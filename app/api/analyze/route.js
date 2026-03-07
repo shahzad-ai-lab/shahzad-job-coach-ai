@@ -7,13 +7,12 @@ function truncate(text, max) {
   return text.length > max ? text.slice(0, max) : text
 }
 
-// CONFIRMED available models from ListModels API (in order of preference)
+// CONFIRMED working models — gemini-flash-latest verified 200 OK
 const MODELS = [
-  'gemini-2.0-flash-lite',   // lightest, highest free tier quota
-  'gemini-2.0-flash',        // standard
-  'gemini-2.0-flash-001',    // specific version
-  'gemini-flash-latest',     // alias
-  'gemini-2.5-flash',        // newest
+  'gemini-flash-latest',     // CONFIRMED WORKING
+  'gemini-flash-lite-latest',// fallback alias
+  'gemini-pro-latest',       // fallback
+  'gemini-2.5-flash',        // newest fallback
 ]
 const API_VERSION = 'v1beta'
 
