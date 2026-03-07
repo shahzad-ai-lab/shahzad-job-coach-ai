@@ -322,36 +322,42 @@ export default function Home() {
       <div style={s.container}>
 
         {/* Rotating Quote */}
-        <div style={{ textAlign:'center', marginBottom:32, minHeight:80 }}>
-          <div style={{
-            opacity: quoteFade ? 1 : 0,
-            transition: 'opacity 0.4s ease',
-            display:'inline-block', maxWidth:720,
-          }}>
-            <p style={{
-              fontSize:'clamp(1rem,2.5vw,1.25rem)', fontWeight:700, margin:'0 0 8px',
-              background: ['linear-gradient(90deg,#FF0099,#FACF39)','linear-gradient(90deg,#00AEEF,#38EF7D)','linear-gradient(90deg,#FC466B,#3F5EFB)','linear-gradient(90deg,#F7971E,#FFD200)','linear-gradient(90deg,#DA22FF,#FF0099)'][quoteIdx % 5],
-              WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
-              filter:`drop-shadow(0 0 18px ${['#FF0099','#00AEEF','#FC466B','#F7971E','#DA22FF'][quoteIdx % 5]}66)`,
-              lineHeight:1.4,
-            }}>
-              &ldquo;{QUOTES[quoteIdx].text}&rdquo;
-            </p>
-            <p style={{ fontSize:12, color:'rgba(255,255,255,0.35)', margin:0, fontStyle:'italic' }}>
-              — {QUOTES[quoteIdx].author}
-            </p>
-          </div>
-          {/* Quote dots */}
-          <div style={{ display:'flex', justifyContent:'center', gap:5, marginTop:10 }}>
-            {QUOTES.map((_, i) => (
-              <div key={i} style={{
-                width: i === quoteIdx ? 18 : 5, height:5, borderRadius:999,
-                background: i === quoteIdx ? 'linear-gradient(90deg,#FF0099,#FACF39)' : 'rgba(255,255,255,0.15)',
-                transition:'all .4s',
-              }} />
-            ))}
-          </div>
-        </div>
+        {(() => {
+          const glowColors  = ['#FF0099','#00AEEF','#FC466B','#F7971E','#DA22FF']
+          const gradients   = ['linear-gradient(90deg,#FF0099,#FACF39)','linear-gradient(90deg,#00AEEF,#38EF7D)','linear-gradient(90deg,#FC466B,#3F5EFB)','linear-gradient(90deg,#F7971E,#FFD200)','linear-gradient(90deg,#DA22FF,#FF0099)']
+          const glow = glowColors[quoteIdx % 5]
+          return (
+            <div style={{ textAlign:'center', marginBottom:32, minHeight:90 }}>
+              <div style={{ opacity: quoteFade ? 1 : 0, transition:'opacity 0.4s ease', display:'inline-block', maxWidth:720 }}>
+                {/* Glow wrapper — filter must NOT be on the same element as webkit-text-fill-color:transparent */}
+                <div style={{ filter:`drop-shadow(0 0 20px ${glow}99)` }}>
+                  <p style={{
+                    fontSize:'clamp(1rem,2.5vw,1.3rem)', fontWeight:800, margin:'0 0 10px',
+                    background: gradients[quoteIdx % 5],
+                    WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
+                    backgroundClip:'text', lineHeight:1.45, letterSpacing:'.01em',
+                  }}>
+                    &ldquo;{QUOTES[quoteIdx].text}&rdquo;
+                  </p>
+                </div>
+                <p style={{ fontSize:12, color:'rgba(255,255,255,0.4)', margin:0, fontStyle:'italic', letterSpacing:'.03em' }}>
+                  — {QUOTES[quoteIdx].author}
+                </p>
+              </div>
+              {/* Quote progress dots */}
+              <div style={{ display:'flex', justifyContent:'center', gap:5, marginTop:12 }}>
+                {QUOTES.map((_, i) => (
+                  <div key={i} style={{
+                    width: i === quoteIdx ? 20 : 5, height:5, borderRadius:999,
+                    background: i === quoteIdx ? gradients[i % 5] : 'rgba(255,255,255,0.12)',
+                    boxShadow: i === quoteIdx ? `0 0 8px ${glowColors[i % 5]}88` : 'none',
+                    transition:'all .4s ease',
+                  }} />
+                ))}
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Input Grid */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))', gap:20, marginBottom:20 }}>
