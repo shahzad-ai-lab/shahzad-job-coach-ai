@@ -2,6 +2,62 @@ export const maxDuration = 60
 
 const MAX_RESUME = 6000
 const MAX_JOB = 3000
+const MAX_BODY_BYTES = 50000
+const HOURLY_LIMIT = 5
+const HOUR_MS = 60 * 60 * 1000
+// Progressive backoff: 1st violation = 1h, 2nd = 3h, 3rd+ = 6h
+const BACKOFF_HOURS = [1, 3, 6]
+
+// In-memory rate limit store (best-effort on Vercel serverless free tier)
+// Entry: { count, windowReset, violations, blockUntil }
+const ipStore = new Map()
+
+function getRateLimitEntry(ip) {
+  const now = Date.now()
+  let entry = ipStore.get(ip)
+  if (!entry) {
+    entry = { count: 0, windowReset: now + HOUR_MS, violations: 0, blockUntil: 0 }
+  } else if (now > entry.windowReset) {
+    // New hourly window — reset count but keep violation history
+    entry.count = 0
+    entry.windowReset = now + HOUR_MS
+  }
+  ipStore.set(ip, entry)
+  return entry
+}
+
+function securityHeaders() {
+  return {
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'X-XSS-Protection': '1; mode=block',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    'Cache-Control': 'no-store',
+  }
+}
+
+function sanitize(text) {
+  if (typeof text !== 'string') return ''
+  // Strip HTML tags
+  let s = text.replace(/<[^>]*>/g, '')
+  // Strip null bytes and non-printable control chars (keep newlines/tabs)
+  s = s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+  // Neutralize common prompt injection patterns
+  const injectionPatterns = [
+    /ignore\s+previous\s+instructions/gi,
+    /system\s*:/gi,
+    /\[INST\]/gi,
+    /\[\/INST\]/gi,
+    /<\|im_start\|>/gi,
+    /###\s*instruction/gi,
+    /you\s+are\s+now\s+a\s+/gi,
+  ]
+  for (const pattern of injectionPatterns) {
+    s = s.replace(pattern, '[removed]')
+  }
+  return s.trim()
+}
 
 function truncate(text, max) {
   return text.length > max ? text.slice(0, max) : text
@@ -59,20 +115,72 @@ function extractJSON(raw) {
 }
 
 export async function POST(request) {
+  const h = securityHeaders()
+
+  // ── Rate Limiting ─────────────────────────────────────────────
+  const forwarded = request.headers.get('x-forwarded-for') || ''
+  const ip = forwarded.split(',')[0].trim() || 'unknown'
+  const rateEntry = getRateLimitEntry(ip)
+  const now = Date.now()
+
+  // Check if IP is currently in a backoff block
+  if (rateEntry.blockUntil > now) {
+    const blockMins = Math.ceil((rateEntry.blockUntil - now) / 60000)
+    const blockHours = blockMins >= 60 ? Math.ceil(blockMins / 60) : null
+    const timeStr = blockHours ? `${blockHours} hour${blockHours !== 1 ? 's' : ''}` : `${blockMins} minute${blockMins !== 1 ? 's' : ''}`
+    return Response.json(
+      {
+        error: 'rate_limited',
+        message: `Slow down! Too many requests. Please come back in ${timeStr}. This keeps the service free for everyone.`,
+        blockUntil: new Date(rateEntry.blockUntil).toISOString(),
+        violations: rateEntry.violations,
+      },
+      { status: 429, headers: h }
+    )
+  }
+
+  // Check if hourly limit exceeded — apply progressive backoff
+  if (rateEntry.count >= HOURLY_LIMIT) {
+    const backoffHours = BACKOFF_HOURS[Math.min(rateEntry.violations, BACKOFF_HOURS.length - 1)]
+    rateEntry.violations += 1
+    rateEntry.blockUntil = now + backoffHours * HOUR_MS
+    ipStore.set(ip, rateEntry)
+    return Response.json(
+      {
+        error: 'rate_limited',
+        message: `You have made ${HOURLY_LIMIT} requests this hour. Please come back in ${backoffHours} hour${backoffHours !== 1 ? 's' : ''}. This keeps the service free for everyone.`,
+        blockUntil: new Date(rateEntry.blockUntil).toISOString(),
+        violations: rateEntry.violations,
+      },
+      { status: 429, headers: h }
+    )
+  }
+
+  // ── Request Size Guard ────────────────────────────────────────
+  const contentLength = parseInt(request.headers.get('content-length') || '0', 10)
+  if (contentLength > MAX_BODY_BYTES) {
+    return Response.json({ error: 'Request too large.' }, { status: 413, headers: h })
+  }
+
+  // ── Parse & Sanitize Input ────────────────────────────────────
   let resumeText, jobPosting
   try {
     const body = await request.json()
-    resumeText = truncate((body.resumeText || '').trim(), MAX_RESUME)
-    jobPosting = truncate((body.jobPosting || '').trim(), MAX_JOB)
+    resumeText = truncate(sanitize(body.resumeText || ''), MAX_RESUME)
+    jobPosting = truncate(sanitize(body.jobPosting || ''), MAX_JOB)
   } catch {
-    return Response.json({ error: 'Invalid request.' }, { status: 400 })
+    return Response.json({ error: 'Invalid request.' }, { status: 400, headers: h })
   }
 
-  if (!resumeText) return Response.json({ error: 'Resume text is required.' }, { status: 400 })
-  if (!jobPosting) return Response.json({ error: 'Job posting is required.' }, { status: 400 })
+  if (!resumeText) return Response.json({ error: 'Resume text is required.' }, { status: 400, headers: h })
+  if (!jobPosting) return Response.json({ error: 'Job description is required.' }, { status: 400, headers: h })
 
   const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return Response.json({ error: 'API key not configured on server.' }, { status: 500 })
+  if (!apiKey) return Response.json({ error: 'API key not configured on server.' }, { status: 500, headers: h })
+
+  // Increment rate count BEFORE the expensive call
+  rateEntry.count += 1
+  ipStore.set(ip, rateEntry)
 
   const prompt = `You are an expert career coach and ATS specialist. Analyze the resume and job posting. Return ONLY raw JSON with exactly these 12 keys. No markdown, no code blocks.
 
@@ -89,14 +197,20 @@ Return this JSON (fill every field with real detailed content):
   try {
     raw = await callGemini(prompt, apiKey)
   } catch (err) {
+    // Refund the rate count on server/AI error — not the user's fault
+    rateEntry.count = Math.max(0, rateEntry.count - 1)
+    ipStore.set(ip, rateEntry)
     console.error('callGemini error:', err.message)
-    return Response.json({ error: err.message }, { status: 503 })
+    return Response.json({ error: err.message }, { status: 503, headers: h })
   }
 
   const parsed = extractJSON(raw)
   if (!parsed) {
+    // Refund count on parse failure too
+    rateEntry.count = Math.max(0, rateEntry.count - 1)
+    ipStore.set(ip, rateEntry)
     console.error('JSON parse failed. Raw:', raw?.slice(0, 300))
-    return Response.json({ error: 'AI returned unexpected format. Please try again.' }, { status: 500 })
+    return Response.json({ error: 'AI returned unexpected format. Please try again.' }, { status: 500, headers: h })
   }
 
   const keys = ['coverLetter','resumeRewrite','skillsGap','interviewPrep','starStories','linkedinSummary','resumeScore','introScripts','matchingJobs','thankYouEmail','salaryNegotiation','actionPlan']
@@ -106,5 +220,9 @@ Return this JSON (fill every field with real detailed content):
     }
   }
 
-  return Response.json(parsed)
+  const remaining = Math.max(0, HOURLY_LIMIT - rateEntry.count)
+  return Response.json(
+    { ...parsed, _meta: { remaining, windowReset: new Date(rateEntry.windowReset).toISOString() } },
+    { headers: h }
+  )
 }

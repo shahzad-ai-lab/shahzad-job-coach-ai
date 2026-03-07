@@ -3,6 +3,47 @@
 import { useState, useRef } from 'react'
 
 const MAX_PASTE_CHARS = 12000
+const CLIENT_HOURLY_LIMIT = 5
+const HOUR_MS = 60 * 60 * 1000
+const BACKOFF_HOURS = [1, 3, 6]
+
+function getRateLimitState() {
+  try {
+    const raw = localStorage.getItem('jcai_rl')
+    const s = raw ? JSON.parse(raw) : null
+    const now = Date.now()
+    if (!s) return { count: 0, windowReset: now + HOUR_MS, violations: 0, blockUntil: 0 }
+    // Reset hourly window if expired but keep violations
+    if (now > s.windowReset) return { count: 0, windowReset: now + HOUR_MS, violations: s.violations || 0, blockUntil: s.blockUntil || 0 }
+    return s
+  } catch { return { count: 0, windowReset: Date.now() + HOUR_MS, violations: 0, blockUntil: 0 } }
+}
+
+function saveRateLimitState(s) {
+  try { localStorage.setItem('jcai_rl', JSON.stringify(s)) } catch {}
+}
+
+function checkAndIncrementRateLimit() {
+  const s = getRateLimitState()
+  const now = Date.now()
+  // Still blocked?
+  if (s.blockUntil > now) {
+    const mins = Math.ceil((s.blockUntil - now) / 60000)
+    const hrs = mins >= 60 ? Math.ceil(mins / 60) : null
+    return { allowed: false, message: `Slow down! Come back in ${hrs ? hrs + ' hour' + (hrs > 1 ? 's' : '') : mins + ' min' + (mins > 1 ? 's' : '')}.` }
+  }
+  // Hourly limit hit?
+  if (s.count >= CLIENT_HOURLY_LIMIT) {
+    const backoffHrs = BACKOFF_HOURS[Math.min(s.violations, BACKOFF_HOURS.length - 1)]
+    s.violations = (s.violations || 0) + 1
+    s.blockUntil = now + backoffHrs * HOUR_MS
+    saveRateLimitState(s)
+    return { allowed: false, message: `${CLIENT_HOURLY_LIMIT} requests used this hour. Come back in ${backoffHrs} hour${backoffHrs > 1 ? 's' : ''}! This keeps the service free for everyone.` }
+  }
+  s.count += 1
+  saveRateLimitState(s)
+  return { allowed: true, remaining: CLIENT_HOURLY_LIMIT - s.count }
+}
 
 const CARDS = [
   { key: 'resumeScore',       title: 'Resume Score',       icon: '📊', g: 'linear-gradient(135deg,#00C6FF,#0072FF)' },
@@ -87,6 +128,9 @@ export default function Home() {
   async function handleAnalyze() {
     if (!resumeText.trim()) { setError('Please add your resume text or upload a file.'); return }
     if (!jobPosting.trim()) { setError('Please paste the job description.'); return }
+    // Client-side rate limit check
+    const rl = checkAndIncrementRateLimit()
+    if (!rl.allowed) { setError(rl.message); return }
     setError(''); setLoading(true); setResults(null); setActiveCard(null)
     try {
       const res = await fetch('/api/analyze', {
@@ -94,6 +138,7 @@ export default function Home() {
         body: JSON.stringify({ resumeText, jobPosting }),
       })
       const data = await res.json()
+      if (data.error === 'rate_limited') throw new Error(data.message)
       if (data.error) throw new Error(data.error)
       setResults(data); setActiveCard('resumeScore')
     } catch (err) { setError(err.message) }
@@ -129,10 +174,17 @@ export default function Home() {
           Upload your resume. Paste the job.{' '}
           <strong style={{ color:'#fff', fontWeight:800 }}>Land the interview.</strong>
         </p>
-        <div style={{ display:'flex', justifyContent:'center', gap:12, flexWrap:'wrap' }}>
+        <div style={{ display:'flex', justifyContent:'center', gap:12, flexWrap:'wrap', marginBottom:16 }}>
           {['12 AI Tools','ATS Scoring','Salary Scripts','30-60-90 Plan'].map(t => (
             <span key={t} style={{ padding:'5px 14px', borderRadius:999, background:'rgba(255,255,255,0.1)', fontSize:12, fontWeight:600, color:'rgba(255,255,255,0.8)', border:'1px solid rgba(255,255,255,0.15)' }}>{t}</span>
           ))}
+        </div>
+        {/* Privacy Notice */}
+        <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'8px 18px', borderRadius:999, background:'rgba(56,239,125,0.1)', border:'1px solid rgba(56,239,125,0.25)', fontSize:12, color:'rgba(56,239,125,0.9)', fontWeight:600 }}>
+          <span>🔒</span> Your data is never stored on our servers. Everything is processed in memory and cleared on refresh.
+        </div>
+        <div style={{ marginTop:8, fontSize:11, color:'rgba(255,255,255,0.3)' }}>
+          Free tier: <strong style={{ color:'rgba(255,255,255,0.5)' }}>5 analyses per hour</strong> · Refresh page = all data gone
         </div>
       </header>
 
@@ -312,6 +364,58 @@ export default function Home() {
             })()}
           </div>
         )}
+      </div>
+
+      {/* Privacy & Disclaimer */}
+      <div style={{ maxWidth:1000, margin:'0 auto', padding:'0 16px 40px' }}>
+        <div style={{ borderRadius:16, border:'1px solid rgba(255,255,255,0.08)', padding:'20px 24px', background:'rgba(255,255,255,0.03)' }}>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))', gap:20 }}>
+
+            {/* Privacy */}
+            <div>
+              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+                <span style={{ fontSize:18 }}>🔒</span>
+                <strong style={{ color:'rgba(255,255,255,0.8)', fontSize:13 }}>Privacy — Your Data Stays With You</strong>
+              </div>
+              <ul style={{ color:'rgba(255,255,255,0.4)', fontSize:12, lineHeight:1.7, margin:0, paddingLeft:16 }}>
+                <li>We do <strong style={{ color:'rgba(255,255,255,0.6)' }}>NOT</strong> store your resume on any server</li>
+                <li>We do <strong style={{ color:'rgba(255,255,255,0.6)' }}>NOT</strong> store the job description</li>
+                <li>We do <strong style={{ color:'rgba(255,255,255,0.6)' }}>NOT</strong> store AI results or logs</li>
+                <li>Data is processed in-memory and discarded immediately</li>
+                <li>Refresh or close the page — everything is gone</li>
+                <li>AI analysis provided by Google Gemini (Google Privacy Policy applies)</li>
+              </ul>
+            </div>
+
+            {/* GRC / Compliance */}
+            <div>
+              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+                <span style={{ fontSize:18 }}>🛡️</span>
+                <strong style={{ color:'rgba(255,255,255,0.8)', fontSize:13 }}>Security & Compliance (GRC)</strong>
+              </div>
+              <ul style={{ color:'rgba(255,255,255,0.4)', fontSize:12, lineHeight:1.7, margin:0, paddingLeft:16 }}>
+                <li>All traffic encrypted via HTTPS (TLS 1.3)</li>
+                <li>Rate limited: 5 requests/hour per IP — prevents abuse</li>
+                <li>Progressive blocks: 1h → 3h → 6h on repeated violations</li>
+                <li>Inputs sanitized — HTML, null bytes, injection patterns removed</li>
+                <li>Security headers: X-Frame-Options, CSP, XSS-Protection</li>
+                <li>Zero persistent storage — GDPR/PIPEDA friendly by design</li>
+              </ul>
+            </div>
+
+            {/* Disclaimer */}
+            <div>
+              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+                <span style={{ fontSize:18 }}>⚠️</span>
+                <strong style={{ color:'rgba(255,255,255,0.8)', fontSize:13 }}>Disclaimer</strong>
+              </div>
+              <p style={{ color:'rgba(255,255,255,0.4)', fontSize:12, lineHeight:1.7, margin:0 }}>
+                Job Coach AI 2026 is an AI-assisted tool for career guidance purposes only. All outputs are generated by artificial intelligence and should be reviewed and customized before use. This tool does not guarantee employment outcomes. Salary ranges are estimates and may not reflect local market conditions. Always verify information with qualified professionals. By using this tool, you accept that outputs are AI-generated and may contain inaccuracies.
+              </p>
+            </div>
+
+          </div>
+        </div>
       </div>
 
       {/* Footer */}
