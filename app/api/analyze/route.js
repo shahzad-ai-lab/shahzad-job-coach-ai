@@ -7,67 +7,68 @@ function truncate(text, max) {
   return text.length > max ? text.slice(0, max) : text
 }
 
-// Direct REST call — no SDK, no version issues, 8s timeout per attempt
-async function geminiRest(modelId, prompt, apiKey) {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 8000)
-  try {
-    const url = `https://generativelanguage.googleapis.com/v1/models/${modelId}:generateContent?key=${apiKey}`
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: controller.signal,
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 4096 },
-      }),
-    })
-    clearTimeout(timer)
-    const data = await res.json()
-    if (!res.ok) {
-      const errMsg = data?.error?.message || `HTTP ${res.status}`
-      throw Object.assign(new Error(errMsg), { status: res.status })
-    }
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text || null
-  } catch (err) {
-    clearTimeout(timer)
-    throw err
-  }
-}
+// CONFIRMED available models from ListModels API (in order of preference)
+const MODELS = [
+  'gemini-2.0-flash-lite',   // lightest, highest free tier quota
+  'gemini-2.0-flash',        // standard
+  'gemini-2.0-flash-001',    // specific version
+  'gemini-flash-latest',     // alias
+  'gemini-2.5-flash',        // newest
+]
+const API_VERSION = 'v1beta'
 
-// Try models in order — skip on any error, no waiting
-async function callGemini(prompt) {
-  const key = process.env.GEMINI_API_KEY
-  if (!key) throw new Error('GEMINI_API_KEY not set')
-
-  const models = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-pro', 'gemini-pro']
+async function callGemini(prompt, apiKey) {
   const errors = []
-
-  for (const model of models) {
+  for (const model of MODELS) {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 9000)
     try {
-      const text = await geminiRest(model, prompt, key)
-      if (text) {
-        console.log(`Success with ${model}`)
-        return text
+      const url = `https://generativelanguage.googleapis.com/${API_VERSION}/models/${model}:generateContent?key=${apiKey}`
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 4096 },
+        }),
+      })
+      clearTimeout(timer)
+      const data = await res.json()
+      if (res.ok) {
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
+        if (text) {
+          console.log(`Success: ${model}`)
+          return text
+        }
+        errors.push(`${model}: empty response`)
+        continue
       }
+      const errMsg = data?.error?.message || `HTTP ${res.status}`
+      errors.push(`${model}: ${errMsg.slice(0, 80)}`)
+      console.warn(`${model} failed: ${errMsg.slice(0, 80)}`)
+      // On 429 try next model (different quota pool)
+      // On 404 try next model
     } catch (err) {
-      const msg = err?.message || ''
-      errors.push(`${model}: ${msg.slice(0, 60)}`)
-      console.warn(`${model} failed: ${msg.slice(0, 80)}`)
-      // On 429 skip to next immediately — no sleeping, avoid timeout
-      // On 404 skip to next
-      // On abort (timeout) skip to next
+      clearTimeout(timer)
+      errors.push(`${model}: ${err.message?.slice(0, 60) || 'timeout'}`)
+      console.warn(`${model} exception: ${err.message?.slice(0, 60)}`)
     }
   }
-  throw new Error(`All models failed. Errors: ${errors.join(' | ')}`)
+  throw new Error(`All models failed: ${errors.join(' | ')}`)
 }
 
-function cleanJSON(raw) {
-  return raw
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/```\s*$/i, '')
-    .trim()
+function extractJSON(raw) {
+  // Remove markdown fences
+  let cleaned = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim()
+  // Try direct parse
+  try { return JSON.parse(cleaned) } catch {}
+  // Extract first {...} block
+  const match = cleaned.match(/\{[\s\S]*\}/)
+  if (match) {
+    try { return JSON.parse(match[0]) } catch {}
+  }
+  return null
 }
 
 export async function POST(request) {
@@ -77,14 +78,17 @@ export async function POST(request) {
     resumeText = truncate((body.resumeText || '').trim(), MAX_RESUME)
     jobPosting = truncate((body.jobPosting || '').trim(), MAX_JOB)
   } catch {
-    return Response.json({ error: 'Invalid request body.' }, { status: 400 })
+    return Response.json({ error: 'Invalid request.' }, { status: 400 })
   }
 
   if (!resumeText) return Response.json({ error: 'Resume text is required.' }, { status: 400 })
   if (!jobPosting) return Response.json({ error: 'Job posting is required.' }, { status: 400 })
 
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) return Response.json({ error: 'API key not configured.' }, { status: 500 })
+
   const prompt = `You are an expert career coach. Analyze the resume and job posting below.
-Return ONLY a valid JSON object with exactly these 6 keys. No markdown, no code blocks, no extra text — raw JSON only.
+Return ONLY a valid JSON object with exactly these 6 keys. No markdown, no code blocks, raw JSON only.
 
 RESUME:
 ${resumeText}
@@ -92,46 +96,34 @@ ${resumeText}
 JOB POSTING:
 ${jobPosting}
 
-JSON format (fill each value with detailed content):
+Return this exact JSON structure with detailed content for each field:
 {
-  "coverLetter": "3-paragraph cover letter body. Confident, specific, human tone. No date or subject line.",
-  "resumeRewrite": "Full rewritten resume optimized for this job. Action verbs, quantified achievements, matched keywords.",
-  "skillsGap": "MATCHING SKILLS:\\n- list\\n\\nMISSING SKILLS:\\n- list\\n\\nTOP 3 RECOMMENDATIONS:\\n1. ...\\n2. ...\\n3. ...",
-  "interviewPrep": "Q1: [question]\\nStrategy: [answer approach]\\n\\nQ2: [question]\\nStrategy: [answer approach]\\n\\n(5 total)",
-  "starStories": "STORY 1:\\nSituation: ...\\nTask: ...\\nAction: ...\\nResult: ...\\n\\n(3 stories total)",
-  "linkedinSummary": "3-4 sentence first-person LinkedIn About section. Compelling and professional."
+  "coverLetter": "Write a 3-paragraph cover letter body here. Confident, specific, human tone. No date or subject line.",
+  "resumeRewrite": "Write the full rewritten resume here optimized for this job.",
+  "skillsGap": "MATCHING SKILLS:\\n- skill1\\n- skill2\\n\\nMISSING SKILLS:\\n- skill1\\n- skill2\\n\\nTOP 3 RECOMMENDATIONS:\\n1. action\\n2. action\\n3. action",
+  "interviewPrep": "Q1: question here\\nStrategy: answer strategy\\n\\nQ2: question\\nStrategy: strategy\\n\\nQ3: question\\nStrategy: strategy\\n\\nQ4: question\\nStrategy: strategy\\n\\nQ5: question\\nStrategy: strategy",
+  "starStories": "STORY 1:\\nSituation: ...\\nTask: ...\\nAction: ...\\nResult: ...\\n\\nSTORY 2:\\nSituation: ...\\nTask: ...\\nAction: ...\\nResult: ...\\n\\nSTORY 3:\\nSituation: ...\\nTask: ...\\nAction: ...\\nResult: ...",
+  "linkedinSummary": "Write 3-4 sentence first-person LinkedIn About section here."
 }`
 
   let raw
   try {
-    raw = await callGemini(prompt)
+    raw = await callGemini(prompt, apiKey)
   } catch (err) {
-    console.error('callGemini failed:', err.message)
-    return Response.json(
-      { error: 'AI unavailable right now. Please wait 1 minute and try again.' },
-      { status: 503 }
-    )
+    console.error('callGemini error:', err.message)
+    return Response.json({ error: 'AI service error: ' + err.message }, { status: 503 })
   }
 
-  let parsed
-  try {
-    parsed = JSON.parse(cleanJSON(raw))
-  } catch {
-    // Gemini sometimes adds commentary — try to extract JSON block
-    const match = raw.match(/\{[\s\S]*\}/)
-    if (match) {
-      try { parsed = JSON.parse(match[0]) } catch { /* fall through */ }
-    }
-    if (!parsed) {
-      console.error('JSON parse failed. Raw snippet:', raw.slice(0, 200))
-      return Response.json({ error: 'AI returned unexpected format. Please try again.' }, { status: 500 })
-    }
+  const parsed = extractJSON(raw)
+  if (!parsed) {
+    console.error('JSON extract failed. Raw snippet:', raw?.slice(0, 200))
+    return Response.json({ error: 'AI returned unexpected format. Please try again.' }, { status: 500 })
   }
 
   const keys = ['coverLetter', 'resumeRewrite', 'skillsGap', 'interviewPrep', 'starStories', 'linkedinSummary']
   for (const key of keys) {
     if (!parsed[key] || typeof parsed[key] !== 'string') {
-      parsed[key] = 'Content not generated. Please try again.'
+      parsed[key] = 'Content not generated for this section. Please try again.'
     }
   }
 
