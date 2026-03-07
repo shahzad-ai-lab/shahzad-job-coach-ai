@@ -276,8 +276,19 @@ export default function Home() {
             <span key={t} style={{ padding:'5px 14px', borderRadius:999, background:'rgba(255,255,255,0.1)', fontSize:12, fontWeight:600, color:'rgba(255,255,255,0.8)', border:'1px solid rgba(255,255,255,0.15)' }}>{t}</span>
           ))}
         </div>
+        {/* Welcome Banner */}
+        <div style={{ maxWidth:780, margin:'12px auto 0', padding:'18px 24px', borderRadius:18, background:'linear-gradient(135deg,rgba(255,0,153,0.1),rgba(0,174,239,0.1))', border:'1px solid rgba(255,255,255,0.12)', textAlign:'left' }}>
+          <p style={{ fontSize:14, color:'rgba(255,255,255,0.85)', lineHeight:1.8, margin:'0 0 10px' }}>
+            Thank you for visiting! These are <strong style={{ color:'#FACF39' }}>12 AI-powered tools built free for all humanity.</strong> We help you uplift your career — polish your cover letter, rewrite your resume, optimize your LinkedIn, prepare for interviews with Q&amp;A, craft STAR stories, discover matching jobs, score your resume against ATS, and identify your hard and soft skill gaps — plus much more.
+          </p>
+          <p style={{ fontSize:13, color:'rgba(255,255,255,0.5)', lineHeight:1.7, margin:0 }}>
+            Enjoy the app. If you would like to build something similar — AI-powered apps or services for community, trial, or commercial use —{' '}
+            <strong style={{ color:'#FF0099' }}>I am happy to help.</strong>
+          </p>
+        </div>
+
         {/* Privacy Notice */}
-        <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'8px 18px', borderRadius:999, background:'rgba(56,239,125,0.1)', border:'1px solid rgba(56,239,125,0.25)', fontSize:12, color:'rgba(56,239,125,0.9)', fontWeight:600 }}>
+        <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'8px 18px', borderRadius:999, background:'rgba(56,239,125,0.1)', border:'1px solid rgba(56,239,125,0.25)', fontSize:12, color:'rgba(56,239,125,0.9)', fontWeight:600, marginTop:14 }}>
           <span>🔒</span> Your data is never stored on our servers. Everything is processed in memory and cleared on refresh.
         </div>
         <div style={{ marginTop:6, fontSize:11, color:'rgba(255,255,255,0.3)' }}>
