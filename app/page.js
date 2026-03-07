@@ -30,7 +30,11 @@ export default function Home() {
   const [copied, setCopied]           = useState('')
   const [fileName, setFileName]       = useState('')
   const [dragOver, setDragOver]       = useState(false)
+  const [jobUploading, setJobUploading] = useState(false)
+  const [jobFileName, setJobFileName]   = useState('')
+  const [jobDragOver, setJobDragOver]   = useState(false)
   const fileRef = useRef(null)
+  const jobFileRef = useRef(null)
 
   function handleResumeChange(e) {
     const val = e.target.value
@@ -61,6 +65,24 @@ export default function Home() {
   }
 
   function handleDrop(e) { e.preventDefault(); setDragOver(false); processFile(e.dataTransfer.files[0]) }
+
+  async function processJobFile(file) {
+    if (!file) return
+    const ext = file.name.toLowerCase().slice(file.name.lastIndexOf('.'))
+    if (!['.pdf','.docx','.txt'].includes(ext)) { setError('Only PDF, DOCX, or TXT supported.'); return }
+    if (file.size > 10 * 1024 * 1024) { setError(`File too large (${(file.size/1024/1024).toFixed(1)}MB). Max 10MB.`); return }
+    setJobUploading(true); setError(''); setJobFileName(file.name)
+    try {
+      const fd = new FormData(); fd.append('file', file)
+      const res = await fetch('/api/upload', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      setJobPosting(data.text)
+    } catch (err) { setError(err.message); setJobFileName('') }
+    finally { setJobUploading(false) }
+  }
+
+  function handleJobDrop(e) { e.preventDefault(); setJobDragOver(false); processJobFile(e.dataTransfer.files[0]) }
 
   async function handleAnalyze() {
     if (!resumeText.trim()) { setError('Please add your resume text or upload a file.'); return }
@@ -160,8 +182,35 @@ export default function Home() {
             <h2 style={{ margin:'0 0 16px', fontSize:20, fontWeight:800, background:'linear-gradient(90deg,#FF0099,#FF6B6B)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', display:'flex', alignItems:'center', gap:8 }}>
               <span>💼</span> Job Description
             </h2>
-            <p style={s.label}>Paste the full job description:</p>
-            <textarea value={jobPosting} onChange={handleJobChange} placeholder="Paste the job description here..." style={{ ...s.textarea, height:240 }} />
+
+            {/* Job Drop Zone */}
+            <div
+              onDragOver={e => { e.preventDefault(); setJobDragOver(true) }}
+              onDragLeave={() => setJobDragOver(false)}
+              onDrop={handleJobDrop}
+              onClick={() => jobFileRef.current?.click()}
+              style={{
+                cursor:'pointer', borderRadius:16,
+                border:`2px dashed ${jobDragOver ? '#FF0099' : 'rgba(255,255,255,0.25)'}`,
+                padding:'24px 16px', textAlign:'center', marginBottom:16, transition:'all .2s',
+                background: jobDragOver ? 'rgba(255,0,153,0.15)' : 'rgba(255,255,255,0.04)',
+              }}
+            >
+              <input ref={jobFileRef} type="file" accept=".pdf,.docx,.txt" onChange={e => processJobFile(e.target.files[0])} style={{ display:'none' }} />
+              <div style={{ fontSize:36, marginBottom:8 }}>{jobUploading ? '⏳' : '📂'}</div>
+              {jobUploading
+                ? <p style={{ color:'#FF0099', fontSize:14, fontWeight:700, margin:0 }}>Reading file...</p>
+                : jobFileName
+                  ? <p style={{ color:'#38EF7D', fontSize:13, fontWeight:700, margin:0 }}>✓ {jobFileName}</p>
+                  : <>
+                      <p style={{ color:'#fff', fontSize:15, fontWeight:700, margin:'0 0 6px' }}>Drop file here or click to upload</p>
+                      <p style={{ color:'rgba(255,255,255,0.45)', fontSize:12, margin:0 }}>PDF · DOCX · TXT · Max 10MB</p>
+                    </>
+              }
+            </div>
+
+            <p style={{ ...s.label, textAlign:'center' }}>— or paste the job description below —</p>
+            <textarea value={jobPosting} onChange={handleJobChange} placeholder="Paste the job description here..." style={{ ...s.textarea, height:160 }} />
             <p style={{ textAlign:'right', fontSize:11, color:'rgba(255,255,255,0.3)', margin:'4px 0 0' }}>{jobPosting.length.toLocaleString()} / 6,000</p>
           </div>
         </div>
