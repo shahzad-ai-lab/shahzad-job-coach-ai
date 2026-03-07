@@ -1,8 +1,43 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 const MAX_PASTE_CHARS = 12000
+
+// ── Motivational Quotes ───────────────────────────────────────────
+const QUOTES = [
+  { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+  { text: "Your resume gets you the interview. Your story gets you the job.", author: "Job Coach AI" },
+  { text: "Every expert was once a beginner. Keep going.", author: "Helen Hayes" },
+  { text: "Success is not the key to happiness. Happiness is the key to success.", author: "Albert Schweitzer" },
+  { text: "Opportunities don't happen. You create them.", author: "Chris Grosser" },
+  { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
+  { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+  { text: "You miss 100% of the shots you don't take.", author: "Wayne Gretzky" },
+  { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+  { text: "Hard work beats talent when talent doesn't work hard.", author: "Tim Notke" },
+  { text: "Your next chapter begins with a single application. Send it.", author: "Job Coach AI" },
+  { text: "Rejection is redirection. Every no is closer to the yes.", author: "Job Coach AI" },
+  { text: "The best time to plant a tree was 20 years ago. The second best time is now.", author: "Chinese Proverb" },
+  { text: "Dream big. Start small. Act now.", author: "Robin Sharma" },
+  { text: "You are one conversation away from a completely different life.", author: "Job Coach AI" },
+  { text: "Confidence is not 'they will like me'. Confidence is 'I'll be fine if they don't'.", author: "Christina Grimmie" },
+  { text: "A comfort zone is a beautiful place, but nothing ever grows there.", author: "Unknown" },
+  { text: "Your skills are already impressive. Let the world see them.", author: "Job Coach AI" },
+  { text: "It always seems impossible until it's done.", author: "Nelson Mandela" },
+  { text: "Hustle in silence and let your LinkedIn speak for you.", author: "Job Coach AI" },
+]
+
+function detectOS() {
+  if (typeof navigator === 'undefined') return 'Unknown'
+  const ua = navigator.userAgent
+  if (/Windows NT 10|Windows NT 11/.test(ua)) return 'Windows'
+  if (/Macintosh|Mac OS X/.test(ua)) return 'macOS'
+  if (/iPhone|iPad/.test(ua)) return 'iOS'
+  if (/Android/.test(ua)) return 'Android'
+  if (/Linux/.test(ua)) return 'Linux'
+  return 'Unknown'
+}
 const CLIENT_HOURLY_LIMIT = 5
 const HOUR_MS = 60 * 60 * 1000
 const BACKOFF_HOURS = [1, 3, 6]
@@ -74,8 +109,48 @@ export default function Home() {
   const [jobUploading, setJobUploading] = useState(false)
   const [jobFileName, setJobFileName]   = useState('')
   const [jobDragOver, setJobDragOver]   = useState(false)
-  const fileRef = useRef(null)
+  const [userInfo, setUserInfo]     = useState(null)
+  const [weather, setWeather]       = useState('')
+  const [quoteIdx, setQuoteIdx]     = useState(0)
+  const [quoteFade, setQuoteFade]   = useState(true)
+  const [remaining, setRemaining]   = useState(CLIENT_HOURLY_LIMIT)
+  const fileRef    = useRef(null)
   const jobFileRef = useRef(null)
+
+  // ── Fetch IP / location / weather on mount ────────────────────
+  useEffect(() => {
+    fetch('https://ipapi.co/json/')
+      .then(r => r.json())
+      .then(d => {
+        setUserInfo({
+          ip: d.ip || '—',
+          city: d.city || '—',
+          region: d.region || '—',
+          country: d.country_name || '—',
+          postal: d.postal || '—',
+          org: d.org || '—',
+          os: detectOS(),
+        })
+        const loc = encodeURIComponent((d.city || '') + ',' + (d.country_code || ''))
+        return fetch(`https://wttr.in/${loc}?format=%c+%C+%t&m`)
+      })
+      .then(r => r.text())
+      .then(w => setWeather(w.trim()))
+      .catch(() => {})
+    // Show current remaining count from localStorage
+    const s = getRateLimitState()
+    setRemaining(Math.max(0, CLIENT_HOURLY_LIMIT - s.count))
+  }, [])
+
+  // ── Rotate quotes every 5 seconds ────────────────────────────
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setQuoteFade(false)
+      setTimeout(() => { setQuoteIdx(i => (i + 1) % QUOTES.length); setQuoteFade(true) }, 400)
+    }, 5000)
+    return () => clearInterval(iv)
+  }, [])
+
 
   function handleResumeChange(e) {
     const val = e.target.value
@@ -141,6 +216,7 @@ export default function Home() {
       if (data.error === 'rate_limited') throw new Error(data.message)
       if (data.error) throw new Error(data.error)
       setResults(data); setActiveCard('resumeScore')
+      if (data._meta?.remaining !== undefined) setRemaining(data._meta.remaining)
     } catch (err) { setError(err.message) }
     finally { setLoading(false) }
   }
@@ -161,6 +237,61 @@ export default function Home() {
     <main style={s.page}>
       {/* Rainbow top bar */}
       <div style={{ height: 5, background: 'linear-gradient(90deg,#FF0099,#FACF39,#00AEEF,#38EF7D,#FF6B35)' }} />
+
+      {/* User Info Bar */}
+      <div style={{ background:'rgba(255,255,255,0.04)', borderBottom:'1px solid rgba(255,255,255,0.07)', padding:'8px 20px' }}>
+        <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:8 }}>
+          {/* Left: location + weather */}
+          <div style={{ display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
+            {userInfo ? (
+              <>
+                <span style={{ fontSize:12, color:'rgba(255,255,255,0.5)', display:'flex', alignItems:'center', gap:5 }}>
+                  <span style={{ color:'#00AEEF' }}>📍</span>
+                  <strong style={{ color:'rgba(255,255,255,0.75)' }}>{userInfo.city}, {userInfo.region}</strong>
+                  <span style={{ color:'rgba(255,255,255,0.35)' }}>·</span>
+                  {userInfo.country}
+                  <span style={{ color:'rgba(255,255,255,0.35)' }}>·</span>
+                  {userInfo.postal}
+                </span>
+                <span style={{ fontSize:12, color:'rgba(255,255,255,0.35)', display:'flex', alignItems:'center', gap:5 }}>
+                  <span style={{ color:'#FACF39' }}>🖥️</span> {userInfo.os}
+                </span>
+                <span style={{ fontSize:12, color:'rgba(255,255,255,0.35)', display:'flex', alignItems:'center', gap:5 }}>
+                  <span style={{ color:'#FF0099' }}>🌐</span>
+                  <span style={{ fontFamily:'monospace', fontSize:11, color:'rgba(255,255,255,0.4)' }}>{userInfo.ip}</span>
+                </span>
+                {weather && (
+                  <span style={{ fontSize:12, color:'rgba(255,255,255,0.5)', display:'flex', alignItems:'center', gap:5 }}>
+                    <span>{weather}</span>
+                    <span style={{ color:'rgba(255,255,255,0.25)', fontSize:10 }}>in {userInfo.city}</span>
+                  </span>
+                )}
+              </>
+            ) : (
+              <span style={{ fontSize:11, color:'rgba(255,255,255,0.2)', fontStyle:'italic' }}>Detecting your location...</span>
+            )}
+          </div>
+          {/* Right: usage meter */}
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <span style={{ fontSize:11, color:'rgba(255,255,255,0.35)' }}>Free analyses:</span>
+            <div style={{ display:'flex', gap:4 }}>
+              {Array.from({ length: CLIENT_HOURLY_LIMIT }).map((_, i) => (
+                <div key={i} style={{
+                  width:10, height:10, borderRadius:'50%',
+                  background: i < remaining
+                    ? 'linear-gradient(135deg,#38EF7D,#11998E)'
+                    : 'rgba(255,255,255,0.12)',
+                  boxShadow: i < remaining ? '0 0 6px rgba(56,239,125,0.6)' : 'none',
+                  transition:'all .3s',
+                }} />
+              ))}
+            </div>
+            <span style={{ fontSize:11, color: remaining > 0 ? '#38EF7D' : '#FF6B6B', fontWeight:700 }}>
+              {remaining}/{CLIENT_HOURLY_LIMIT} left
+            </span>
+          </div>
+        </div>
+      </div>
 
       {/* Header */}
       <header style={{ padding: '52px 24px 36px', textAlign: 'center' }}>
@@ -189,6 +320,39 @@ export default function Home() {
       </header>
 
       <div style={s.container}>
+
+        {/* Rotating Quote */}
+        <div style={{ textAlign:'center', marginBottom:32, minHeight:80 }}>
+          <div style={{
+            opacity: quoteFade ? 1 : 0,
+            transition: 'opacity 0.4s ease',
+            display:'inline-block', maxWidth:720,
+          }}>
+            <p style={{
+              fontSize:'clamp(1rem,2.5vw,1.25rem)', fontWeight:700, margin:'0 0 8px',
+              background: ['linear-gradient(90deg,#FF0099,#FACF39)','linear-gradient(90deg,#00AEEF,#38EF7D)','linear-gradient(90deg,#FC466B,#3F5EFB)','linear-gradient(90deg,#F7971E,#FFD200)','linear-gradient(90deg,#DA22FF,#FF0099)'][quoteIdx % 5],
+              WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
+              filter:`drop-shadow(0 0 18px ${['#FF0099','#00AEEF','#FC466B','#F7971E','#DA22FF'][quoteIdx % 5]}66)`,
+              lineHeight:1.4,
+            }}>
+              &ldquo;{QUOTES[quoteIdx].text}&rdquo;
+            </p>
+            <p style={{ fontSize:12, color:'rgba(255,255,255,0.35)', margin:0, fontStyle:'italic' }}>
+              — {QUOTES[quoteIdx].author}
+            </p>
+          </div>
+          {/* Quote dots */}
+          <div style={{ display:'flex', justifyContent:'center', gap:5, marginTop:10 }}>
+            {QUOTES.map((_, i) => (
+              <div key={i} style={{
+                width: i === quoteIdx ? 18 : 5, height:5, borderRadius:999,
+                background: i === quoteIdx ? 'linear-gradient(90deg,#FF0099,#FACF39)' : 'rgba(255,255,255,0.15)',
+                transition:'all .4s',
+              }} />
+            ))}
+          </div>
+        </div>
+
         {/* Input Grid */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))', gap:20, marginBottom:20 }}>
 
@@ -428,6 +592,7 @@ export default function Home() {
 
       <style>{`
         @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        @keyframes pulse-glow { 0%,100%{filter:drop-shadow(0 0 8px #FF009966)} 50%{filter:drop-shadow(0 0 24px #FF0099cc)} }
         *{box-sizing:border-box}
         textarea::placeholder{color:rgba(255,255,255,0.25)}
         ::-webkit-scrollbar{width:6px}
