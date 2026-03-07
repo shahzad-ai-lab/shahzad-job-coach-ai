@@ -10,7 +10,7 @@ export async function POST(request) {
       return Response.json({ error: 'Resume and job posting are required' }, { status: 400 })
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
     const prompts = {
       coverLetter: `You are an expert career coach. Write a compelling, personalized cover letter based on this resume and job posting. Make it sound human, confident, and specific. 3 paragraphs max.
@@ -84,7 +84,8 @@ ${jobPosting}`,
           const result = await model.generateContent(prompts[key])
           results[key] = result.response.text()
         } catch (err) {
-          results[key] = `Error generating ${key}. Please try again.`
+          console.error(`Error generating ${key}:`, err?.message || err)
+          results[key] = `Error: ${err?.message || 'Failed to generate. Please try again.'}`
         }
       })
     )
