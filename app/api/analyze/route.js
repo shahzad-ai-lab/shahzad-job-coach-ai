@@ -1,152 +1,90 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
-
 export const maxDuration = 60
 
-const MAX_TEXT_CHARS = 12000
+const MAX_RESUME = 12000
+const MAX_JOB = 6000
 
-function truncate(text, max = MAX_TEXT_CHARS) {
-  if (text.length <= max) return text
-  return text.slice(0, max) + '\n[truncated to fit limits]'
+function truncate(text, max) {
+  return text.length > max ? text.slice(0, max) : text
 }
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-function is429(err) {
-  const msg = err?.message || ''
-  return msg.includes('429') || msg.includes('quota') || msg.includes('rate') || err?.status === 429
-}
-
-// ── Gemini fallback chain (separate quota per model) ──────────────────────────
-const GEMINI_MODELS = [
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-latest',
-  'gemini-1.5-pro',
-  'gemini-pro',
-]
-
-async function tryGemini(prompt) {
-  if (!process.env.GEMINI_API_KEY) return null
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY, { apiVersion: 'v1' })
-  for (const modelName of GEMINI_MODELS) {
-    try {
-      const model = genAI.getGenerativeModel({ model: modelName })
-      const result = await model.generateContent(prompt)
-      console.log(`Gemini success with model: ${modelName}`)
-      return result.response.text().trim()
-    } catch (err) {
-      console.warn(`Gemini ${modelName} failed: ${err?.message?.slice(0, 80)}`)
-      if (is429(err)) await sleep(15000)
+// Direct REST call — no SDK, no version issues, 8s timeout per attempt
+async function geminiRest(modelId, prompt, apiKey) {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 8000)
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1/models/${modelId}:generateContent?key=${apiKey}`
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.7, maxOutputTokens: 4096 },
+      }),
+    })
+    clearTimeout(timer)
+    const data = await res.json()
+    if (!res.ok) {
+      const errMsg = data?.error?.message || `HTTP ${res.status}`
+      throw Object.assign(new Error(errMsg), { status: res.status })
     }
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text || null
+  } catch (err) {
+    clearTimeout(timer)
+    throw err
   }
-  return null
 }
 
-// ── Groq fallback (free tier: llama models, very fast) ────────────────────────
-async function tryGroq(prompt) {
-  if (!process.env.GROQ_API_KEY) return null
-  const models = ['llama-3.3-70b-versatile', 'llama3-70b-8192', 'mixtral-8x7b-32768']
+// Try models in order — skip on any error, no waiting
+async function callGemini(prompt) {
+  const key = process.env.GEMINI_API_KEY
+  if (!key) throw new Error('GEMINI_API_KEY not set')
+
+  const models = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-pro', 'gemini-pro']
+  const errors = []
+
   for (const model of models) {
     try {
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model,
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.7,
-          max_tokens: 4096,
-        }),
-      })
-      if (!res.ok) {
-        const txt = await res.text()
-        console.warn(`Groq ${model} failed: ${res.status} ${txt.slice(0, 80)}`)
-        if (res.status === 429) await sleep(10000)
-        continue
-      }
-      const data = await res.json()
-      console.log(`Groq success with model: ${model}`)
-      return data.choices[0]?.message?.content?.trim() || null
-    } catch (err) {
-      console.warn(`Groq ${model} error: ${err?.message?.slice(0, 80)}`)
-    }
-  }
-  return null
-}
-
-// ── OpenRouter fallback (has free models) ─────────────────────────────────────
-async function tryOpenRouter(prompt) {
-  if (!process.env.OPENROUTER_API_KEY) return null
-  const models = [
-    'meta-llama/llama-3.3-70b-instruct:free',
-    'mistralai/mistral-7b-instruct:free',
-    'google/gemma-2-9b-it:free',
-  ]
-  for (const model of models) {
-    try {
-      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          'HTTP-Referer': 'https://shahzad-job-coach-ai.vercel.app',
-          'X-Title': 'Job Coach AI',
-        },
-        body: JSON.stringify({
-          model,
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: 4096,
-        }),
-      })
-      if (!res.ok) {
-        console.warn(`OpenRouter ${model} failed: ${res.status}`)
-        continue
-      }
-      const data = await res.json()
-      const text = data.choices?.[0]?.message?.content?.trim()
+      const text = await geminiRest(model, prompt, key)
       if (text) {
-        console.log(`OpenRouter success with model: ${model}`)
+        console.log(`Success with ${model}`)
         return text
       }
     } catch (err) {
-      console.warn(`OpenRouter ${model} error: ${err?.message?.slice(0, 80)}`)
+      const msg = err?.message || ''
+      errors.push(`${model}: ${msg.slice(0, 60)}`)
+      console.warn(`${model} failed: ${msg.slice(0, 80)}`)
+      // On 429 skip to next immediately — no sleeping, avoid timeout
+      // On 404 skip to next
+      // On abort (timeout) skip to next
     }
   }
-  return null
+  throw new Error(`All models failed. Errors: ${errors.join(' | ')}`)
 }
 
-// ── Master call with all providers ───────────────────────────────────────────
-async function callAI(prompt) {
-  const raw = await tryGemini(prompt)
-    ?? await tryGroq(prompt)
-    ?? await tryOpenRouter(prompt)
-  if (!raw) throw new Error('All AI providers failed or quota exceeded. Please try again in a few minutes.')
+function cleanJSON(raw) {
   return raw
-}
-
-function parseResponse(raw) {
-  const cleaned = raw
     .replace(/^```json\s*/i, '')
     .replace(/^```\s*/i, '')
     .replace(/```\s*$/i, '')
     .trim()
-  return JSON.parse(cleaned)
 }
 
 export async function POST(request) {
+  let resumeText, jobPosting
   try {
     const body = await request.json()
-    const resumeText = truncate((body.resumeText || '').trim())
-    const jobPosting = truncate((body.jobPosting || '').trim(), 6000)
+    resumeText = truncate((body.resumeText || '').trim(), MAX_RESUME)
+    jobPosting = truncate((body.jobPosting || '').trim(), MAX_JOB)
+  } catch {
+    return Response.json({ error: 'Invalid request body.' }, { status: 400 })
+  }
 
-    if (!resumeText) return Response.json({ error: 'Resume text is required.' }, { status: 400 })
-    if (!jobPosting) return Response.json({ error: 'Job posting is required.' }, { status: 400 })
+  if (!resumeText) return Response.json({ error: 'Resume text is required.' }, { status: 400 })
+  if (!jobPosting) return Response.json({ error: 'Job posting is required.' }, { status: 400 })
 
-    const prompt = `You are an expert career coach and resume writer. Analyze the resume and job posting below, then return a JSON object with exactly these 6 keys. Each value must be a detailed, high-quality string.
+  const prompt = `You are an expert career coach. Analyze the resume and job posting below.
+Return ONLY a valid JSON object with exactly these 6 keys. No markdown, no code blocks, no extra text — raw JSON only.
 
 RESUME:
 ${resumeText}
@@ -154,39 +92,48 @@ ${resumeText}
 JOB POSTING:
 ${jobPosting}
 
-Return ONLY valid JSON with these exact keys (no markdown, no code blocks, just raw JSON):
+JSON format (fill each value with detailed content):
 {
-  "coverLetter": "3-paragraph personalized cover letter body (no date/subject). Confident, specific, human tone.",
-  "resumeRewrite": "Full rewritten resume optimized for this job. Strong action verbs, keywords matched, achievements quantified.",
-  "skillsGap": "Section 1: MATCHING SKILLS (bullet list). Section 2: MISSING SKILLS (bullet list). Section 3: TOP 3 RECOMMENDATIONS to close the gap.",
-  "interviewPrep": "5 likely interview questions with answer strategies. Format: Q1: [question]\\nStrategy: [answer approach]",
-  "starStories": "3 STAR stories (Situation/Task/Action/Result) the candidate can use for this role. Label each section.",
-  "linkedinSummary": "3-4 sentence first-person LinkedIn About summary targeting this role. Compelling and professional."
+  "coverLetter": "3-paragraph cover letter body. Confident, specific, human tone. No date or subject line.",
+  "resumeRewrite": "Full rewritten resume optimized for this job. Action verbs, quantified achievements, matched keywords.",
+  "skillsGap": "MATCHING SKILLS:\\n- list\\n\\nMISSING SKILLS:\\n- list\\n\\nTOP 3 RECOMMENDATIONS:\\n1. ...\\n2. ...\\n3. ...",
+  "interviewPrep": "Q1: [question]\\nStrategy: [answer approach]\\n\\nQ2: [question]\\nStrategy: [answer approach]\\n\\n(5 total)",
+  "starStories": "STORY 1:\\nSituation: ...\\nTask: ...\\nAction: ...\\nResult: ...\\n\\n(3 stories total)",
+  "linkedinSummary": "3-4 sentence first-person LinkedIn About section. Compelling and professional."
 }`
 
-    let raw
-    try {
-      raw = await callAI(prompt)
-    } catch (err) {
-      return Response.json({ error: err.message }, { status: 503 })
-    }
+  let raw
+  try {
+    raw = await callGemini(prompt)
+  } catch (err) {
+    console.error('callGemini failed:', err.message)
+    return Response.json(
+      { error: 'AI unavailable right now. Please wait 1 minute and try again.' },
+      { status: 503 }
+    )
+  }
 
-    let parsed
-    try {
-      parsed = parseResponse(raw)
-    } catch {
-      console.error('JSON parse error. Raw:', raw.slice(0, 300))
+  let parsed
+  try {
+    parsed = JSON.parse(cleanJSON(raw))
+  } catch {
+    // Gemini sometimes adds commentary — try to extract JSON block
+    const match = raw.match(/\{[\s\S]*\}/)
+    if (match) {
+      try { parsed = JSON.parse(match[0]) } catch { /* fall through */ }
+    }
+    if (!parsed) {
+      console.error('JSON parse failed. Raw snippet:', raw.slice(0, 200))
       return Response.json({ error: 'AI returned unexpected format. Please try again.' }, { status: 500 })
     }
-
-    const required = ['coverLetter', 'resumeRewrite', 'skillsGap', 'interviewPrep', 'starStories', 'linkedinSummary']
-    for (const key of required) {
-      if (!parsed[key]) parsed[key] = 'No content generated for this section. Please try again.'
-    }
-
-    return Response.json(parsed)
-  } catch (error) {
-    console.error('Analyze route error:', error?.message || error)
-    return Response.json({ error: 'Unexpected error. Please try again.' }, { status: 500 })
   }
+
+  const keys = ['coverLetter', 'resumeRewrite', 'skillsGap', 'interviewPrep', 'starStories', 'linkedinSummary']
+  for (const key of keys) {
+    if (!parsed[key] || typeof parsed[key] !== 'string') {
+      parsed[key] = 'Content not generated. Please try again.'
+    }
+  }
+
+  return Response.json(parsed)
 }
