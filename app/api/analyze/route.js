@@ -1,72 +1,63 @@
 export const maxDuration = 60
 
-const MAX_RESUME = 12000
-const MAX_JOB = 6000
+// Tighter limits = faster response = no timeout
+const MAX_RESUME = 6000
+const MAX_JOB = 3000
 
 function truncate(text, max) {
   return text.length > max ? text.slice(0, max) : text
 }
 
-// CONFIRMED working models — gemini-flash-latest verified 200 OK
+// gemini-flash-latest = CONFIRMED 200 OK. Give it full 55s timeout.
+// gemini-flash-lite-latest = fallback (high demand but works)
 const MODELS = [
-  'gemini-flash-latest',     // CONFIRMED WORKING
-  'gemini-flash-lite-latest',// fallback alias
-  'gemini-pro-latest',       // fallback
-  'gemini-2.5-flash',        // newest fallback
+  { name: 'gemini-flash-latest',     timeout: 55000 },
+  { name: 'gemini-flash-lite-latest',timeout: 55000 },
 ]
 const API_VERSION = 'v1beta'
 
 async function callGemini(prompt, apiKey) {
   const errors = []
-  for (const model of MODELS) {
+  for (const { name, timeout } of MODELS) {
     const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), 9000)
+    const timer = setTimeout(() => controller.abort(), timeout)
     try {
-      const url = `https://generativelanguage.googleapis.com/${API_VERSION}/models/${model}:generateContent?key=${apiKey}`
+      const url = `https://generativelanguage.googleapis.com/${API_VERSION}/models/${name}:generateContent?key=${apiKey}`
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 4096 },
+          generationConfig: { temperature: 0.7, maxOutputTokens: 3000 },
         }),
       })
       clearTimeout(timer)
       const data = await res.json()
       if (res.ok) {
         const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
-        if (text) {
-          console.log(`Success: ${model}`)
-          return text
-        }
-        errors.push(`${model}: empty response`)
-        continue
+        if (text) { console.log(`Success: ${name}`); return text }
+        errors.push(`${name}: empty response`)
+      } else {
+        const msg = data?.error?.message || `HTTP ${res.status}`
+        errors.push(`${name}: ${msg.slice(0, 80)}`)
+        console.warn(`${name} failed: ${msg.slice(0, 80)}`)
       }
-      const errMsg = data?.error?.message || `HTTP ${res.status}`
-      errors.push(`${model}: ${errMsg.slice(0, 80)}`)
-      console.warn(`${model} failed: ${errMsg.slice(0, 80)}`)
-      // On 429 try next model (different quota pool)
-      // On 404 try next model
     } catch (err) {
       clearTimeout(timer)
-      errors.push(`${model}: ${err.message?.slice(0, 60) || 'timeout'}`)
-      console.warn(`${model} exception: ${err.message?.slice(0, 60)}`)
+      const msg = err.name === 'AbortError' ? 'timed out' : (err.message?.slice(0, 60) || 'error')
+      errors.push(`${name}: ${msg}`)
+      console.warn(`${name} exception: ${msg}`)
     }
   }
   throw new Error(`All models failed: ${errors.join(' | ')}`)
 }
 
 function extractJSON(raw) {
-  // Remove markdown fences
   let cleaned = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim()
-  // Try direct parse
   try { return JSON.parse(cleaned) } catch {}
-  // Extract first {...} block
   const match = cleaned.match(/\{[\s\S]*\}/)
-  if (match) {
-    try { return JSON.parse(match[0]) } catch {}
-  }
+  if (match) { try { return JSON.parse(match[0]) } catch {} }
   return null
 }
 
@@ -84,10 +75,9 @@ export async function POST(request) {
   if (!jobPosting) return Response.json({ error: 'Job posting is required.' }, { status: 400 })
 
   const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return Response.json({ error: 'API key not configured.' }, { status: 500 })
+  if (!apiKey) return Response.json({ error: 'API key not configured on server.' }, { status: 500 })
 
-  const prompt = `You are an expert career coach. Analyze the resume and job posting below.
-Return ONLY a valid JSON object with exactly these 6 keys. No markdown, no code blocks, raw JSON only.
+  const prompt = `You are a career coach. Based on the resume and job posting below, return ONLY a raw JSON object with these 6 keys. No markdown, no explanation, just JSON.
 
 RESUME:
 ${resumeText}
@@ -95,34 +85,27 @@ ${resumeText}
 JOB POSTING:
 ${jobPosting}
 
-Return this exact JSON structure with detailed content for each field:
-{
-  "coverLetter": "Write a 3-paragraph cover letter body here. Confident, specific, human tone. No date or subject line.",
-  "resumeRewrite": "Write the full rewritten resume here optimized for this job.",
-  "skillsGap": "MATCHING SKILLS:\\n- skill1\\n- skill2\\n\\nMISSING SKILLS:\\n- skill1\\n- skill2\\n\\nTOP 3 RECOMMENDATIONS:\\n1. action\\n2. action\\n3. action",
-  "interviewPrep": "Q1: question here\\nStrategy: answer strategy\\n\\nQ2: question\\nStrategy: strategy\\n\\nQ3: question\\nStrategy: strategy\\n\\nQ4: question\\nStrategy: strategy\\n\\nQ5: question\\nStrategy: strategy",
-  "starStories": "STORY 1:\\nSituation: ...\\nTask: ...\\nAction: ...\\nResult: ...\\n\\nSTORY 2:\\nSituation: ...\\nTask: ...\\nAction: ...\\nResult: ...\\n\\nSTORY 3:\\nSituation: ...\\nTask: ...\\nAction: ...\\nResult: ...",
-  "linkedinSummary": "Write 3-4 sentence first-person LinkedIn About section here."
-}`
+JSON to return:
+{"coverLetter":"3-paragraph cover letter body, no date/subject, confident tone","resumeRewrite":"rewritten resume optimized for this job with strong action verbs","skillsGap":"MATCHING SKILLS:\\n- ...\\n\\nMISSING SKILLS:\\n- ...\\n\\nTOP 3 ACTIONS:\\n1. ...","interviewPrep":"Q1: ...\\nStrategy: ...\\n\\nQ2: ...\\nStrategy: ...\\n\\nQ3: ...\\nStrategy: ...\\n\\nQ4: ...\\nStrategy: ...\\n\\nQ5: ...\\nStrategy: ...","starStories":"STORY 1:\\nS: ...\\nT: ...\\nA: ...\\nR: ...\\n\\nSTORY 2:\\nS: ...\\nT: ...\\nA: ...\\nR: ...\\n\\nSTORY 3:\\nS: ...\\nT: ...\\nA: ...\\nR: ...","linkedinSummary":"3-4 sentence first-person LinkedIn About section"}`
 
   let raw
   try {
     raw = await callGemini(prompt, apiKey)
   } catch (err) {
     console.error('callGemini error:', err.message)
-    return Response.json({ error: 'AI service error: ' + err.message }, { status: 503 })
+    return Response.json({ error: err.message }, { status: 503 })
   }
 
   const parsed = extractJSON(raw)
   if (!parsed) {
-    console.error('JSON extract failed. Raw snippet:', raw?.slice(0, 200))
+    console.error('JSON parse failed. Raw:', raw?.slice(0, 300))
     return Response.json({ error: 'AI returned unexpected format. Please try again.' }, { status: 500 })
   }
 
   const keys = ['coverLetter', 'resumeRewrite', 'skillsGap', 'interviewPrep', 'starStories', 'linkedinSummary']
   for (const key of keys) {
     if (!parsed[key] || typeof parsed[key] !== 'string') {
-      parsed[key] = 'Content not generated for this section. Please try again.'
+      parsed[key] = 'Not generated. Please try again.'
     }
   }
 
