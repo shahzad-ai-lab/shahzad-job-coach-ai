@@ -4,30 +4,6 @@ import { useState, useRef, useEffect } from 'react'
 
 const MAX_PASTE_CHARS = 12000
 
-// ── Motivational Quotes ───────────────────────────────────────────
-const QUOTES = [
-  { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
-  { text: "Your resume gets you the interview. Your story gets you the job.", author: "Job Coach AI" },
-  { text: "Every expert was once a beginner. Keep going.", author: "Helen Hayes" },
-  { text: "Success is not the key to happiness. Happiness is the key to success.", author: "Albert Schweitzer" },
-  { text: "Opportunities don't happen. You create them.", author: "Chris Grosser" },
-  { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
-  { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
-  { text: "You miss 100% of the shots you don't take.", author: "Wayne Gretzky" },
-  { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
-  { text: "Hard work beats talent when talent doesn't work hard.", author: "Tim Notke" },
-  { text: "Your next chapter begins with a single application. Send it.", author: "Job Coach AI" },
-  { text: "Rejection is redirection. Every no is closer to the yes.", author: "Job Coach AI" },
-  { text: "The best time to plant a tree was 20 years ago. The second best time is now.", author: "Chinese Proverb" },
-  { text: "Dream big. Start small. Act now.", author: "Robin Sharma" },
-  { text: "You are one conversation away from a completely different life.", author: "Job Coach AI" },
-  { text: "Confidence is not 'they will like me'. Confidence is 'I'll be fine if they don't'.", author: "Christina Grimmie" },
-  { text: "A comfort zone is a beautiful place, but nothing ever grows there.", author: "Unknown" },
-  { text: "Your skills are already impressive. Let the world see them.", author: "Job Coach AI" },
-  { text: "It always seems impossible until it's done.", author: "Nelson Mandela" },
-  { text: "Hustle in silence and let your LinkedIn speak for you.", author: "Job Coach AI" },
-]
-
 function detectOS() {
   if (typeof navigator === 'undefined') return 'Unknown'
   const ua = navigator.userAgent
@@ -111,8 +87,6 @@ export default function Home() {
   const [jobDragOver, setJobDragOver]   = useState(false)
   const [userInfo, setUserInfo]     = useState(null)
   const [weather, setWeather]       = useState('')
-  const [quoteIdx, setQuoteIdx]     = useState(0)
-  const [quoteFade, setQuoteFade]   = useState(true)
   const [remaining, setRemaining]   = useState(CLIENT_HOURLY_LIMIT)
   const fileRef    = useRef(null)
   const jobFileRef = useRef(null)
@@ -142,14 +116,6 @@ export default function Home() {
     setRemaining(Math.max(0, CLIENT_HOURLY_LIMIT - s.count))
   }, [])
 
-  // ── Rotate quotes every 5 seconds ────────────────────────────
-  useEffect(() => {
-    const iv = setInterval(() => {
-      setQuoteFade(false)
-      setTimeout(() => { setQuoteIdx(i => (i + 1) % QUOTES.length); setQuoteFade(true) }, 400)
-    }, 5000)
-    return () => clearInterval(iv)
-  }, [])
 
 
   function handleResumeChange(e) {
@@ -227,7 +193,7 @@ export default function Home() {
 
   const s = {
     page: { minHeight: '100vh', background: 'linear-gradient(160deg,#0F0C29,#302B63,#24243E)', color: '#fff', fontFamily: "'Segoe UI',system-ui,sans-serif" },
-    container: { maxWidth: 1000, margin: '0 auto', padding: '0 16px 80px' },
+    container: { maxWidth: 1200, margin: '0 auto', padding: '0 12px 40px' },
     card: { background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)', borderRadius: 20, padding: 24, border: '1px solid rgba(255,255,255,0.12)' },
     textarea: { width: '100%', background: 'rgba(255,255,255,0.08)', color: '#fff', borderRadius: 12, padding: 12, fontSize: 13, resize: 'none', border: '1px solid rgba(255,255,255,0.15)', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' },
     label: { fontSize: 11, color: 'rgba(255,255,255,0.5)', marginBottom: 4 },
@@ -294,18 +260,18 @@ export default function Home() {
       </div>
 
       {/* Header */}
-      <header style={{ padding: '52px 24px 36px', textAlign: 'center' }}>
+      <header style={{ padding: '28px 16px 20px', textAlign: 'center' }}>
         <div style={{ display:'inline-block', marginBottom:16, padding:'5px 18px', borderRadius:999, background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.2)', fontSize:11, fontWeight:700, letterSpacing:3, textTransform:'uppercase', color:'#FACF39' }}>
           AI-Powered Career Coach
         </div>
         <h1 style={{ fontSize:'clamp(2.8rem,9vw,5.5rem)', fontWeight:900, margin:'0 0 8px', background:'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', lineHeight:1.05 }}>
           Job Coach AI 2026
         </h1>
-        <p style={{ color:'rgba(255,255,255,0.6)', fontSize:19, maxWidth:500, margin:'0 auto 28px', fontWeight:400 }}>
+        <p style={{ color:'rgba(255,255,255,0.6)', fontSize:16, maxWidth:500, margin:'0 auto 14px', fontWeight:400 }}>
           Upload your resume. Paste the job.{' '}
           <strong style={{ color:'#fff', fontWeight:800 }}>Land the interview.</strong>
         </p>
-        <div style={{ display:'flex', justifyContent:'center', gap:12, flexWrap:'wrap', marginBottom:16 }}>
+        <div style={{ display:'flex', justifyContent:'center', gap:8, flexWrap:'wrap', marginBottom:10 }}>
           {['12 AI Tools','ATS Scoring','Salary Scripts','30-60-90 Plan'].map(t => (
             <span key={t} style={{ padding:'5px 14px', borderRadius:999, background:'rgba(255,255,255,0.1)', fontSize:12, fontWeight:600, color:'rgba(255,255,255,0.8)', border:'1px solid rgba(255,255,255,0.15)' }}>{t}</span>
           ))}
@@ -314,50 +280,12 @@ export default function Home() {
         <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'8px 18px', borderRadius:999, background:'rgba(56,239,125,0.1)', border:'1px solid rgba(56,239,125,0.25)', fontSize:12, color:'rgba(56,239,125,0.9)', fontWeight:600 }}>
           <span>🔒</span> Your data is never stored on our servers. Everything is processed in memory and cleared on refresh.
         </div>
-        <div style={{ marginTop:8, fontSize:11, color:'rgba(255,255,255,0.3)' }}>
+        <div style={{ marginTop:6, fontSize:11, color:'rgba(255,255,255,0.3)' }}>
           Free tier: <strong style={{ color:'rgba(255,255,255,0.5)' }}>5 analyses per hour</strong> · Refresh page = all data gone
         </div>
       </header>
 
       <div style={s.container}>
-
-        {/* Rotating Quote */}
-        {(() => {
-          const glowColors  = ['#FF0099','#00AEEF','#FC466B','#F7971E','#DA22FF']
-          const gradients   = ['linear-gradient(90deg,#FF0099,#FACF39)','linear-gradient(90deg,#00AEEF,#38EF7D)','linear-gradient(90deg,#FC466B,#3F5EFB)','linear-gradient(90deg,#F7971E,#FFD200)','linear-gradient(90deg,#DA22FF,#FF0099)']
-          const glow = glowColors[quoteIdx % 5]
-          return (
-            <div style={{ textAlign:'center', marginBottom:32, minHeight:90 }}>
-              <div style={{ opacity: quoteFade ? 1 : 0, transition:'opacity 0.4s ease', display:'inline-block', maxWidth:720 }}>
-                {/* Glow wrapper — filter must NOT be on the same element as webkit-text-fill-color:transparent */}
-                <div style={{ filter:`drop-shadow(0 0 20px ${glow}99)` }}>
-                  <p style={{
-                    fontSize:'clamp(1rem,2.5vw,1.3rem)', fontWeight:800, margin:'0 0 10px',
-                    background: gradients[quoteIdx % 5],
-                    WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
-                    backgroundClip:'text', lineHeight:1.45, letterSpacing:'.01em',
-                  }}>
-                    &ldquo;{QUOTES[quoteIdx].text}&rdquo;
-                  </p>
-                </div>
-                <p style={{ fontSize:12, color:'rgba(255,255,255,0.4)', margin:0, fontStyle:'italic', letterSpacing:'.03em' }}>
-                  — {QUOTES[quoteIdx].author}
-                </p>
-              </div>
-              {/* Quote progress dots */}
-              <div style={{ display:'flex', justifyContent:'center', gap:5, marginTop:12 }}>
-                {QUOTES.map((_, i) => (
-                  <div key={i} style={{
-                    width: i === quoteIdx ? 20 : 5, height:5, borderRadius:999,
-                    background: i === quoteIdx ? gradients[i % 5] : 'rgba(255,255,255,0.12)',
-                    boxShadow: i === quoteIdx ? `0 0 8px ${glowColors[i % 5]}88` : 'none',
-                    transition:'all .4s ease',
-                  }} />
-                ))}
-              </div>
-            </div>
-          )
-        })()}
 
         {/* Input Grid */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))', gap:20, marginBottom:20 }}>
@@ -445,7 +373,7 @@ export default function Home() {
         )}
 
         {/* Analyze Button */}
-        <div style={{ textAlign:'center', marginBottom:52 }}>
+        <div style={{ textAlign:'center', marginBottom:24 }}>
           <button
             onClick={handleAnalyze}
             disabled={loading}
@@ -537,7 +465,7 @@ export default function Home() {
       </div>
 
       {/* Privacy & Disclaimer */}
-      <div style={{ maxWidth:1000, margin:'0 auto', padding:'0 16px 40px' }}>
+      <div style={{ maxWidth:1200, margin:'0 auto', padding:'0 12px 24px' }}>
         <div style={{ borderRadius:16, border:'1px solid rgba(255,255,255,0.08)', padding:'20px 24px', background:'rgba(255,255,255,0.03)' }}>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))', gap:20 }}>
 
