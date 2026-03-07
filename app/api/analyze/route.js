@@ -28,7 +28,7 @@ const GEMINI_MODELS = [
 
 async function tryGemini(prompt) {
   if (!process.env.GEMINI_API_KEY) return null
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY, { apiVersion: 'v1' })
   for (const modelName of GEMINI_MODELS) {
     try {
       const model = genAI.getGenerativeModel({ model: modelName })
