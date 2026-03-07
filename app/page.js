@@ -4,13 +4,23 @@ import { useState, useRef } from 'react'
 
 const MAX_PASTE_CHARS = 12000
 
+// 60-30-10 Dopamine Brights palette
+// 60% background: Cream #F7F3EE
+// 30% secondary: Sky Blue #00AEEF (headers, sections)
+// 10% CTA accent: Sunny Yellow #FACF39 (main button)
+// Text: Deep Navy #112D4E
+// Highlights: Electric Pink #FF0099
+
 const CARDS = [
-  { key: 'coverLetter',    title: 'Cover Letter',      icon: '✉️',  grad: 'from-violet-500 to-purple-600',   ring: 'ring-violet-500' },
-  { key: 'resumeRewrite',  title: 'Resume Rewrite',    icon: '📄',  grad: 'from-blue-500 to-cyan-500',       ring: 'ring-blue-500'   },
-  { key: 'skillsGap',      title: 'Skills Gap',        icon: '🎯',  grad: 'from-orange-400 to-pink-500',     ring: 'ring-orange-400' },
-  { key: 'interviewPrep',  title: 'Interview Prep',    icon: '🎤',  grad: 'from-emerald-400 to-teal-500',    ring: 'ring-emerald-400'},
-  { key: 'starStories',    title: 'STAR Stories',      icon: '⭐',  grad: 'from-yellow-400 to-orange-500',   ring: 'ring-yellow-400' },
-  { key: 'linkedinSummary',title: 'LinkedIn Summary',  icon: '💼',  grad: 'from-sky-400 to-indigo-500',      ring: 'ring-sky-400'    },
+  { key: 'resumeScore',    title: 'Resume Score',      icon: '📊', bg: '#00AEEF', ring: '#00AEEF' },
+  { key: 'coverLetter',    title: 'Cover Letter',      icon: '✉️',  bg: '#FF0099', ring: '#FF0099' },
+  { key: 'resumeRewrite',  title: 'Resume Rewrite',    icon: '📄',  bg: '#7B2FBE', ring: '#7B2FBE' },
+  { key: 'skillsGap',      title: 'Skills Gap',        icon: '🎯',  bg: '#FF6B35', ring: '#FF6B35' },
+  { key: 'interviewPrep',  title: 'Interview Prep',    icon: '🎤',  bg: '#00C896', ring: '#00C896' },
+  { key: 'introScripts',   title: 'Intro Scripts',     icon: '🗣️',  bg: '#FF0099', ring: '#FF0099' },
+  { key: 'starStories',    title: 'STAR Stories',      icon: '⭐',  bg: '#FACF39', ring: '#FACF39' },
+  { key: 'linkedinSummary',title: 'LinkedIn Summary',  icon: '💼',  bg: '#00AEEF', ring: '#00AEEF' },
+  { key: 'matchingJobs',   title: 'Matching Jobs',     icon: '🏢',  bg: '#FF6B35', ring: '#FF6B35' },
 ]
 
 export default function Home() {
@@ -29,12 +39,9 @@ export default function Home() {
   function handleResumeChange(e) {
     const val = e.target.value
     if (val.length > MAX_PASTE_CHARS) {
-      setError(`Resume text capped at ${MAX_PASTE_CHARS.toLocaleString()} characters.`)
+      setError(`Resume capped at ${MAX_PASTE_CHARS.toLocaleString()} characters.`)
       setResumeText(val.slice(0, MAX_PASTE_CHARS))
-    } else {
-      setError('')
-      setResumeText(val)
-    }
+    } else { setError(''); setResumeText(val) }
   }
 
   function handleJobChange(e) {
@@ -42,21 +49,15 @@ export default function Home() {
     if (val.length > 6000) {
       setError('Job posting capped at 6,000 characters.')
       setJobPosting(val.slice(0, 6000))
-    } else {
-      setError('')
-      setJobPosting(val)
-    }
+    } else { setError(''); setJobPosting(val) }
   }
 
   async function processFile(file) {
     if (!file) return
-    const allowed = ['.pdf', '.docx', '.txt']
     const ext = file.name.toLowerCase().slice(file.name.lastIndexOf('.'))
-    if (!allowed.includes(ext)) { setError('Only PDF, DOCX, or TXT files are supported.'); return }
+    if (!['.pdf','.docx','.txt'].includes(ext)) { setError('Only PDF, DOCX, or TXT supported.'); return }
     if (file.size > 10 * 1024 * 1024) { setError(`File too large (${(file.size/1024/1024).toFixed(1)}MB). Max 10MB.`); return }
-    setUploading(true)
-    setError('')
-    setFileName(file.name)
+    setUploading(true); setError(''); setFileName(file.name)
     try {
       const formData = new FormData()
       formData.append('file', file)
@@ -64,29 +65,17 @@ export default function Home() {
       const data = await res.json()
       if (data.error) throw new Error(data.error)
       setResumeText(data.text)
-    } catch (err) {
-      setError(err.message)
-      setFileName('')
-    } finally {
-      setUploading(false)
-    }
+    } catch (err) { setError(err.message); setFileName('') }
+    finally { setUploading(false) }
   }
 
   function handleFileInput(e) { processFile(e.target.files[0]) }
-
-  function handleDrop(e) {
-    e.preventDefault()
-    setDragOver(false)
-    processFile(e.dataTransfer.files[0])
-  }
+  function handleDrop(e) { e.preventDefault(); setDragOver(false); processFile(e.dataTransfer.files[0]) }
 
   async function handleAnalyze() {
     if (!resumeText.trim()) { setError('Please add your resume text or upload a file.'); return }
     if (!jobPosting.trim()) { setError('Please paste the job posting.'); return }
-    setError('')
-    setLoading(true)
-    setResults(null)
-    setActiveCard(null)
+    setError(''); setLoading(true); setResults(null); setActiveCard(null)
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST',
@@ -96,12 +85,9 @@ export default function Home() {
       const data = await res.json()
       if (data.error) throw new Error(data.error)
       setResults(data)
-      setActiveCard('coverLetter')
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+      setActiveCard('resumeScore')
+    } catch (err) { setError(err.message) }
+    finally { setLoading(false) }
   }
 
   function copyToClipboard(text, key) {
@@ -111,191 +97,223 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0a0a0f] text-white overflow-x-hidden">
+    <main style={{ background: '#F7F3EE', color: '#112D4E', minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
 
-      {/* Animated background blobs */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-violet-600 rounded-full opacity-20 blur-3xl animate-pulse" />
-        <div className="absolute top-1/3 -right-40 w-80 h-80 bg-cyan-500 rounded-full opacity-15 blur-3xl animate-pulse" style={{animationDelay:'1s'}} />
-        <div className="absolute bottom-20 left-1/3 w-72 h-72 bg-pink-600 rounded-full opacity-15 blur-3xl animate-pulse" style={{animationDelay:'2s'}} />
-      </div>
+      {/* Subtle top accent bar */}
+      <div style={{ height: 5, background: 'linear-gradient(90deg, #FACF39, #FF0099, #00AEEF)' }} />
 
       {/* Header */}
-      <header className="relative py-14 px-4 text-center">
-        <div className="inline-block mb-4 px-4 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-semibold tracking-widest uppercase text-violet-300">
+      <header style={{ padding: '48px 24px 32px', textAlign: 'center' }}>
+        <div style={{
+          display: 'inline-block', marginBottom: 16, padding: '4px 16px',
+          borderRadius: 999, background: '#00AEEF20', border: '1px solid #00AEEF60',
+          fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', color: '#00AEEF'
+        }}>
           AI-Powered Career Coach
         </div>
-        <h1 className="text-5xl md:text-7xl font-black mb-4 bg-gradient-to-r from-violet-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent leading-tight">
-          Job Coach AI
-        </h1>
-        <p className="text-gray-400 text-lg md:text-xl max-w-xl mx-auto">
+        <h1 style={{
+          fontSize: 'clamp(2.5rem, 8vw, 5rem)', fontWeight: 900, margin: '0 0 12px',
+          background: 'linear-gradient(135deg, #FF0099, #FACF39, #00AEEF)',
+          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: 1.1
+        }}>Job Coach AI</h1>
+        <p style={{ color: '#112D4E99', fontSize: 18, maxWidth: 480, margin: '0 auto 24px' }}>
           Upload your resume. Paste the job.{' '}
-          <span className="text-white font-semibold">Land the interview.</span>
+          <strong style={{ color: '#112D4E' }}>Land the interview.</strong>
         </p>
-        <div className="mt-6 mx-auto w-24 h-1 rounded-full bg-gradient-to-r from-violet-500 to-cyan-500" />
+        <div style={{ width: 80, height: 4, borderRadius: 4, background: 'linear-gradient(90deg, #FF0099, #00AEEF)', margin: '0 auto' }} />
       </header>
 
-      <div className="max-w-5xl mx-auto px-4 pb-20">
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 16px 80px' }}>
 
         {/* Input Grid */}
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20, marginBottom: 20 }}>
 
-          {/* Resume Card */}
-          <div className="relative group rounded-3xl bg-white/5 border border-white/10 p-6 backdrop-blur-sm hover:border-violet-500/50 transition-all duration-300">
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-violet-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <span className="text-2xl">📋</span>
-              <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">Your Resume</span>
+          {/* Resume */}
+          <div style={{ background: '#fff', borderRadius: 20, padding: 24, border: '2px solid #00AEEF30', boxShadow: '0 4px 20px #00AEEF15' }}>
+            <h2 style={{ margin: '0 0 16px', fontSize: 18, fontWeight: 800, color: '#00AEEF', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>📋</span> Your Resume
             </h2>
-
-            {/* Drop Zone */}
             <div
               onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
               onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
               onClick={() => fileRef.current?.click()}
-              className={`cursor-pointer rounded-2xl border-2 border-dashed p-5 text-center mb-4 transition-all duration-200 ${
-                dragOver
-                  ? 'border-violet-400 bg-violet-500/10'
-                  : 'border-white/20 hover:border-violet-400/60 hover:bg-white/5'
-              }`}
+              style={{
+                cursor: 'pointer', borderRadius: 14, border: `2px dashed ${dragOver ? '#00AEEF' : '#00AEEF50'}`,
+                padding: '20px 16px', textAlign: 'center', marginBottom: 14, transition: 'all .2s',
+                background: dragOver ? '#00AEEF10' : '#F7F3EE'
+              }}
             >
-              <input ref={fileRef} type="file" accept=".pdf,.docx,.txt" onChange={handleFileInput} className="hidden" />
-              <div className="text-3xl mb-2">{uploading ? '⏳' : '📂'}</div>
-              {uploading ? (
-                <p className="text-violet-300 text-sm font-medium animate-pulse">Reading file...</p>
-              ) : fileName ? (
-                <p className="text-emerald-400 text-sm font-medium truncate">✓ {fileName}</p>
-              ) : (
-                <>
-                  <p className="text-white/70 text-sm font-medium">Drop file here or click to upload</p>
-                  <p className="text-white/30 text-xs mt-1">PDF · DOCX · TXT · Max 10MB</p>
-                </>
-              )}
+              <input ref={fileRef} type="file" accept=".pdf,.docx,.txt" onChange={handleFileInput} style={{ display: 'none' }} />
+              <div style={{ fontSize: 28, marginBottom: 6 }}>{uploading ? '⏳' : '📂'}</div>
+              {uploading
+                ? <p style={{ color: '#00AEEF', fontSize: 13, fontWeight: 600, margin: 0 }}>Reading file...</p>
+                : fileName
+                  ? <p style={{ color: '#00C896', fontSize: 13, fontWeight: 600, margin: 0 }}>✓ {fileName}</p>
+                  : <>
+                      <p style={{ color: '#112D4E', fontSize: 13, fontWeight: 600, margin: '0 0 4px' }}>Drop file or click to upload</p>
+                      <p style={{ color: '#112D4E60', fontSize: 11, margin: 0 }}>PDF · DOCX · TXT · Max 10MB</p>
+                    </>
+              }
             </div>
-
-            <p className="text-white/30 text-xs mb-2 text-center">— or paste below —</p>
+            <p style={{ color: '#112D4E60', fontSize: 11, textAlign: 'center', margin: '0 0 8px' }}>— or paste below —</p>
             <textarea
-              value={resumeText}
-              onChange={handleResumeChange}
+              value={resumeText} onChange={handleResumeChange}
               placeholder="Paste your resume text here..."
-              className="w-full h-40 bg-black/30 text-gray-200 rounded-xl p-3 text-sm resize-none border border-white/10 focus:outline-none focus:border-violet-500 transition placeholder-white/20"
+              style={{
+                width: '100%', height: 160, background: '#F7F3EE', color: '#112D4E', borderRadius: 12,
+                padding: 12, fontSize: 13, resize: 'none', border: '1px solid #00AEEF30',
+                outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit'
+              }}
             />
-            <p className="text-right text-xs text-white/20 mt-1">{resumeText.length.toLocaleString()} / {MAX_PASTE_CHARS.toLocaleString()}</p>
+            <p style={{ textAlign: 'right', fontSize: 11, color: '#112D4E40', margin: '4px 0 0' }}>
+              {resumeText.length.toLocaleString()} / {MAX_PASTE_CHARS.toLocaleString()}
+            </p>
           </div>
 
-          {/* Job Posting Card */}
-          <div className="relative group rounded-3xl bg-white/5 border border-white/10 p-6 backdrop-blur-sm hover:border-cyan-500/50 transition-all duration-300">
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <span className="text-2xl">💼</span>
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Job Posting</span>
+          {/* Job Posting */}
+          <div style={{ background: '#fff', borderRadius: 20, padding: 24, border: '2px solid #FF009930', boxShadow: '0 4px 20px #FF009915' }}>
+            <h2 style={{ margin: '0 0 16px', fontSize: 18, fontWeight: 800, color: '#FF0099', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>💼</span> Job Posting
             </h2>
-            <p className="text-white/30 text-xs mb-3">Paste the full job description:</p>
+            <p style={{ color: '#112D4E60', fontSize: 11, margin: '0 0 8px' }}>Paste the full job description:</p>
             <textarea
-              value={jobPosting}
-              onChange={handleJobChange}
+              value={jobPosting} onChange={handleJobChange}
               placeholder="Paste the job posting here..."
-              className="w-full h-56 bg-black/30 text-gray-200 rounded-xl p-3 text-sm resize-none border border-white/10 focus:outline-none focus:border-cyan-500 transition placeholder-white/20"
+              style={{
+                width: '100%', height: 220, background: '#F7F3EE', color: '#112D4E', borderRadius: 12,
+                padding: 12, fontSize: 13, resize: 'none', border: '1px solid #FF009930',
+                outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit'
+              }}
             />
-            <p className="text-right text-xs text-white/20 mt-1">{jobPosting.length.toLocaleString()} / 6,000</p>
+            <p style={{ textAlign: 'right', fontSize: 11, color: '#112D4E40', margin: '4px 0 0' }}>
+              {jobPosting.length.toLocaleString()} / 6,000
+            </p>
           </div>
         </div>
 
         {/* Error */}
         {error && (
-          <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/30 text-red-300 rounded-2xl px-5 py-4 mb-6 text-sm">
-            <span className="text-xl">⚠️</span>
-            <span>{error}</span>
+          <div style={{ background: '#FF000010', border: '1px solid #FF000040', color: '#CC0000', borderRadius: 14, padding: '12px 20px', marginBottom: 20, fontSize: 13, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span>⚠️</span> {error}
           </div>
         )}
 
-        {/* Analyze Button */}
-        <div className="text-center mb-12">
+        {/* CTA Button — 10% Accent = Sunny Yellow */}
+        <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <button
             onClick={handleAnalyze}
             disabled={loading}
-            className="relative group inline-flex items-center gap-3 bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 hover:from-violet-500 hover:via-purple-500 hover:to-pink-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-xl px-14 py-5 rounded-2xl transition-all duration-300 shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:scale-105 active:scale-95"
+            style={{
+              background: loading ? '#ccc' : 'linear-gradient(135deg, #FACF39, #FF9500)',
+              color: '#112D4E', fontWeight: 900, fontSize: 20, border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
+              padding: '18px 56px', borderRadius: 18, boxShadow: loading ? 'none' : '0 8px 32px #FACF3960',
+              transition: 'all .2s', transform: loading ? 'none' : 'scale(1)',
+              display: 'inline-flex', alignItems: 'center', gap: 10
+            }}
+            onMouseEnter={e => { if (!loading) e.currentTarget.style.transform = 'scale(1.05)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)' }}
           >
-            <span className="text-2xl">{loading ? '✨' : '🚀'}</span>
+            <span style={{ fontSize: 24 }}>{loading ? '✨' : '🚀'}</span>
             {loading ? 'Analyzing...' : 'Analyze Now'}
           </button>
           {loading && (
-            <div className="mt-5">
-              <div className="flex justify-center gap-2 mb-3">
+            <div style={{ marginTop: 20 }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 10 }}>
                 {[0,1,2,3,4].map(i => (
-                  <div key={i} className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{animationDelay:`${i*0.12}s`}} />
+                  <div key={i} style={{
+                    width: 8, height: 8, borderRadius: '50%', background: '#FF0099',
+                    animation: 'bounce .8s ease infinite', animationDelay: `${i * 0.12}s`
+                  }} />
                 ))}
               </div>
-              <p className="text-white/40 text-sm">AI is generating all 6 results — about 20 seconds...</p>
+              <p style={{ color: '#112D4E80', fontSize: 13 }}>AI is generating 9 results — about 25 seconds...</p>
             </div>
           )}
         </div>
 
         {/* Results */}
         {results && (
-          <div className="animate-fadeIn">
-            <h2 className="text-center text-2xl font-black mb-6 bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
-              Your Results are Ready
-            </h2>
+          <div>
+            <h2 style={{ textAlign: 'center', fontSize: 26, fontWeight: 900, marginBottom: 24,
+              background: 'linear-gradient(135deg, #FF0099, #FACF39)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
+            }}>Your Results are Ready</h2>
 
-            {/* Card Tabs */}
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-8">
-              {CARDS.map((card) => (
+            {/* Card Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 24 }}>
+              {CARDS.map(card => (
                 <button
                   key={card.key}
                   onClick={() => setActiveCard(card.key)}
-                  className={`rounded-2xl p-3 text-center text-xs font-bold transition-all duration-200 border hover:scale-105 active:scale-95 ${
-                    activeCard === card.key
-                      ? `bg-gradient-to-b ${card.grad} border-white/20 shadow-lg ring-2 ${card.ring} ring-offset-2 ring-offset-[#0a0a0f] scale-105`
-                      : 'bg-white/5 border-white/10 hover:bg-white/10'
-                  }`}
+                  style={{
+                    borderRadius: 16, padding: '12px 8px', textAlign: 'center', cursor: 'pointer',
+                    border: activeCard === card.key ? `2px solid ${card.bg}` : '2px solid #00000010',
+                    background: activeCard === card.key
+                      ? `linear-gradient(135deg, ${card.bg}20, ${card.bg}10)`
+                      : '#fff',
+                    boxShadow: activeCard === card.key ? `0 4px 16px ${card.bg}40` : '0 2px 8px #00000010',
+                    transform: activeCard === card.key ? 'scale(1.04)' : 'scale(1)',
+                    transition: 'all .2s', fontFamily: 'inherit'
+                  }}
                 >
-                  <div className="text-2xl mb-1">{card.icon}</div>
-                  <div className="leading-tight">{card.title}</div>
+                  <div style={{ fontSize: 24, marginBottom: 4 }}>{card.icon}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: activeCard === card.key ? card.bg : '#112D4E', lineHeight: 1.2 }}>
+                    {card.title}
+                  </div>
                 </button>
               ))}
             </div>
 
-            {/* Active Card Content */}
-            {activeCard && results[activeCard] && (
-              <div className="rounded-3xl bg-white/5 border border-white/10 p-6 backdrop-blur-sm">
-                <div className="flex justify-between items-center mb-5">
-                  <h3 className={`text-xl font-black bg-gradient-to-r ${CARDS.find(c=>c.key===activeCard)?.grad} bg-clip-text text-transparent`}>
-                    {CARDS.find(c=>c.key===activeCard)?.icon}{' '}
-                    {CARDS.find(c=>c.key===activeCard)?.title}
-                  </h3>
-                  <button
-                    onClick={() => copyToClipboard(results[activeCard], activeCard)}
-                    className={`flex items-center gap-2 text-sm font-semibold px-5 py-2 rounded-xl transition-all duration-200 ${
-                      copied === activeCard
-                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                        : 'bg-white/10 hover:bg-white/20 border border-white/10'
-                    }`}
-                  >
-                    {copied === activeCard ? '✓ Copied!' : '📋 Copy'}
-                  </button>
+            {/* Active Card */}
+            {activeCard && results[activeCard] && (() => {
+              const card = CARDS.find(c => c.key === activeCard)
+              return (
+                <div style={{ background: '#fff', borderRadius: 20, padding: 24, border: `2px solid ${card.bg}40`, boxShadow: `0 8px 32px ${card.bg}20` }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                    <h3 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: card.bg, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span>{card.icon}</span> {card.title}
+                    </h3>
+                    <button
+                      onClick={() => copyToClipboard(results[activeCard], activeCard)}
+                      style={{
+                        background: copied === activeCard ? '#00C89620' : '#F7F3EE',
+                        color: copied === activeCard ? '#00C896' : '#112D4E',
+                        border: `1px solid ${copied === activeCard ? '#00C896' : '#00000020'}`,
+                        borderRadius: 10, padding: '8px 18px', cursor: 'pointer',
+                        fontSize: 13, fontWeight: 600, transition: 'all .2s', fontFamily: 'inherit'
+                      }}
+                    >
+                      {copied === activeCard ? '✓ Copied!' : '📋 Copy'}
+                    </button>
+                  </div>
+                  <div style={{
+                    background: '#F7F3EE', borderRadius: 14, padding: 20, fontSize: 14,
+                    whiteSpace: 'pre-wrap', lineHeight: 1.7, color: '#112D4E',
+                    maxHeight: 520, overflowY: 'auto', border: `1px solid ${card.bg}20`
+                  }}>
+                    {results[activeCard]}
+                  </div>
                 </div>
-                <div className="bg-black/40 rounded-2xl p-5 text-gray-200 text-sm whitespace-pre-wrap leading-relaxed max-h-[520px] overflow-y-auto border border-white/5">
-                  {results[activeCard]}
-                </div>
-              </div>
-            )}
+              )
+            })()}
           </div>
         )}
       </div>
 
       {/* Footer */}
-      <footer className="text-center text-white/20 text-sm py-10 border-t border-white/5">
-        Built with love by <span className="text-violet-400 font-semibold">Shahzad</span> · Job Coach AI · Powered by Google Gemini
+      <footer style={{ textAlign: 'center', padding: '32px 16px', borderTop: '1px solid #00000010', color: '#112D4E60', fontSize: 13 }}>
+        Built with love by{' '}
+        <strong style={{ color: '#FF0099' }}>Shahzad</strong>
+        {' · Job Coach AI 2026 · Powered by '}
+        <strong style={{ color: '#00AEEF' }}>Anthropic Claude Sonnet 4.6</strong>
       </footer>
 
-      <style jsx global>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(16px); }
-          to   { opacity: 1; transform: translateY(0); }
+      <style>{`
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
         }
-        .animate-fadeIn { animation: fadeIn 0.5s ease both; }
       `}</style>
     </main>
   )
