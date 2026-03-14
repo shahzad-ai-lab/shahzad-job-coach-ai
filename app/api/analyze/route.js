@@ -64,6 +64,50 @@ const MODELS = [
   { name: 'gemini-flash-lite-latest', timeout: 55000 },
 ]
 
+async function callGemini(prompt, apiKey) {
+  const errors = []
+  for (const { name, timeout } of MODELS) {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), timeout)
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${name}:generateContent?key=${apiKey}`
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          tools: [{ googleSearch: {} }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 8192 },
+        }),
+      })
+      clearTimeout(timer)
+      const data = await res.json()
+      if (res.ok) {
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
+        if (text) { console.log(`Success: ${name}`); return text }
+        errors.push(`${name}: empty response`)
+      } else {
+        const msg = data?.error?.message || `HTTP ${res.status}`
+        errors.push(`${name}: ${msg.slice(0, 80)}`)
+      }
+    } catch (err) {
+      clearTimeout(timer)
+      const msg = err.name === 'AbortError' ? 'timed out' : (err.message?.slice(0, 60) || 'error')
+      errors.push(`${name}: ${msg}`)
+    }
+  }
+  throw new Error(`All models failed: ${errors.join(' | ')}`)
+}
+
+function extractJSON(raw) {
+  let cleaned = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim()
+  try { return JSON.parse(cleaned) } catch {}
+  const match = cleaned.match(/\{[\s\S]*\}/)
+  if (match) { try { return JSON.parse(match[0]) } catch {} }
+  return null
+}
+
 export async function POST(request) {
   const h = securityHeaders()
 
@@ -166,12 +210,12 @@ export async function POST(request) {
     thankYouEmail: "### thankYouEmail\n[Content: Post-interview email template]",
     salaryNegotiation: "### salaryNegotiation\n[Content: Market salary research (search if needed), scripts, what to avoid]",
     actionPlan: "### actionPlan\n[Content: 30-60-90 day onboarding plan]",
-    visaPathways: "### visaPathways\n[Content: Analyze the candidate's likely location vs target job. Provide 3 specific Visa/Immigration pathways or remote work digital nomad options (e.g., H1-B, Express Entry, D8) using the Master Guide knowledge.]",
-    recruiterPov: "### recruiterPov\n[Content: Act as a ruthless Fortune 500 tech recruiter. List the top 3 instant 'Red Flags' or rejection reasons in this resume, and exactly how the candidate must fix them immediately.]"
+    visaPathways: "Analyze the candidate's likely location vs target job. Provide 3 specific Visa/Immigration pathways or remote work digital nomad options (e.g., H1-B, Express Entry, D8) using the Master Guide knowledge.",
+    recruiterPov: "Act as a ruthless Fortune 500 tech recruiter. List the top 3 instant 'Red Flags' or rejection reasons in this resume, and exactly how the candidate must fix them immediately."
   }
 
   const keysToUse = requestedKeys || Object.keys(ALL_PROMPT_SECTIONS)
-  const dynamicSections = keysToUse.map(k => ALL_PROMPT_SECTIONS[k]).join('\n')
+  const jsonFormatHint = keysToUse.map(k => `"${k}": "[${ALL_PROMPT_SECTIONS[k]}]"`).join(',\n')
 
   const prompt = `You are an expert career coach and ATS specialist. 
 Analyze the resume and job posting carefully in the context of global best practices.
@@ -193,87 +237,34 @@ JOB POSTING:
 ${jobPosting}
 
 ---
-You MUST output your response using EXACTLY the following ${keysToUse.length} section headers, preceded by "### ", and followed by your detailed analysis. Do not use JSON. Do not deviate from the keys:
+Return ONLY raw JSON with exactly these keys: ${JSON.stringify(keysToUse)}. No markdown around the JSON. Fill every field with massive, beautifully formatted text. Use \n characters for newlines inside the JSON strings.
 
-${dynamicSections}
+{
+${jsonFormatHint}
+}
 `
 
-  for (const { name, timeout } of MODELS) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${name}:streamGenerateContent?alt=sse&key=${apiKey}`
-      const reqBody = {
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        tools: [{ googleSearch: {} }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
-      }
+  let raw
+  try {
+    raw = await callGemini(prompt, apiKey)
+  } catch (err) {
+    rateEntry.count = Math.max(0, rateEntry.count - 1)
+    ipStore.set(ip, rateEntry)
+    return Response.json({ error: err.message }, { status: 503, headers: h })
+  }
 
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(reqBody)
-      })
+  const parsed = extractJSON(raw)
+  if (!parsed) {
+    rateEntry.count = Math.max(0, rateEntry.count - 1)
+    ipStore.set(ip, rateEntry)
+    return Response.json({ error: 'AI returned unexpected format. Please try again.' }, { status: 500, headers: h })
+  }
 
-      if (!res.ok) {
-        console.warn(`Model ${name} failed with status: ${res.status}`)
-        continue
-      }
-
-      // Stream the SSE response directly to the client as a readable stream
-      const stream = new ReadableStream({
-        async start(controller) {
-          const reader = res.body.getReader()
-          const decoder = new TextDecoder()
-          let buffer = ''
-          try {
-            while (true) {
-              const { done, value } = await reader.read()
-              if (done) break
-              buffer += decoder.decode(value, { stream: true })
-              
-              const chunks = buffer.split('\n\n')
-              buffer = chunks.pop() || '' // Keep the last incomplete chunk
-              
-              for (const chunk of chunks) {
-                if (!chunk.trim() || chunk.includes('[DONE]')) continue
-                
-                // Gemini SSE lines start with "data: "
-                const dataMatch = chunk.match(/^data:\s*(.+)$/s)
-                if (dataMatch) {
-                  try {
-                    const data = JSON.parse(dataMatch[1])
-                    if (data.candidates && data.candidates[0].content.parts[0].text) {
-                      const textChunk = data.candidates[0].content.parts[0].text
-                      controller.enqueue(new TextEncoder().encode(textChunk))
-                    }
-                  } catch (e) {
-                    // Ignore valid partial JSON chunks
-                  }
-                }
-              }
-            }
-          } catch (e) {
-            console.error(e)
-          } finally {
-            controller.close()
-          }
-        }
-      })
-
-      return new Response(stream, {
-        headers: {
-          'Content-Type': 'text/plain',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-          ...h
-        }
-      })
-    } catch (e) {
-      console.warn(`Model ${name} stream fetch failed`, e)
+  for (const key of keysToUse) {
+    if (!parsed[key] || typeof parsed[key] !== 'string') {
+      parsed[key] = 'Not generated. Please try again or provide more clear inputs.'
     }
   }
 
-  // Refund count if completely failed
-  rateEntry.count = Math.max(0, rateEntry.count - 1)
-  ipStore.set(ip, rateEntry)
-  return Response.json({ error: 'AI failed to generate response. Please try again.' }, { status: 500, headers: h })
+  return Response.json(parsed, { headers: h })
 }

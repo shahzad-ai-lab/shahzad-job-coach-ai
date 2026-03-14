@@ -202,31 +202,9 @@ export default function Home() {
         throw new Error(msg)
       }
 
-      // Stream parsing
-      const reader = res.body.getReader()
-      const decoder = new TextDecoder()
-      let fullText = ''
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        
-        fullText += decoder.decode(value, { stream: true })
-        
-        const parts = fullText.split('### ')
-        const newResults = {}
-        for (let i = 1; i < parts.length; i++) {
-          const p = parts[i]
-          const firstNewline = p.indexOf('\\n')
-          if (firstNewline === -1) continue // Title not fully typed yet
-          const key = p.slice(0, firstNewline).trim()
-          const content = p.slice(firstNewline + 1)
-          if (requestedKeys.includes(key)) {
-            newResults[key] = content.trimStart()
-          }
-        }
-        setResults(prev => ({ ...prev, ...newResults }))
-      }
+      // Parse JSON directly (100% reliable)
+      const data = await res.json()
+      setResults(data)
       
       // Attempt to fetch fresh rate limit remainder if we can
       const s = getRateLimitState()
