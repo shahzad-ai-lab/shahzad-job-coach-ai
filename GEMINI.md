@@ -473,4 +473,60 @@ Best FREE path for student building Android + iOS for same app:
 - [ ] Consider PWA (add to home screen) as zero-cost mobile solution
 
 ---
+
+### SESSION 19 — March 14, 2026
+**Discussed:** User reviewed ATS algorithm document. 3 questions: (1) what's already done, (2) is Serper mandatory, (3) mobile app guide.
+**Files changed:** `app/api/analyze/route.js`, `CLAUDE.md`, `GEMINI.md`
+**Build:** PASSED | **Git:** commit b7cfa64 — live on Vercel
+
+**ATS Algorithm — what was missing, now added:**
+- resumeScore: Score interpretation thresholds (80%+=auto-shortlist, 60-79%=manual, 50-59%=borderline, <50%=auto-reject)
+- resumeScore: Knockout question identification (work auth, visa, licenses, location, years required)
+- resumeScore: Composite weighted breakdown (skills 40%, experience+recency 25%, soft 15%, education 10%, format 10%)
+- resumeScore: Recency decay (flags skills used 3+ years ago vs recently)
+- resumeScore: Achievement density audit (count quantified bullets, rewrites weak ones)
+- resumeScore: Resume anatomy check (length, single column, no graphics, file type, standard headings)
+- recruiterPov: 6-second first impression simulation
+- recruiterPov: LinkedIn cross-check warning (date/title consistency)
+- recruiterPov: Engagement signals coaching (respond fast, update profile, apply within 48h)
+
+**Serper API — answers:**
+- YES mandatory for Live Jobs feature. NO for the 14 AI cards (those use Gemini only)
+- It is a SEPARATE service, SEPARATE company, SEPARATE key from Gemini
+- The Gemini key (AIzaSy...) is Google AI Studio ONLY — stays there forever
+- Serper is serper.dev — free 2,500/month — different company entirely
+- Setup: serper.dev → sign up → copy key → add SERPER_API_KEY to .env.local AND Vercel env vars
+- If user skips Serper: Live Jobs section shows error message, everything else works fine
+
+**Mobile App — complete guide:**
+SAME infrastructure — mobile app calls same Vercel URLs. No new AI key needed.
+
+OPTION A — PWA (easiest, free, zero app store):
+- Add manifest.json to Next.js → users tap "Add to Home Screen" → looks like native app
+- Works on Android + iOS. $0 cost. Ready in 1 hour.
+
+OPTION B — Expo React Native (best for real app):
+```bash
+npm install -g expo-cli
+npx create-expo-app JobCoachMobile
+cd JobCoachMobile
+npx expo start
+```
+- Replace web fetch with same fetch() calls to same Vercel API URLs
+- Test FREE with Expo Go app on any phone (scan QR code)
+- Android publish: Google Play $25 one-time
+- iOS publish: Apple Developer $99/year (needs Mac)
+- Same GEMINI_API_KEY stays on Vercel server — mobile app never sees it (security preserved)
+- Same Serper key if live jobs on mobile
+
+OPTION C — Flutter (also free, Google-backed, excellent):
+- Language: Dart (similar to Java/Swift)
+- Harder than Expo but better performance
+- Daughter recommendation: Start with Expo if she knows JavaScript/React. Flutter if starting from zero.
+
+**Next actions:**
+- [ ] Shahzad: add SERPER_API_KEY to .env.local + Vercel
+- [ ] For daughter mobile: decide PWA (instant) or Expo (full app)
+
+---
 *Last Updated: March 14, 2026 | Both CLAUDE.md and GEMINI.md must stay identical*
