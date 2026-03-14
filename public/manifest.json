@@ -1,0 +1,16 @@
+{
+  "name": "Job Coach AI 2026",
+  "short_name": "Job Coach AI",
+  "description": "16 free AI career tools — resume, interviews, salary, visas. No login.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F0C29",
+  "theme_color": "#0F0C29",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "categories": ["productivity", "education", "business"],
+  "lang": "en"
+}

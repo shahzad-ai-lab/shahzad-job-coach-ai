@@ -139,6 +139,8 @@ export async function POST(request) {
     resumeText = truncate(sanitize(body.resumeText || ''), MAX_RESUME)
     jobPosting = truncate(sanitize(body.jobPosting || ''), MAX_JOB)
     requestedKeys = Array.isArray(body.requestedKeys) && body.requestedKeys.length > 0 ? body.requestedKeys : null
+    const lang = typeof body.lang === 'string' && body.lang.length <= 5 ? body.lang : 'en'
+    const langInstruction = lang !== 'en' ? `\nIMPORTANT: Respond in the user's language (detected: ${lang}). Keep all JSON keys in English but write all VALUES in ${lang}.\n` : ''
   } catch {
     return Response.json({ error: 'Invalid request.' }, { status: 400, headers: h })
   }
@@ -195,9 +197,9 @@ export async function POST(request) {
   rateEntry.count += 1
   ipStore.set(ip, rateEntry)
 
-  const keysToUse = requestedKeys || ['resumeScore','coverLetter','resumeRewrite','skillsGap','interviewPrep','starStories','linkedinSummary','introScripts','matchingJobs','thankYouEmail','salaryNegotiation','actionPlan','visaPathways','recruiterPov']
+  const keysToUse = requestedKeys || ['resumeScore','recruiterPov','coverLetter','resumeRewrite','skillsGap','interviewPrep','starStories','linkedinSummary','introScripts','matchingJobs','thankYouEmail','salaryNegotiation','actionPlan','visaPathways','coldOutreach','careerPivot']
 
-  const prompt = `You are a brutally honest career coach and senior ATS specialist. This is a REALITY CHECK tool — no false hope, no sugarcoating. Be strict. Candidates deserve truth, not comfort.
+  const prompt = `${langInstruction}You are a brutally honest career coach and senior ATS specialist. This is a REALITY CHECK tool — no false hope, no sugarcoating. Be strict. Candidates deserve truth, not comfort.
 
 RULES: Return ONLY raw JSON. No markdown. No code fences. Use \\n for newlines inside strings. No asterisks (*) — use • for bullets. Be specific, not generic.
 
@@ -238,7 +240,11 @@ Return JSON with EXACTLY these keys. Every field must be detailed, honest, and s
 
 "actionPlan": "## 30-60-90 DAY ONBOARDING PLAN\\n\\n## FIRST WEEK CHECKLIST\\n• [Day 1 action]\\n• [Day 2-3 action]\\n• [Day 4-5 action]\\n\\n## 30-DAY GOALS (Learn)\\n• Week 1: [specific]\\n• Week 2: [specific]\\n• Week 3: [specific]\\n• Week 4: [specific — first deliverable]\\n\\n## 60-DAY GOALS (Contribute)\\n• [Specific contribution 1]\\n• [Specific contribution 2]\\n• [First win to demonstrate value]\\n\\n## 90-DAY GOALS (Lead/Own)\\n• [Measurable outcome 1]\\n• [Measurable outcome 2]\\n• [How you prove yourself in this role]",
 
-"visaPathways": "## VISA AND IMMIGRATION OPTIONS\\n\\n## OPTION 1: [Most relevant visa — e.g. H-1B / Express Entry / Skilled Worker Visa]\\nEligibility: [requirements]\\nProcess: [key steps]\\nTimeline: [realistic estimate]\\nOfficial link: [real government URL]\\n\\n## OPTION 2: [Second option]\\nEligibility: [requirements]\\nTimeline: [estimate]\\nOfficial link: [URL]\\n\\n## OPTION 3: REMOTE / DIGITAL NOMAD\\nBest countries for this profile: [list 3 with visa names]\\nRequirements: [brief]\\n\\n## KEY ADVICE\\n[2-3 honest sentences on best path for this specific candidate's situation]"
+"visaPathways": "## VISA AND IMMIGRATION OPTIONS\\n\\n## OPTION 1: [Most relevant visa — e.g. H-1B / Express Entry / Skilled Worker Visa]\\nEligibility: [requirements]\\nProcess: [key steps]\\nTimeline: [realistic estimate]\\nOfficial link: [real government URL]\\n\\n## OPTION 2: [Second option]\\nEligibility: [requirements]\\nTimeline: [estimate]\\nOfficial link: [URL]\\n\\n## OPTION 3: REMOTE / DIGITAL NOMAD\\nBest countries for this profile: [list 3 with visa names]\\nRequirements: [brief]\\n\\n## KEY ADVICE\\n[2-3 honest sentences on best path for this specific candidate's situation]",
+
+"coldOutreach": "## COLD OUTREACH MESSAGES\\n\\n## LINKEDIN CONNECTION REQUEST (300 chars max)\\n[Natural, non-salesy message. Reference something real about their work or the company. End with a specific reason to connect — not just 'I'd love to connect'.]\\n\\n## LINKEDIN DM (after connection accepted)\\n[Follow-up message: 1 sentence compliment, 1 sentence your value, 1 specific ask — e.g. 15-min call or referral request. Under 150 words.]\\n\\n## EMAIL TO HIRING MANAGER (cold)\\nSubject: [Specific subject line — not 'Job Application']\\n\\n[Para 1: One sentence hook — why you're reaching out to THIS person at THIS company]\\n[Para 2: Your top 2 relevant achievements in 2 sentences]\\n[Para 3: Specific ask — informational interview, referral, or application review]\\n\\n## FOLLOW-UP MESSAGE (if no reply after 1 week)\\n[Short, confident, adds new value — not just 'just checking in']\\n\\n## KEY RULES FOR COLD OUTREACH\\n• [Rule 1 specific to this candidate's situation]\\n• [Rule 2]\\n• [Rule 3 — biggest mistake to avoid]",
+
+"careerPivot": "## CAREER PIVOT MAP\\n\\n## YOUR PIVOT SCORE\\nHow pivot-ready is this candidate for a career change: [EASY / MODERATE / CHALLENGING]\\nReason: [honest 1-sentence assessment]\\n\\n## TOP 3 ADJACENT ROLES YOU CAN TARGET NOW\\n\\n### PIVOT 1: [Role title] — [Industry]\\nTransferable skills you already have: [list 3-4 from resume]\\nSkills gap to bridge: [1-2 missing skills]\\nTime to qualify: [honest estimate — weeks/months]\\nWhere to apply: [platform]\\nWhy this works: [specific reason based on resume]\\n\\n### PIVOT 2: [Role title] — [Industry]\\nTransferable skills: [list]\\nGap to bridge: [skills]\\nTime: [estimate]\\nWhere: [platform]\\n\\n### PIVOT 3: [Role title — more ambitious, 6-12 month target]\\nTransferable skills: [list]\\nGap to bridge: [skills]\\nTime: [estimate]\\nWhere: [platform]\\n\\n## 90-DAY PIVOT ACTION PLAN\\n• Month 1: [specific action — course, project, networking]\\n• Month 2: [specific action]\\n• Month 3: [apply to first pivot role with new profile]\\n\\n## WHAT TO PUT ON YOUR RESUME FOR THE PIVOT\\n[Specific advice on how to reframe existing experience for the target role]"
 }`
 
   let raw

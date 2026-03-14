@@ -108,6 +108,17 @@ function checkRL() {
   return { ok: true, remaining: CLIENT_HOURLY_LIMIT - s.count }
 }
 
+// ── Language detection ────────────────────────────────────────────────────────
+const LANG_LABELS = {
+  es: 'Español', ar: 'العربية', fr: 'Français', hi: 'हिन्दी',
+  pt: 'Português', de: 'Deutsch', zh: '中文', ur: 'اردو',
+  bn: 'বাংলা', sw: 'Kiswahili', ru: 'Русский', ja: '日本語',
+}
+function detectLang() {
+  if (typeof navigator === 'undefined') return 'en'
+  return (navigator.language || 'en').split('-')[0].toLowerCase()
+}
+
 // ── OS detection ──────────────────────────────────────────────────────────────
 function detectOS() {
   if (typeof navigator === 'undefined') return 'Unknown'
@@ -136,6 +147,8 @@ const CARDS = [
   { key: 'thankYouEmail',     title: 'Thank You',        icon: '💌',  g: 'linear-gradient(135deg,#DA22FF,#9733EE)' },
   { key: 'salaryNegotiation', title: 'Salary Strategy',  icon: '💰',  g: 'linear-gradient(135deg,#11998E,#38EF7D)' },
   { key: 'actionPlan',        title: '30-60-90 Plan',    icon: '🗓️',  g: 'linear-gradient(135deg,#FF416C,#FF4B2B)' },
+  { key: 'coldOutreach',      title: 'Cold Outreach',    icon: '📨',  g: 'linear-gradient(135deg,#8E2DE2,#4A00E0)' },
+  { key: 'careerPivot',       title: 'Career Pivot',     icon: '🔄',  g: 'linear-gradient(135deg,#F7971E,#FFD200)' },
 ]
 
 // ── RenderText: converts markdown-like text to React elements ─────────────────
@@ -291,6 +304,16 @@ export default function Home() {
   const [userInfo, setUserInfo]       = useState(null)
   const [weather, setWeather]         = useState('')
   const [remaining, setRemaining]     = useState(CLIENT_HOURLY_LIMIT)
+  const [userLang, setUserLang]       = useState('en')
+  // ── Chatbot state ───────────────────────────────────────────────────────────
+  const [chatOpen, setChatOpen]       = useState(false)
+  const [chatMessages, setChatMessages] = useState([
+    { role: 'assistant', content: "Hi! I'm your Career Coach AI 👋\nAsk me anything about resumes, job search, interviews, salary, skills, or visas. I'm here to help — free, always." }
+  ])
+  const [chatInput, setChatInput]     = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
+  const chatEndRef = useRef(null)
+
   // ── Live Jobs state ─────────────────────────────────────────────────────────
   const [liveJobs, setLiveJobs]       = useState(null)
   const [jobsLoading, setJobsLoading] = useState(false)
@@ -334,6 +357,8 @@ export default function Home() {
       .catch(() => {})
     const s = getRLS()
     setRemaining(Math.max(0, CLIENT_HOURLY_LIMIT - s.count))
+    const lang = detectLang()
+    setUserLang(lang)
   }, [])
 
   // ── Instant ATS Score (client-side, zero API) ───────────────────────────────
@@ -383,7 +408,7 @@ export default function Home() {
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeText, jobPosting: jobText, requestedKeys: CARDS.map(c => c.key) }),
+        body: JSON.stringify({ resumeText, jobPosting: jobText, requestedKeys: CARDS.map(c => c.key), lang: userLang }),
       })
       if (!res.ok) {
         let msg = 'Analysis failed'
@@ -399,6 +424,32 @@ export default function Home() {
   }
 
   // ── Share / Download ────────────────────────────────────────────────────────
+  // ── Chatbot ─────────────────────────────────────────────────────────────────
+  async function sendChat(e) {
+    e?.preventDefault()
+    const text = chatInput.trim()
+    if (!text || chatLoading) return
+    const userMsg = { role: 'user', content: text }
+    const updated = [...chatMessages, userMsg]
+    setChatMessages(updated)
+    setChatInput('')
+    setChatLoading(true)
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: updated }),
+      })
+      const data = await res.json()
+      setChatMessages(prev => [...prev, { role: 'assistant', content: data.reply || data.error || 'Sorry, try again.' }])
+    } catch {
+      setChatMessages(prev => [...prev, { role: 'assistant', content: 'Network error. Please try again.' }])
+    } finally {
+      setChatLoading(false)
+      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
+    }
+  }
+
   // ── Live Jobs: search Google Jobs via Serper ────────────────────────────────
   async function fetchLiveJobs() {
     if (!searchTitle.trim()) { setJobsError('Enter a job title to search.'); return }
@@ -1071,6 +1122,118 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* ── Chatbot Floating Button + Panel ────────────────────────────────── */}
+        {/* Floating button */}
+        <button
+          onClick={() => setChatOpen(o => !o)}
+          style={{
+            position: 'fixed', bottom: 24, right: 24, zIndex: 1000,
+            width: 60, height: 60, borderRadius: '50%', border: 'none', cursor: 'pointer',
+            background: chatOpen ? 'linear-gradient(135deg,#FF416C,#FF4B2B)' : 'linear-gradient(135deg,#00C6FF,#0072FF)',
+            boxShadow: '0 6px 28px rgba(0,114,255,0.55)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 26, transition: 'all .3s',
+            animation: chatOpen ? 'none' : 'pulse-glow 2.5s ease-in-out infinite',
+          }}
+          title="Career Coach AI Chat"
+        >
+          {chatOpen ? '✕' : '💬'}
+        </button>
+
+        {/* Chat panel */}
+        {chatOpen && (
+          <div style={{
+            position: 'fixed', bottom: 96, right: 24, zIndex: 999,
+            width: 'min(380px, calc(100vw - 32px))',
+            height: 520,
+            background: 'rgba(15,12,41,0.97)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 20, border: '1px solid rgba(0,198,255,0.35)',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.7)',
+            display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            animation: 'fade-in 0.25s ease',
+          }}>
+            {/* Chat header */}
+            <div style={{
+              padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)',
+              background: 'linear-gradient(135deg,rgba(0,198,255,0.15),rgba(0,114,255,0.1))',
+              display: 'flex', alignItems: 'center', gap: 10,
+            }}>
+              <span style={{ fontSize: 22 }}>🤖</span>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: 14, color: '#fff' }}>Career Coach AI</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Career topics only · Free · Private</div>
+              </div>
+              <div style={{ marginLeft: 'auto', width: 8, height: 8, borderRadius: '50%', background: '#38EF7D', boxShadow: '0 0 8px rgba(56,239,125,0.8)' }} />
+            </div>
+
+            {/* Messages */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 8px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {chatMessages.map((msg, i) => (
+                <div key={i} style={{
+                  display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                }}>
+                  <div style={{
+                    maxWidth: '85%', padding: '10px 14px', borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                    background: msg.role === 'user'
+                      ? 'linear-gradient(135deg,#0072FF,#00C6FF)'
+                      : 'rgba(255,255,255,0.07)',
+                    border: msg.role === 'assistant' ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                    fontSize: 13, lineHeight: 1.6, color: '#fff', whiteSpace: 'pre-wrap',
+                  }}>
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+              {chatLoading && (
+                <div style={{ display: 'flex', gap: 5, padding: '8px 14px' }}>
+                  {[0,1,2].map(i => (
+                    <div key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: '#00C6FF', animation: 'bounce .9s ease infinite', animationDelay: `${i*0.2}s` }} />
+                  ))}
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Suggested questions */}
+            {chatMessages.length <= 1 && (
+              <div style={{ padding: '0 10px 8px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {['How do I improve my ATS score?', 'What salary should I ask for?', 'Help me prepare for interviews', 'How do I pivot careers?'].map(q => (
+                  <button key={q} onClick={() => { setChatInput(q); setTimeout(() => document.getElementById('chat-input')?.focus(), 50) }}
+                    style={{ fontSize: 11, padding: '5px 10px', borderRadius: 20, background: 'rgba(0,198,255,0.12)', border: '1px solid rgba(0,198,255,0.25)', color: '#00C6FF', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Input */}
+            <form onSubmit={sendChat} style={{ padding: '10px 12px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', gap: 8 }}>
+              <input
+                id="chat-input"
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                placeholder="Ask anything about your career..."
+                disabled={chatLoading}
+                style={{
+                  flex: 1, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: 12, padding: '9px 13px', color: '#fff', fontSize: 13,
+                  outline: 'none', fontFamily: 'inherit',
+                }}
+              />
+              <button type="submit" disabled={chatLoading || !chatInput.trim()}
+                style={{
+                  background: 'linear-gradient(135deg,#00C6FF,#0072FF)', border: 'none',
+                  borderRadius: 12, width: 40, height: 40, cursor: chatLoading || !chatInput.trim() ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
+                  opacity: chatInput.trim() ? 1 : 0.4, flexShrink: 0,
+                }}>
+                ➤
+              </button>
+            </form>
+          </div>
+        )}
 
         {/* ── Footer ─────────────────────────────────────────────────────────── */}
         <footer style={{ textAlign: 'center', padding: '28px 16px', borderTop: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
