@@ -305,4 +305,23 @@ Total without scholarship: $330 (AI-900 + SC-900)
 **Next:** Pushing a rapid hotfix to GitHub to trigger Vercel deployment so the user can test the resolved streaming interface and novel UI.
 
 ---
+
+### SESSION 12 — March 13, 2026
+**Discussed:** User requested we avoid overwhelming visitors with all 14 tools at once and suggested utilizing modern SaaS frameworks (Supabase, Pinecone). Decided to stay serverless to respect the "Zero-Data Storage" privacy constraint.
+**Files changed:** `app/page.js`, `app/api/analyze/route.js`, `task.md`, `implementation_plan.md`, `CLAUDE.md`, `GEMINI.md`.
+**Key decisions:**
+- **Progressive UI Wizard:** Rebuilt the home page to display a "Goal Selection Wizard" (Job Hunt, Immigration, Career Change, Full Power).
+- **Dynamic Optimization:** Altered the API so it dynamically filters the 14 prompts down to only what is needed (e.g., 3 targets for Immigration), vastly increasing API speed and lowering compute burn.
+**Next:** V2 Hackathon Scope is exactly 100% complete and deployed to Vercel edge via GitHub.
+
+---
+
+### SESSION 13 — March 13, 2026
+**Discussed:** User reported 14 AI tools were completely blank ("Waiting for AI...") on the live Vercel site. Ran thorough debugs across all integration files.
+**Files changed:** `app/api/analyze/route.js`, `CLAUDE.md`, `GEMINI.md`.
+**Key decisions:**
+- **Hotfix:** Found that during the V2 transition, our SSE stream parsing algorithm regex (`/^data:\s*(.+)$/s`) and new line splitters were double-escaped as `\\s` and `\\n`, causing the Vercel edge to silently fail to match the incoming data stream and buffer infinitely. Ran an automated script to repair the syntax across the backend.
+**Next:** Pushing the hotfix to GitHub immediately.
+
+---
 *Last Updated: March 13, 2026 | Both CLAUDE.md and GEMINI.md must stay identical*
