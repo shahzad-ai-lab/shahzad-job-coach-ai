@@ -1,13 +1,13 @@
 # CLAUDE.md + GEMINI.md — SINGLE MASTER BLUEPRINT
 ### Auto-loaded every session. One file = full project truth. Keep both files identical.
 ### RULE: Every 10 minutes during active work → paste latest update into this file.
-**Last Updated: March 13, 2026**
+**Last Updated: March 14, 2026 — SESSION 16 COMPLETE**
 
 ---
 
 ## AUTO-SAVE PROTOCOL (Read This First Every Session)
 
-**For Claude/Gemini:** Every ~10 minutes of active conversation, append a dated update block:
+**For Claude:** Every ~10 minutes of active conversation, append a dated update block:
 ```
 ### UPDATE [DATE TIME]
 - What was discussed/built/decided
@@ -19,7 +19,6 @@ This prevents all work being lost if session hits token limit.
 
 **For Shahzad:** When starting any new session say:
 > "Read CLAUDE.md and resume where we left off"
-> OR for Gemini: "Read GEMINI.md and resume where we left off"
 
 ---
 
@@ -30,7 +29,7 @@ This prevents all work being lost if session hits token limit.
 | Name | Shahzad Muhammad |
 | Location | Mississauga, Ontario, Canada |
 | OS | Windows 11 Pro + VS Code |
-| Style | Vibe coding — Claude/Gemini does all technical work |
+| Style | Vibe coding — Claude does all technical work |
 | UI | Bold vibrant gradients always |
 | Mission | Free AI tools for underserved populations globally |
 | Status | Career professional → founder transition |
@@ -64,8 +63,8 @@ resumeScore · coverLetter · resumeRewrite · skillsGap · interviewPrep · int
 |------|------|-------------|--------|
 | `.env.local` | ENV | Gemini API key for local dev. NEVER commit. Key = `GEMINI_API_KEY=AIzaSy...` | Safe in .gitignore |
 | `.gitignore` | Git | Ignores: .env.local, node_modules/, .next/, *.log | Safe in .gitignore |
-| `CLAUDE.md` | MD | Master blueprint for Claude sessions — auto-loaded | Updated every session |
-| `GEMINI.md` | MD | THIS FILE — master blueprint for Gemini sessions — identical to CLAUDE.md | Updated every session |
+| `CLAUDE.md` | MD | THIS FILE — master blueprint, auto-loaded by Claude | Updated every session |
+| `GEMINI.md` | MD | Identical copy of CLAUDE.md — for Gemini AI sessions | Keep 100% in sync |
 | `SESSION_LOG.md` | MD | Full session history log Sessions 1–6 | Up to date |
 | `STORY.md` | MD | Full project development narrative | Up to date (Sessions 1-8) |
 | `EXECUTIVE_SUMMARY.md` | MD | Hackathon judge-facing doc, ~389 lines | Complete |
@@ -380,6 +379,7 @@ Total without scholarship: $330 (AI-900 + SC-900)
 - Rate limiting — 5/hr per IP, backoff 1h/3h/6h
 - Security headers, input sanitization, request size guard
 - Models: gemini-flash-latest → gemini-flash-lite-latest (fallback)
+- deepDiveGoal removed (was unused)
 
 **TEST SCENARIO — paste these to test:**
 RESUME: "Sarah Ahmed, Software Engineer, Toronto. React, TypeScript, Node.js, Python, PostgreSQL, AWS, Docker. 4 years experience. Led team of 4, rebuilt customer portal in React/TypeScript, reduced load time 60%. BSc Computer Science UofT 2021."
@@ -394,7 +394,83 @@ JOB: "Senior Full-Stack Engineer, FinTech startup Toronto. React, TypeScript, No
 ---
 
 ### SESSION 17 — March 14, 2026
-**Fixes:** Expanded stop words ~200, min keyword 4 chars, local score renamed "Quick Word Match", missing keywords solid red bg, matched solid green bg, skillsGap now has hard+soft skills both ways + certs with URLs, matchingJobs has freelance platforms (Upwork/Toptal/Flexiple/Gun.io/Contra), scoring strict/brutally honest, all AI cards use ## headings and bullets, visaPathways has govt URLs, recruiterPov has verdict + what works well. Build PASSED. Pushed 3694b66.
+**Discussed:** User tested live app. Issues found: (1) Local ATS showing English filler words like "reviewed","profile","thought","seen","huge" as missing keywords — stop list too small. (2) Missing keywords showed with red border only — user wants red background. (3) AI ATS Score 96/100 vs local 40/100 — confusing, needed explanation. (4) Hard+soft skills sections missing in skillsGap output. (5) No certifications with URLs. (6) No freelance/contract platform suggestions. (7) Scoring too generous — needs to be strict/brutally honest.
+**Files changed:** `app/page.js`, `app/api/analyze/route.js`
+**Build:** PASSED CLEAN
+**Git push:** commit 3694b66 — live on Vercel
+
+**Fixes applied:**
+- Stop words expanded from ~60 to ~200 words — filters ALL English narrative/HR jargon (reviewed, profile, thought, seen, huge, start-up, mission-driven, based, etc.)
+- Min keyword length changed from >2 to >3 chars (eliminates short noise)
+- Local score renamed: "Quick Word Match Score — Instant, No API"
+- Added explanation text: explains difference between local word match vs AI semantic scoring
+- Missing keywords: SOLID RED background (rgba 0.3) + bright red text — clearly distinguished
+- Matched keywords: SOLID GREEN background (rgba 0.22) — clearly distinguished
+- skillsGap prompt: now requires HARD SKILLS MATCHED + HARD SKILLS MISSING + SOFT SKILLS MATCHED + SOFT SKILLS MISSING + UPSKILLING ROADMAP with real URLs + CERTIFICATIONS with provider/cost/URL
+- matchingJobs prompt: now includes FREELANCE/CONTRACT section with: Upwork, Toptal, Flexiple, Gun.io, Contra, LinkedIn Services + industry-specific platforms
+- Scoring instruction: "Be brutally honest — no false hope. Most resumes score 40-75. Only 90+ if genuinely exceptional."
+- All AI cards now use ## headings and • bullets — proper formatting throughout
+- visaPathways: now includes official government URLs
+- recruiterPov: now includes WHAT WORKS WELL section + verdict (STRONG PASS/PASS/BORDERLINE/REJECT)
+
+---
+
+### SESSION 18 — March 14, 2026
+**Discussed:** (1) Folder reorganization — v1/v2 structure. (2) Google Jobs live search integration. (3) User asked about competitor job sites, resume builders, AI career tools, algorithms, and mobile app dev for daughter.
+**Files changed:** `app/api/jobs/route.js` (NEW), `app/page.js`, `app/api/analyze/route.js`, `CLAUDE.md`, `GEMINI.md`
+**Build:** PASSED CLEAN
+**Git push:** commit cbe77eb — live on Vercel
+
+**Folder restructure DONE:**
+- Root: CLAUDE.md + GEMINI.md + Next.js files only
+- `v1/`: all legacy hackathon docs, scripts, archive, media, credentials
+- `v2/`: MASTER_CAREER_REFERENCE.md (active knowledge base)
+- route.js path updated: `process.cwd()/v2/MASTER_CAREER_REFERENCE.md`
+
+**Live Jobs feature DONE:**
+- New `/api/jobs/route.js` — calls Serper.dev Google Jobs API
+- Requires `SERPER_API_KEY` in `.env.local` AND Vercel env vars (free: 2,500 searches/month at serper.dev)
+- UI: job title + location (auto-filled from IP) + timeframe dropdown (24h/1w/2w/1m)
+- Returns jobs with: title, company, location, posted date, job type, salary, source, apply link
+- Rate limited: 10 searches/hr per IP
+
+**SERPER KEY SETUP (Shahzad must do once):**
+1. Go to https://serper.dev — sign up free
+2. Copy API key from dashboard
+3. Add to `.env.local`: `SERPER_API_KEY=your_key_here`
+4. Add to Vercel: Dashboard → Project → Settings → Environment Variables → add `SERPER_API_KEY`
+
+**Mobile app research (for daughter):**
+Best FREE path for student building Android + iOS for same app:
+- **Expo (React Native)** — BEST CHOICE: free, one codebase, calls existing Vercel API, beginner-friendly
+  - Install: `npm install -g expo-cli` → `npx create-expo-app JobCoachMobile`
+  - Just replaces web fetch with React Native components calling same `/api/analyze` URL
+  - Android: free to sideload; Google Play = $25 one-time
+  - iOS: needs Mac + Apple Developer = $99/year for App Store; OR use Expo Go app for testing
+- **Flutter** — also free/excellent but requires learning Dart
+- **PWA** — simplest: just add manifest.json + service worker to existing Next.js app → installs on any phone from browser. Zero cost. No app store needed.
+- **Thunkable / MIT App Inventor** — no-code, good for beginners, but limited API flexibility
+
+**Competitor landscape (summary):**
+- LinkedIn: AI job matching, Easy Apply, Skills assessments — but paid for full features
+- Indeed: Sponsored + organic, AI resume review — free basic
+- Zety/Novoresume/Rezi: Resume builders with ATS scan — $20-30/month
+- Jobscan: Resume vs JD keyword match — $50/month. We do this FREE.
+- Teal HQ: Free job tracker + AI resume — closest competitor
+- Final Round AI / Interview.io: AI interview practice — paid
+- Our edge: 14 tools FREE, no login, no storage, global (visa pathways), strict ATS
+
+**Algorithms behind platforms:**
+- ATS scoring: keyword density + section detection + format penalties (no tables, images)
+- LinkedIn: TF-IDF skills match + engagement signals (apply rate, click rate) + recency
+- Resume match: cosine similarity on BERT embeddings (semantic match, not just keywords)
+- Salary prediction: regression model on title + YoE + location + company size
+- Job recommendation: collaborative filtering (users like you applied to X) + content-based
+
+**Next actions:**
+- [ ] User must add SERPER_API_KEY to .env.local AND Vercel env vars
+- [ ] Daughter: start with Expo for mobile (free, React Native)
+- [ ] Consider PWA (add to home screen) as zero-cost mobile solution
 
 ---
 *Last Updated: March 14, 2026 | Both CLAUDE.md and GEMINI.md must stay identical*

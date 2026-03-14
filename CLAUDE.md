@@ -414,4 +414,63 @@ JOB: "Senior Full-Stack Engineer, FinTech startup Toronto. React, TypeScript, No
 - recruiterPov: now includes WHAT WORKS WELL section + verdict (STRONG PASS/PASS/BORDERLINE/REJECT)
 
 ---
+
+### SESSION 18 — March 14, 2026
+**Discussed:** (1) Folder reorganization — v1/v2 structure. (2) Google Jobs live search integration. (3) User asked about competitor job sites, resume builders, AI career tools, algorithms, and mobile app dev for daughter.
+**Files changed:** `app/api/jobs/route.js` (NEW), `app/page.js`, `app/api/analyze/route.js`, `CLAUDE.md`, `GEMINI.md`
+**Build:** PASSED CLEAN
+**Git push:** commit cbe77eb — live on Vercel
+
+**Folder restructure DONE:**
+- Root: CLAUDE.md + GEMINI.md + Next.js files only
+- `v1/`: all legacy hackathon docs, scripts, archive, media, credentials
+- `v2/`: MASTER_CAREER_REFERENCE.md (active knowledge base)
+- route.js path updated: `process.cwd()/v2/MASTER_CAREER_REFERENCE.md`
+
+**Live Jobs feature DONE:**
+- New `/api/jobs/route.js` — calls Serper.dev Google Jobs API
+- Requires `SERPER_API_KEY` in `.env.local` AND Vercel env vars (free: 2,500 searches/month at serper.dev)
+- UI: job title + location (auto-filled from IP) + timeframe dropdown (24h/1w/2w/1m)
+- Returns jobs with: title, company, location, posted date, job type, salary, source, apply link
+- Rate limited: 10 searches/hr per IP
+
+**SERPER KEY SETUP (Shahzad must do once):**
+1. Go to https://serper.dev — sign up free
+2. Copy API key from dashboard
+3. Add to `.env.local`: `SERPER_API_KEY=your_key_here`
+4. Add to Vercel: Dashboard → Project → Settings → Environment Variables → add `SERPER_API_KEY`
+
+**Mobile app research (for daughter):**
+Best FREE path for student building Android + iOS for same app:
+- **Expo (React Native)** — BEST CHOICE: free, one codebase, calls existing Vercel API, beginner-friendly
+  - Install: `npm install -g expo-cli` → `npx create-expo-app JobCoachMobile`
+  - Just replaces web fetch with React Native components calling same `/api/analyze` URL
+  - Android: free to sideload; Google Play = $25 one-time
+  - iOS: needs Mac + Apple Developer = $99/year for App Store; OR use Expo Go app for testing
+- **Flutter** — also free/excellent but requires learning Dart
+- **PWA** — simplest: just add manifest.json + service worker to existing Next.js app → installs on any phone from browser. Zero cost. No app store needed.
+- **Thunkable / MIT App Inventor** — no-code, good for beginners, but limited API flexibility
+
+**Competitor landscape (summary):**
+- LinkedIn: AI job matching, Easy Apply, Skills assessments — but paid for full features
+- Indeed: Sponsored + organic, AI resume review — free basic
+- Zety/Novoresume/Rezi: Resume builders with ATS scan — $20-30/month
+- Jobscan: Resume vs JD keyword match — $50/month. We do this FREE.
+- Teal HQ: Free job tracker + AI resume — closest competitor
+- Final Round AI / Interview.io: AI interview practice — paid
+- Our edge: 14 tools FREE, no login, no storage, global (visa pathways), strict ATS
+
+**Algorithms behind platforms:**
+- ATS scoring: keyword density + section detection + format penalties (no tables, images)
+- LinkedIn: TF-IDF skills match + engagement signals (apply rate, click rate) + recency
+- Resume match: cosine similarity on BERT embeddings (semantic match, not just keywords)
+- Salary prediction: regression model on title + YoE + location + company size
+- Job recommendation: collaborative filtering (users like you applied to X) + content-based
+
+**Next actions:**
+- [ ] User must add SERPER_API_KEY to .env.local AND Vercel env vars
+- [ ] Daughter: start with Expo for mobile (free, React Native)
+- [ ] Consider PWA (add to home screen) as zero-cost mobile solution
+
+---
 *Last Updated: March 14, 2026 | Both CLAUDE.md and GEMINI.md must stay identical*
