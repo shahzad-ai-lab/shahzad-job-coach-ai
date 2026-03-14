@@ -151,7 +151,7 @@ export async function POST(request) {
   // ── Lightweight Semantic Router (RAG) ───────────────────────────
   let masterGuide = ''
   try {
-    const p = path.join(process.cwd(), 'MASTER_CAREER_REFERENCE.md')
+    const p = path.join(process.cwd(), 'v2', 'MASTER_CAREER_REFERENCE.md')
     if (fs.existsSync(p)) {
       const fullText = fs.readFileSync(p, 'utf-8')
       const sections = fullText.split(/(?=^## )/m)

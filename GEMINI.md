@@ -346,4 +346,55 @@ Total without scholarship: $330 (AI-900 + SC-900)
 **Next:** Pushing formatting updates to GitHub/Vercel and awaiting user review.
 
 ---
-*Last Updated: March 13, 2026 | Both CLAUDE.md and GEMINI.md must stay identical*
+
+### SESSION 16 — March 14, 2026
+**Discussed:** User reviewed live app, found duplicate buttons/headings, UI not compact, all V2 features missing from screen. Requested full V2 rebuild locally before pushing.
+**Bug fixed:** Removed `tools:[{googleSearch:{}}]` from route.js — this was silently killing ALL Gemini API calls. Fixed prompt format hints (were double-bracketed, garbled).
+**Files changed:** `app/page.js` (FULL REWRITE), `app/api/analyze/route.js` (bug fix + prompt fix), `.gitignore` (added credentials.txt), `CLAUDE.md`, `GEMINI.md`
+**Build status:** `npm run build` — PASSED CLEAN, zero errors
+**Git push:** route.js fix pushed to GitHub/Vercel (commit 0bfcfcd)
+**page.js NOT YET pushed** — built locally, awaiting user green light
+
+**What is NOW in app/page.js (V2 COMPLETE):**
+- Splash screen — 1.8s auto-dismiss, click to skip, animated progress bar
+- Instant ATS Score — 100% client-side, useMemo, SVG circle ring, keyword badges, zero API
+- ATS algorithm — extracts keywords (80-word stop list removes filler English words), compares resume vs job, score = matched/total*100
+- 14 cards — resumeScore·recruiterPov·coverLetter·resumeRewrite·skillsGap·interviewPrep·introScripts·starStories·linkedinSummary·matchingJobs·visaPathways·thankYouEmail·salaryNegotiation·actionPlan
+- Per-card shimmer loading — overlay animation on cards not yet generated
+- Green dot indicator — shows which cards have results
+- RenderText component — # h1 blue, ## h2 gold, bullets pink •, numbered gold, **bold** inline, LABEL: gold, NO dangerouslySetInnerHTML
+- Share button — navigator.share with clipboard fallback
+- Download .txt — all 14 cards exported
+- Error display — red banner with × dismiss
+- Drag-drop file upload — both resume AND job description
+- Mobile responsive — all grids auto-fit/minmax, works at 360px
+- User info bar — location, OS, weather, usage dots
+- Welcome banner — AI layoffs context, career migration, visa mention
+- NO duplicate buttons or sections
+- Footer — "Built by Shahzad · Mississauga · Google Gemini AntiGravity · Free for All Humanity"
+
+**What is in app/api/analyze/route.js (V2 COMPLETE):**
+- googleSearch tool REMOVED (was breaking API)
+- Explicit 14-key prompt with detailed format templates
+- RAG system — reads MASTER_CAREER_REFERENCE.md, injects relevant sections by keyword triggers
+- Rate limiting — 5/hr per IP, backoff 1h/3h/6h
+- Security headers, input sanitization, request size guard
+- Models: gemini-flash-latest → gemini-flash-lite-latest (fallback)
+
+**TEST SCENARIO — paste these to test:**
+RESUME: "Sarah Ahmed, Software Engineer, Toronto. React, TypeScript, Node.js, Python, PostgreSQL, AWS, Docker. 4 years experience. Led team of 4, rebuilt customer portal in React/TypeScript, reduced load time 60%. BSc Computer Science UofT 2021."
+JOB: "Senior Full-Stack Engineer, FinTech startup Toronto. React, TypeScript, Node.js required. 3+ years. AWS preferred. $110,000-$140,000 CAD."
+
+**PENDING — needs user to approve then push:**
+- [ ] `git push origin main` — to deploy V2 page.js to Vercel
+- [ ] Folder reorganization: create v1/ and v2/ folders, move docs
+
+**Next action:** User says "green light" → push. User says changes needed → edit then push.
+
+---
+
+### SESSION 17 — March 14, 2026
+**Fixes:** Expanded stop words ~200, min keyword 4 chars, local score renamed "Quick Word Match", missing keywords solid red bg, matched solid green bg, skillsGap now has hard+soft skills both ways + certs with URLs, matchingJobs has freelance platforms (Upwork/Toptal/Flexiple/Gun.io/Contra), scoring strict/brutally honest, all AI cards use ## headings and bullets, visaPathways has govt URLs, recruiterPov has verdict + what works well. Build PASSED. Pushed 3694b66.
+
+---
+*Last Updated: March 14, 2026 | Both CLAUDE.md and GEMINI.md must stay identical*
