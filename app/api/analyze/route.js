@@ -262,6 +262,49 @@ export async function POST(request) {
     console.warn("Could not read COMPANIES_BY_COUNTRY.md", e)
   }
 
+  // ── Occupation Intelligence RAG ───────────────────────────────────────────
+  let occupationIntel = ''
+  try {
+    const op = path.join(process.cwd(), 'v2', 'OCCUPATIONS_ISCO08.md')
+    if (fs.existsSync(op)) {
+      const occText = fs.readFileSync(op, 'utf-8')
+      // Extract fastest-growing + emerging roles sections always (high value)
+      const fastSection = occText.match(/# FASTEST-GROWING OCCUPATIONS[\s\S]{0,3000}/)
+      const emergingSection = occText.match(/# EMERGING 2026 JOB TITLES[\s\S]{0,1500}/)
+      const demandSection = occText.match(/# OCCUPATION-COUNTRY MAPPING[\s\S]{0,2000}/)
+      // Find occupation-specific section from job posting keywords
+      const jobWords = jobPosting.toLowerCase()
+      let roleSection = ''
+      const roleKeywords = [
+        { k: ['software','developer','engineer','programming','code','backend','frontend','fullstack'], sec: 'MAJOR GROUP 2 — PROFESSIONALS' },
+        { k: ['nurse','nursing','clinical','hospital','patient','medical','health'], sec: '## 2221 Nursing' },
+        { k: ['data science','machine learning','ai engineer','data analyst'], sec: '## 2120 Mathematicians' },
+        { k: ['accountant','accounting','cpa','finance','audit'], sec: '## 2411 Accountants' },
+        { k: ['sales','account executive','business development','revenue'], sec: '## 3322 Commercial Sales' },
+        { k: ['teacher','education','instructor','professor','lecturer'], sec: '## 2310 University' },
+        { k: ['manager','director','vp ','vice president','head of'], sec: 'MAJOR GROUP 1 — MANAGERS' },
+        { k: ['lawyer','attorney','legal','law','counsel'], sec: '## 2611 Lawyers' },
+        { k: ['construction','civil','structural','site'], sec: '## 2142 Civil Engineers' },
+        { k: ['electrician','electrical','wiring','power'], sec: '## 7411 Building and Related Electricians' },
+        { k: ['truck','driver','logistics','freight','delivery'], sec: '## 8332 Heavy Truck' },
+      ]
+      for (const { k, sec } of roleKeywords) {
+        if (k.some(kw => jobWords.includes(kw))) {
+          const match = occText.indexOf(sec)
+          if (match >= 0) { roleSection = occText.slice(match, match + 1200); break }
+        }
+      }
+      occupationIntel = [
+        roleSection ? `OCCUPATION PROFILE:\n${roleSection}` : '',
+        fastSection ? fastSection[0] : '',
+        emergingSection ? emergingSection[0] : '',
+        demandSection ? demandSection[0] : '',
+      ].filter(Boolean).join('\n---\n').slice(0, 5000)
+    }
+  } catch (e) {
+    console.warn("Could not read OCCUPATIONS_ISCO08.md", e)
+  }
+
   rateEntry.count += 1
   ipStore.set(ip, rateEntry)
 
@@ -285,6 +328,7 @@ RULES: Return ONLY raw JSON. No markdown. No code fences. Use \\n for newlines i
 
 ${masterGuide ? `CAREER KNOWLEDGE BASE (use this for certifications, salary, visa data):\n${masterGuide}\n---` : ''}
 ${companyIntel ? `${companyIntel}\n---` : ''}
+${occupationIntel ? `OCCUPATION & JOB MARKET INTELLIGENCE (ISCO-08/ILO/BLS 2026):\n${occupationIntel}\n---` : ''}
 
 RESUME:
 ${resumeText}

@@ -1,5 +1,5 @@
 # CLAUDE.md = GEMINI.md — MASTER BLUEPRINT (ULTRA COMPRESSED)
-**Updated: March 14, 2026 — Session 24 | Rule: start session → "Read CLAUDE.md resume where left off"**
+**Updated: March 14, 2026 — Session 25 | Rule: start session → "Read CLAUDE.md resume where left off"**
 
 ---
 
@@ -35,6 +35,8 @@ public/ manifest.json · [NEED: icon-192.png + icon-512.png for stores]
 v1/    legacy docs, scripts, archive, media, credentials
 v2/    MASTER_CAREER_REFERENCE.md (640KB, 48 sections — read with offset+limit only)
        COMPANIES_BY_COUNTRY.md (500+ companies · 30+ countries · career URLs · Forbes/Fortune 500)
+       ALL_COUNTRIES.md (195 UN countries · ISO-2/3 codes · regions · capitals · job market tiers)
+       OCCUPATIONS_ISCO08.md (ISCO-08 all 436 unit groups · 200+ job descriptions · BLS fastest-growing · 2026 emerging roles)
 ```
 
 ---
@@ -90,7 +92,7 @@ Fields per market: `stats · laws · gdp · pop · it · industries · future`
 ---
 
 ## WHAT'S DONE ✅ vs TODO
-**DONE:** ATS algo · 17 cards · chatbot · PWA manifest · multilang · live jobs (Serper) · security · RAG (MASTER_CAREER_REFERENCE + COMPANIES_BY_COUNTRY) · file upload PDF/DOCX/TXT · Country Hero Banner · getMarketPulse 12 markets · 2026 Resume Intelligence injected · manifest.json store-ready · 500+ global companies with career URLs injected per country
+**DONE:** ATS algo · 17 cards · chatbot · PWA manifest · multilang · live jobs · security · RAG (4 data files) · file upload · Country Hero Banner · getMarketPulse 12 markets · 2026 Resume Intel · 195 countries · ISCO-08 436 occupations + descriptions · 500+ companies per country with career URLs
 
 **TODO:**
 - [ ] Shahzad: add SERPER_API_KEY to .env.local + Vercel env vars
@@ -135,7 +137,7 @@ Test models: https://shahzad-job-coach-ai.vercel.app/api/test
 ---
 
 ## SESSION LOG (compressed)
-S1-4 Mar6-8: V1 12cards deploy security H1 submitted | S5-6 Mar11-12: MASTER_REF v4 640KB 48sections | S7-14 Mar13: V2 RAG streaming(failed→reverted) 14cards wizard(removed) | S15-17 Mar13-14: stopwords ATScolors skillsGap certs freelance strictScoring | S18 Mar14: v1/v2 folders liveJobs Serper | S19 Mar14: ATS algo complete | S20 Mar14: chatbot 16cards PWA multilang | S21 Mar14: liveJobs merged matchingJobs 7-country recruiters fix-langInstruction | S22 Mar14: MarketPulse bar YourMarket banner post-results liveJobs quickStart chips | S23 Mar14: CountryHero banner GDP+IT+industries+100yr, getMarketPulse 12markets, 2026ResumeIntelligence injected prompts, manifest store-ready, mobile app guide | S24 Mar14: COMPANIES_BY_COUNTRY.md created (500+ companies · 30+ countries · A-Z · Forbes/Fortune 500 + career URLs), RAG country-company injector in route.js (auto-detects country from job+location → injects matching companies into matchingJobs prompt)
+S1-4 Mar6-8: V1 12cards deploy security H1 submitted | S5-6 Mar11-12: MASTER_REF v4 640KB 48sections | S7-14 Mar13: V2 RAG streaming(failed→reverted) 14cards wizard(removed) | S15-17 Mar13-14: stopwords ATScolors skillsGap certs freelance strictScoring | S18 Mar14: v1/v2 folders liveJobs Serper | S19 Mar14: ATS algo complete | S20 Mar14: chatbot 16cards PWA multilang | S21 Mar14: liveJobs merged matchingJobs 7-country recruiters fix-langInstruction | S22 Mar14: MarketPulse bar YourMarket banner post-results liveJobs quickStart chips | S23 Mar14: CountryHero banner GDP+IT+industries+100yr, getMarketPulse 12markets, 2026ResumeIntelligence injected prompts, manifest store-ready, mobile app guide | S24 Mar14: COMPANIES_BY_COUNTRY.md (500+ companies · 30+ countries · Forbes/Fortune 500 + career URLs), country-company RAG injector | S25 Mar14: ALL_COUNTRIES.md (195 UN countries · ISO codes · regions · job market tiers), OCCUPATIONS_ISCO08.md (ISCO-08 full 436 unit groups · 200+ job descriptions · BLS fastest-growing · 2026 emerging roles · occupation-country demand mapping), occupation RAG injector (auto-detects role from job posting → injects ISCO profile + growth data + fastest-growing list)
 
 ---
 *CLAUDE.md = GEMINI.md always · Update every ~10min · Build must pass before push*
