@@ -294,4 +294,15 @@ Total without scholarship: $330 (AI-900 + SC-900)
 **Next:** Pushing the `feature/v2-master-expansion` branch to Vercel for live production testing.
 
 ---
+
+### SESSION 11 — March 13, 2026
+**Discussed:** User reported that the 14 AI tools were stuck blinking on the live Vercel deployment and that the UI felt too similar to V1. User requested deep-dive pre-questions and updated footer branding to "Google Gemini AntiGravity".
+**Files changed:** `app/page.js`, `app/api/analyze/route.js`, `task.md`, `CLAUDE.md`, `GEMINI.md`.
+**Key decisions:**
+- **Bug Fix:** Rewrote the SSE `ReadableStream` parser in `route.js` because Vercel/Next.js edge was dropping chunks formatted as `data: {...}` when they were split across network packets. Added strict JSON chunking.
+- **Deep Dive UI:** Built a highly visible "Pre-Analysis Deep Dive 🎯" questionnaire above the analyze button.
+- **API Integration:** Passed the new `deepDiveGoal` input back through the Semantic RAG Router and aggressively prompted Gemini to prioritize solving this custom goal across all 14 tools.
+**Next:** Pushing a rapid hotfix to GitHub to trigger Vercel deployment so the user can test the resolved streaming interface and novel UI.
+
+---
 *Last Updated: March 13, 2026 | Both CLAUDE.md and GEMINI.md must stay identical*

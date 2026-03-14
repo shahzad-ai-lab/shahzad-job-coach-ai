@@ -90,11 +90,12 @@ export async function POST(request) {
     return Response.json({ error: 'Request too large.' }, { status: 413, headers: h })
   }
 
-  let resumeText, jobPosting
+  let resumeText, jobPosting, deepDiveGoal
   try {
     const body = await request.json()
     resumeText = truncate(sanitize(body.resumeText || ''), MAX_RESUME)
     jobPosting = truncate(sanitize(body.jobPosting || ''), MAX_JOB)
+    deepDiveGoal = truncate(sanitize(body.deepDiveGoal || ''), 1000)
   } catch {
     return Response.json({ error: 'Invalid request.' }, { status: 400, headers: h })
   }
@@ -115,7 +116,7 @@ export async function POST(request) {
       // Always include table of contents (index 0) and the Global Visa/Future Paths if they are relevant globally
       let relevantSections = [sections[0]] 
       
-      const combinedInput = (resumeText + ' ' + jobPosting).toLowerCase()
+      const combinedInput = (resumeText + ' ' + jobPosting + ' ' + deepDiveGoal).toLowerCase()
       
       // Keywords that act as triggers for specific sections
       const triggers = [
@@ -164,6 +165,10 @@ export async function POST(request) {
   const prompt = `You are an expert career coach and ATS specialist. 
 Analyze the resume and job posting carefully in the context of global best practices.
 If you lack specific details about a country's market context, visas, or salaries, USE THE GOOGLE SEARCH TOOL to find live data and augment your answer.
+
+CRITICAL USER CONTEXT (DEEP DIVE GOAL):
+The user has provided this specific goal/context for you. You MUST prioritize tailoring your entire 14-tool analysis to solve this specific goal:
+"${deepDiveGoal || 'No specific deep dive goal provided. Provide standard excellent coaching.'}"
 
 Use this proprietary career knowledge to aid your analysis:
 ${masterGuide}
@@ -240,18 +245,25 @@ You MUST output your response using EXACTLY the following 14 section headers, pr
               const { done, value } = await reader.read()
               if (done) break
               buffer += decoder.decode(value, { stream: true })
-              const lines = buffer.split('\\n')
-              buffer = lines.pop()
-              for (let line of lines) {
-                line = line.trim()
-                if (line.startsWith('data: ')) {
-                  const dataStr = line.slice(6).trim()
-                  if (dataStr === '[DONE]') continue
+              
+              const chunks = buffer.split('\\n\\n')
+              buffer = chunks.pop() || '' // Keep the last incomplete chunk
+              
+              for (const chunk of chunks) {
+                if (!chunk.trim() || chunk.includes('[DONE]')) continue
+                
+                // Gemini SSE lines start with "data: "
+                const dataMatch = chunk.match(/^data:\\s*(.+)$/s)
+                if (dataMatch) {
                   try {
-                    const data = JSON.parse(dataStr)
-                    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
-                    if (text) controller.enqueue(new TextEncoder().encode(text))
-                  } catch (e) { } // Ignore malformed JSON in partial blocks
+                    const data = JSON.parse(dataMatch[1])
+                    if (data.candidates && data.candidates[0].content.parts[0].text) {
+                      const textChunk = data.candidates[0].content.parts[0].text
+                      controller.enqueue(new TextEncoder().encode(textChunk))
+                    }
+                  } catch (e) {
+                    // Ignore valid partial JSON chunks
+                  }
                 }
               }
             }

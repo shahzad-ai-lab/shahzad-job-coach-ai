@@ -87,9 +87,10 @@ export default function Home() {
   const [jobUploading, setJobUploading] = useState(false)
   const [jobFileName, setJobFileName]   = useState('')
   const [jobDragOver, setJobDragOver]   = useState(false)
-  const [userInfo, setUserInfo]     = useState(null)
-  const [weather, setWeather]       = useState('')
-  const [remaining, setRemaining]   = useState(CLIENT_HOURLY_LIMIT)
+  const [userInfo, setUserInfo]       = useState(null)
+  const [weather, setWeather]         = useState('')
+  const [remaining, setRemaining]     = useState(CLIENT_HOURLY_LIMIT)
+  const [deepDiveGoal, setDeepDiveGoal] = useState('')
   const fileRef    = useRef(null)
   const jobFileRef = useRef(null)
 
@@ -178,7 +179,7 @@ export default function Home() {
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeText, jobPosting }),
+        body: JSON.stringify({ resumeText, jobPosting, deepDiveGoal }),
       })
       if (!res.ok) {
         let msg = 'Error'
@@ -416,6 +417,22 @@ export default function Home() {
           </div>
         )}
 
+        {/* Deep Dive Questionnaire */}
+        <div style={{ maxWidth: 800, margin: '0 auto 24px', padding: '24px', background: 'rgba(255,255,255,0.04)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <h3 style={{ margin: '0 0 12px', fontSize: 18, fontWeight: 700, color: '#FACF39', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>🎯</span> Pre-Analysis Deep Dive
+          </h3>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 16 }}>
+            Help the AI understand your specific situation for hyper-personalized advice (Optional).
+          </p>
+          <textarea 
+            value={deepDiveGoal} 
+            onChange={e => setDeepDiveGoal(e.target.value)} 
+            placeholder="E.g., I am a single mother re-entering the workforce after 5 years, seeking remote work in tech. Or: I need an H1-B visa sponsor in the USA." 
+            style={{ ...s.textarea, height: 80 }} 
+          />
+        </div>
+
         {/* Analyze Button */}
         <div style={{ textAlign:'center', marginBottom:24 }}>
           <button
@@ -612,7 +629,7 @@ export default function Home() {
         Built with love by{' '}
         <strong style={{ color:'#FF0099' }}>Shahzad</strong>
         {' · Job Coach AI 2026 · Powered by '}
-        <strong style={{ color:'#FACF39' }}>Anthropic Claude Sonnet 4.6</strong>
+        <strong style={{ color:'#FACF39' }}>Google Gemini AntiGravity</strong>
       </footer>
 
       <style>{`
