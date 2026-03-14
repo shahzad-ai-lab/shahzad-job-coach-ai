@@ -8,34 +8,76 @@ const CLIENT_HOURLY_LIMIT = 5
 const HOUR_MS = 3_600_000
 const BACKOFF_HOURS = [1, 3, 6]
 
-// ── Stop words for client-side ATS scoring ────────────────────────────────────
+// ── Stop words — comprehensive (removes ALL English filler, narrative, HR jargon) ──
 const STOP_WORDS = new Set([
+  // Articles, conjunctions, prepositions
   'the','and','or','a','an','is','are','was','were','be','been','have','has',
   'do','does','will','would','could','should','can','not','no','in','on','at',
   'by','for','with','as','from','to','of','i','you','we','they','my','your',
   'our','their','this','that','it','get','use','make','who','what','when',
   'where','how','why','which','all','any','each','more','some','such','than',
   'then','so','if','but','also','about','up','out','its','into','over','after',
-  'just','may','other','new','one','two','has','had','him','her','his','she',
-  'he','they','them','those','these','been','being','am','every','much','most',
-  'only','own','same','too','very','both','few','more','most','other','some',
-  'now','here','there','again','further','once','during','before','while',
-  'through','between','against','without','within','along','following','across',
-  'behind','beyond','plus','except','up','down','off','above','below','near',
-  'per','via','re','vs','etc','eg','ie','work','working','experience','years',
-  'year','team','using','role','ability','strong','excellent','good','great',
-  'well','able','skills','skill','knowledge','understanding','familiarity',
-  'including','related','required','preferred','responsibilities','qualifications',
-  'looking','seeking','join','company','position','job','opportunity','apply',
+  'just','may','other','new','one','two','had','him','her','his','she','he',
+  'them','those','these','being','am','every','much','most','only','own',
+  'same','too','very','both','few','now','here','there','again','further',
+  'once','during','before','while','through','between','against','without',
+  'within','along','following','across','behind','beyond','plus','except',
+  'down','off','above','below','near','per','via','re','vs','etc','eg','ie',
+  // Common HR/job-description narrative words
+  'work','working','experience','years','year','team','using','role','ability',
+  'strong','excellent','good','great','well','able','skills','skill','knowledge',
+  'understanding','familiarity','including','related','required','preferred',
+  'responsibilities','qualifications','looking','seeking','join','company',
+  'position','job','opportunity','apply','reviewed','profile','thought','might',
+  'interested','exciting','synthesis','serve','guardian','created','seen','huge',
+  'based','startup','mission','driven','canadian','thought','profile','seen',
+  'start','adoption','maturity','workflow', // keep radiology/medical as technical
+  'passionate','passion','culture','values','growth','candidate','qualified',
+  'demonstrated','established','developed','designed','implemented','maintained',
+  'managed','led','drive','drives','driving','build','builds','building','built',
+  'deliver','delivers','delivering','delivered','define','defined','defining',
+  'ensure','ensures','ensuring','ensured','support','supports','supporting',
+  'collaborate','communicate','identify','analyze','evaluate','implement',
+  'responsible','ownership','accountable','impact','results','outcomes','goals',
+  'objectives','requirements','expectations','fast','paced','environment',
+  'professional','development','training','mentoring','mentorship','coaching',
+  'learning','continuous','improvement','innovation','innovative','creative',
+  'critical','thinking','problem','solving','solution','solutions','approach',
+  'methodology','process','processes','procedure','policy','standard','best',
+  'practice','practices','quality','performance','metrics','measure','reporting',
+  'report','data','analysis','insight','decision','strategic','tactical',
+  'execution','planning','plan','roadmap','timeline','deadline','priority',
+  'resource','resources','budget','cost','value','benefit','benefits','risk',
+  'challenge','issues','resolution','resolve','escalate','stakeholder','customer',
+  'customers','client','clients','partner','partners','vendor','vendors',
+  'internal','external','cross','functional','global','local','regional',
+  'national','international','enterprise','organization','department','division',
+  'group','individual','people','person','someone','anyone','everyone','nobody',
+  'might','could','should','would','shall','need','needs','must','want','wants',
+  'find','found','found','seen','see','look','looks','looked','feel','feels',
+  'felt','think','thinks','thought','know','knows','knew','come','comes','came',
+  'take','takes','took','give','gives','gave','show','shows','showed','tell',
+  'tells','told','ask','asks','asked','seem','seems','seemed','leave','left',
+  'let','lets','set','sets','put','puts','run','runs','ran','hold','held',
+  'move','moves','moved','live','lives','lived','bring','brings','brought',
+  'start','starts','started','turn','turns','turned','keep','keeps','kept',
+  'write','writes','wrote','read','reads','sit','sits','sat','stand','stood',
+  'hear','heard','try','tries','tried','call','calls','called','play','plays',
+  'open','opens','opened','close','closes','closed','change','changes','changed',
+  'type','types','typed','send','sends','sent','receive','received','create',
+  'creates','update','updates','updated','delete','deletes','deleted','view',
+  'views','viewed','access','accesses','accessed','check','checks','checked',
+  'review','reviews','test','tests','tested','validate','validates','validated',
 ])
 
+// Extract meaningful technical/professional keywords only (min 4 chars)
 function extractKeywords(text) {
   return text
     .toLowerCase()
-    .replace(/[^a-z0-9\s\-+#]/g, ' ')
+    .replace(/[^a-z0-9\s\-+#/.]/g, ' ')
     .split(/\s+/)
-    .map(w => w.replace(/^[-]+|[-]+$/g, ''))
-    .filter(w => w.length > 2 && !STOP_WORDS.has(w) && !/^\d+$/.test(w))
+    .map(w => w.replace(/^[-./]+|[-./]+$/g, ''))
+    .filter(w => w.length > 3 && !STOP_WORDS.has(w) && !/^\d+$/.test(w))
 }
 
 // ── Rate limiting helpers ─────────────────────────────────────────────────────
@@ -536,9 +578,14 @@ export default function Home() {
           {/* ── Instant ATS Score ─────────────────────────────────────────── */}
           {atsScore && (
             <div style={{ ...glass, marginBottom: 24, animation: 'fade-in 0.4s ease' }}>
-              <h2 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 800, color: 'rgba(255,255,255,0.5)', letterSpacing: 1, textTransform: 'uppercase' }}>
-                ⚡ Instant ATS Score — Computed Locally (No API)
-              </h2>
+              <div style={{ marginBottom: 14 }}>
+                <h2 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: 'rgba(255,255,255,0.6)', letterSpacing: 1, textTransform: 'uppercase' }}>
+                  ⚡ Quick Word Match Score — Instant, No API
+                </h2>
+                <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>
+                  Measures exact technical keyword overlap only. The AI card <strong style={{ color: '#FACF39' }}>ATS Score</strong> below gives the full semantic, skills & experience analysis — they will differ.
+                </p>
+              </div>
               <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center' }}>
                 <CircleRing score={atsScore.score} />
                 <div style={{ flex: 1, minWidth: 200 }}>
@@ -546,28 +593,28 @@ export default function Home() {
                     fontSize: 18, fontWeight: 900, marginBottom: 8,
                     color: atsScore.score >= 70 ? '#38EF7D' : atsScore.score >= 45 ? '#FACF39' : '#FF416C',
                   }}>
-                    {atsScore.label}
+                    {atsScore.label} — {atsScore.found}/{atsScore.total} technical keywords matched
                   </div>
                   {atsScore.matched.length > 0 && (
                     <div style={{ marginBottom: 10 }}>
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
-                        Matched Keywords
+                      <div style={{ fontSize: 11, color: '#38EF7D', marginBottom: 6, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>
+                        ✓ Keywords Found in Resume
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                         {atsScore.matched.map(kw => (
-                          <span key={kw} style={{ padding: '3px 9px', borderRadius: 999, background: 'rgba(56,239,125,0.15)', border: '1px solid rgba(56,239,125,0.3)', fontSize: 11, color: '#38EF7D', fontWeight: 600 }}>{kw}</span>
+                          <span key={kw} style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(56,239,125,0.22)', border: '1px solid rgba(56,239,125,0.5)', fontSize: 11, color: '#38EF7D', fontWeight: 700 }}>{kw}</span>
                         ))}
                       </div>
                     </div>
                   )}
                   {atsScore.missing.length > 0 && (
                     <div>
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
-                        Missing Keywords
+                      <div style={{ fontSize: 11, color: '#FF6B6B', marginBottom: 6, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>
+                        ✗ Keywords Missing — Add These to Your Resume
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                         {atsScore.missing.map(kw => (
-                          <span key={kw} style={{ padding: '3px 9px', borderRadius: 999, background: 'rgba(255,65,108,0.15)', border: '1px solid rgba(255,65,108,0.3)', fontSize: 11, color: '#FF6B6B', fontWeight: 600 }}>{kw}</span>
+                          <span key={kw} style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(255,65,108,0.3)', border: '1px solid rgba(255,65,108,0.6)', fontSize: 11, color: '#FFB3B3', fontWeight: 700 }}>{kw}</span>
                         ))}
                       </div>
                     </div>

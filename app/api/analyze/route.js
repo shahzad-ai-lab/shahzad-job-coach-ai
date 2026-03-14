@@ -197,11 +197,11 @@ export async function POST(request) {
 
   const keysToUse = requestedKeys || ['resumeScore','coverLetter','resumeRewrite','skillsGap','interviewPrep','starStories','linkedinSummary','introScripts','matchingJobs','thankYouEmail','salaryNegotiation','actionPlan','visaPathways','recruiterPov']
 
-  const prompt = `You are an expert career coach and ATS specialist powered by Google Gemini. Analyze the resume and job posting below. Return ONLY a raw JSON object — no markdown, no code fences, no extra text before or after.
+  const prompt = `You are a brutally honest career coach and senior ATS specialist. This is a REALITY CHECK tool — no false hope, no sugarcoating. Be strict. Candidates deserve truth, not comfort.
 
-CRITICAL: Do NOT ask clarifying questions. Provide complete final answers immediately. Use newline characters (\\n) inside JSON strings. Do NOT use asterisks (*) for bold — use plain structured text with headers and bullet points (•).
+RULES: Return ONLY raw JSON. No markdown. No code fences. Use \\n for newlines inside strings. No asterisks (*) — use • for bullets. Be specific, not generic.
 
-${masterGuide ? `Use this career knowledge database to inform your analysis:\n${masterGuide}\n---` : ''}
+${masterGuide ? `CAREER KNOWLEDGE BASE (use this for certifications, salary, visa data):\n${masterGuide}\n---` : ''}
 
 RESUME:
 ${resumeText}
@@ -209,23 +209,36 @@ ${resumeText}
 JOB POSTING:
 ${jobPosting}
 
-Return a JSON object with EXACTLY these keys filled with detailed, expert content:
+Return JSON with EXACTLY these keys. Every field must be detailed, honest, and specific to THIS resume and THIS job:
 
 {
-"resumeScore": "ATS SCORE: XX/100\\n\\nKEYWORDS FOUND:\\n• keyword1\\n• keyword2\\n\\nKEYWORDS MISSING:\\n• keyword1\\n• keyword2\\n\\nSCORES:\\nHard Skills: X/10\\nSoft Skills: X/10\\nExperience Match: X/10\\nEducation Match: X/10\\n\\nSUMMARY:\\n2-3 sentences on strengths and gaps.",
-"coverLetter": "3-paragraph professional cover letter body (no date/header/subject). Paragraph 1: strong hook referencing the role. Paragraph 2: 2-3 specific achievements matching the job. Paragraph 3: confident call to action.",
-"resumeRewrite": "Full rewritten resume optimized for ATS and this specific job. Include: Summary, Skills, Experience with bullet points using strong action verbs, Education.",
-"skillsGap": "HARD SKILLS MATCH:\\n• list each\\n\\nHARD SKILLS MISSING:\\n• list each\\n\\nSOFT SKILLS MATCH:\\n• list each\\n\\nSOFT SKILLS MISSING:\\n• list each\\n\\nTOP 3 ACTIONS:\\n1. ...\\n2. ...\\n3. ...",
-"interviewPrep": "Q1: [question]\\nStrategy: [how to answer]\\n\\nQ2: [question]\\nStrategy: [how to answer]\\n\\nQ3: [question]\\nStrategy: [how to answer]\\n\\nQ4: [question]\\nStrategy: [how to answer]\\n\\nQ5: [question]\\nStrategy: [how to answer]",
-"starStories": "STORY 1 — [Situation title]\\nS: [Situation]\\nT: [Task]\\nA: [Action — 2-3 steps]\\nR: [Result with metric]\\n\\nSTORY 2 — [Situation title]\\nS: ...\\nT: ...\\nA: ...\\nR: ...\\n\\nSTORY 3 — [Situation title]\\nS: ...\\nT: ...\\nA: ...\\nR: ...",
-"linkedinSummary": "3-4 sentence first-person LinkedIn About section targeting this role. Opens with a hook, includes top skills, ends with value proposition.",
-"introScripts": "1-MINUTE INTRO (Phone Screen):\\n[Full script]\\n\\n2-MINUTE INTRO (Hiring Manager):\\n[Full script]\\n\\n3-MINUTE INTRO (Technical Round):\\n[Full script including specific project examples and tech stack]",
-"matchingJobs": "RECOMMENDED ROLES TO APPLY:\\n\\n1. [Job Title] at [Company Type]\\nWhy: [reason]\\nKeywords to add: [keywords]\\n\\n2. [Job Title] at [Company Type]\\nWhy: [reason]\\nKeywords to add: [keywords]\\n\\n3. [Job Title] at [Company Type]\\nWhy: [reason]\\n\\n4. [Job Title]\\nWhy: [reason]\\n\\n5. [Job Title]\\nWhy: [reason]",
-"thankYouEmail": "SUBJECT: Thank you — [Role] Interview\\n\\nDear [Hiring Manager Name],\\n\\n[Para 1: Thank them, reference something specific discussed]\\n\\n[Para 2: Reinforce top 2 qualifications]\\n\\n[Para 3: Enthusiasm and next steps]\\n\\nBest regards,\\n[Your Name]",
-"salaryNegotiation": "MARKET SALARY RANGE:\\nExpected for this role: $XX,000 – $XX,000\\n\\nOPENING STATEMENT:\\n[Script to use when asked salary expectations]\\n\\nCOUNTEROFFER SCRIPT:\\n[Script when offer is below target]\\n\\nBENEFITS TO NEGOTIATE:\\n• Benefit 1\\n• Benefit 2\\n• Benefit 3\\n\\nNEVER SAY:\\n• Mistake 1\\n• Mistake 2",
-"actionPlan": "30-DAY PLAN (Learn):\\n• Week 1: ...\\n• Week 2: ...\\n• Week 3: ...\\n• Week 4: ...\\n\\n60-DAY PLAN (Contribute):\\n• ...\\n\\n90-DAY PLAN (Lead):\\n• ...\\n\\nFIRST DAY CHECKLIST:\\n• ...\\n• ...\\n• ...",
-"visaPathways": "VISA AND IMMIGRATION PATHWAYS:\\n\\nOption 1: [Visa type e.g. H-1B / Express Entry / Skilled Worker]\\nEligibility: [requirements]\\nProcess: [steps]\\nTimeline: [estimate]\\n\\nOption 2: [Visa type]\\nEligibility: [requirements]\\n\\nOption 3: [Digital Nomad / Remote Work option]\\nCountries: [list]\\nRequirements: [brief]\\n\\nKEY ADVICE: [2-3 sentences on best path for this candidate]",
-"recruiterPov": "RECRUITER VERDICT: [Pass / Borderline / Reject]\\n\\nRED FLAG 1: [Issue]\\nFix: [Exact action to take]\\n\\nRED FLAG 2: [Issue]\\nFix: [Exact action to take]\\n\\nRED FLAG 3: [Issue]\\nFix: [Exact action to take]\\n\\nQUICK WINS (do these today):\\n• ...\\n• ...\\n• ..."
+"resumeScore": "ATS SCORE: XX/100\\n\\nBe strict — most resumes score 40-75. Only award 90+ if it is genuinely exceptional.\\n\\nKEYWORDS FOUND:\\n• [list actual keywords from job found in resume]\\n\\nKEYWORDS MISSING:\\n• [list actual keywords from job NOT in resume]\\n\\nSCORES (be strict, 10=perfect):\\nHard Skills Match: X/10\\nSoft Skills Match: X/10\\nExperience Level Match: X/10\\nEducation Match: X/10\\nATS Formatting: X/10\\n\\nHONEST SUMMARY:\\n[2-3 sentences — state REAL strengths AND real gaps. Do not inflate.]",
+
+"recruiterPov": "RECRUITER VERDICT: [STRONG PASS / PASS / BORDERLINE / REJECT — be honest]\\n\\nWhy a recruiter would pass or reject in 6 seconds:\\n\\nRED FLAG 1: [Specific issue]\\nFix immediately: [Exact action]\\n\\nRED FLAG 2: [Specific issue]\\nFix immediately: [Exact action]\\n\\nRED FLAG 3: [Specific issue]\\nFix immediately: [Exact action]\\n\\nWHAT WORKS WELL:\\n• [Genuine strengths]\\n\\nQUICK WINS (do today before applying):\\n• ...\\n• ...\\n• ...",
+
+"coverLetter": "3-paragraph cover letter body (no date/header). Paragraph 1: specific hook naming the company and role. Paragraph 2: 2-3 quantified achievements matching exact job requirements. Paragraph 3: confident call to action.",
+
+"resumeRewrite": "# REWRITTEN RESUME\\n\\n## PROFESSIONAL SUMMARY\\n[2-3 lines targeting this exact role with top 3 matching skills]\\n\\n## CORE SKILLS\\n[List technical skills matching the job — 2 columns format]\\n\\n## EXPERIENCE\\n[Rewrite each role with strong action verbs and metrics matching this job's keywords]\\n\\n## EDUCATION & CERTIFICATIONS\\n[List with years]",
+
+"skillsGap": "# SKILLS GAP ANALYSIS\\n\\n## HARD SKILLS — MATCHED\\n• [Each technical skill candidate HAS that matches job]\\n\\n## HARD SKILLS — MISSING (Priority Gaps)\\n• [Each technical skill job requires that candidate LACKS — be thorough]\\n\\n## SOFT SKILLS — MATCHED\\n• [Leadership, communication etc. evidenced in resume]\\n\\n## SOFT SKILLS — MISSING\\n• [Soft skills job requires not evidenced]\\n\\n## UPSKILLING ROADMAP\\n1. [Most critical gap] — Course: [specific course name] — URL: [real URL e.g. coursera.org, udemy.com, linkedin.com/learning]\\n2. [Second gap] — Certification: [name] — URL: [real URL]\\n3. [Third gap] — Resource: [name] — URL: [real URL]\\n\\n## CERTIFICATIONS TO PURSUE\\n• [Cert name relevant to this role] — Provider: [name] — Cost: [~$X] — URL: [official URL]\\n• [Second cert] — Provider: [name] — URL: [official URL]\\n• [Third cert] — Provider: [name] — URL: [official URL]",
+
+"interviewPrep": "## LIKELY INTERVIEW QUESTIONS\\n\\nQ1: [Role-specific technical question]\\nStrategy: [How to answer — be specific]\\nSample answer opening: [First 2 sentences]\\n\\nQ2: [Behavioral question based on job requirements]\\nStrategy: [STAR method tip]\\n\\nQ3: [Technical deep-dive question]\\nStrategy: [What they want to hear]\\n\\nQ4: [Culture/situational question]\\nStrategy: [Key points to make]\\n\\nQ5: [Hardest question — about a gap or weakness]\\nStrategy: [How to handle honestly]\\n\\n## QUESTIONS TO ASK THE INTERVIEWER\\n• [Smart question 1]\\n• [Smart question 2]\\n• [Smart question 3]",
+
+"starStories": "## STAR BEHAVIORAL STORIES\\n\\n## STORY 1 — [Title matching a key job requirement]\\nSituation: [Context — 1 sentence]\\nTask: [What you needed to accomplish]\\nAction: [3-4 specific steps you took]\\nResult: [Quantified outcome — numbers matter]\\n\\n## STORY 2 — [Title]\\nSituation: ...\\nTask: ...\\nAction: ...\\nResult: ...\\n\\n## STORY 3 — [Title]\\nSituation: ...\\nTask: ...\\nAction: ...\\nResult: ...",
+
+"linkedinSummary": "First-person LinkedIn About section (3-4 sentences). Opens with a bold hook. Names top 3 technical skills. States impact delivered. Ends with what you are seeking. Optimized for this role's keywords.",
+
+"introScripts": "## INTRODUCTION SCRIPTS\\n\\n## 1-MINUTE (Phone Screen)\\n[Full natural-sounding script]\\n\\n## 2-MINUTE (Hiring Manager)\\n[Full script — adds 1-2 specific achievements]\\n\\n## 3-MINUTE (Technical Round)\\n[Full script — adds specific tech stack, project example, and what you want to contribute]",
+
+"matchingJobs": "## FULL-TIME ROLES TO TARGET\\n\\n1. [Exact job title] — [Industry/Company type]\\nWhy you match: [specific reason]\\nWhere to apply: [LinkedIn / Indeed / company careers]\\nKeywords to add to resume: [keywords]\\n\\n2. [Job title] — [Industry]\\nWhy: [reason]\\nWhere: [platform]\\n\\n3. [Job title]\\nWhy: [reason]\\nWhere: [platform]\\n\\n## FREELANCE / CONTRACT / FRACTIONAL OPPORTUNITIES\\n\\n• Upwork (upwork.com) — Best for: [relevant category for this profile]\\n• Toptal (toptal.com) — Best for: top 3% engineers/finance/design — [relevant or not for this candidate]\\n• Flexiple (flexiple.com) — Best for: tech contractors\\n• Gun.io (gun.io) — Best for: software engineers\\n• Contra (contra.com) — Best for: independent professionals\\n• LinkedIn Services (linkedin.com/services) — Best for: consulting/advisory\\n• [1-2 industry-specific platforms relevant to this candidate]\\n\\nFREELANCE STRATEGY: [2 sentences on how this specific candidate can position themselves for contract work]",
+
+"thankYouEmail": "SUBJECT: Thank you — [Role] Interview\\n\\nDear [Name],\\n\\n[Para 1: Thank them and reference ONE specific thing discussed in the interview]\\n\\n[Para 2: Reinforce your top 2 most relevant qualifications for this exact role]\\n\\n[Para 3: Restate enthusiasm and confirm you are ready for next steps]\\n\\nBest regards,\\n[Your Name]",
+
+"salaryNegotiation": "## SALARY STRATEGY\\n\\nMARKET RANGE FOR THIS ROLE:\\nEntry level: $XX,000 | Mid: $XX,000 | Senior: $XX,000 | Your target: $XX,000\\n[Use location and industry data — be specific]\\n\\nOPENING STATEMENT (when asked):\\n[Exact script to say]\\n\\nCOUNTEROFFER SCRIPT (when offer is low):\\n[Exact script to say]\\n\\nBENEFITS TO NEGOTIATE IF SALARY IS FIXED:\\n• [Benefit 1 — e.g. extra vacation]\\n• [Benefit 2 — e.g. remote days]\\n• [Benefit 3 — e.g. learning budget]\\n\\nNEVER SAY:\\n• [Mistake 1]\\n• [Mistake 2]\\n• [Mistake 3]",
+
+"actionPlan": "## 30-60-90 DAY ONBOARDING PLAN\\n\\n## FIRST WEEK CHECKLIST\\n• [Day 1 action]\\n• [Day 2-3 action]\\n• [Day 4-5 action]\\n\\n## 30-DAY GOALS (Learn)\\n• Week 1: [specific]\\n• Week 2: [specific]\\n• Week 3: [specific]\\n• Week 4: [specific — first deliverable]\\n\\n## 60-DAY GOALS (Contribute)\\n• [Specific contribution 1]\\n• [Specific contribution 2]\\n• [First win to demonstrate value]\\n\\n## 90-DAY GOALS (Lead/Own)\\n• [Measurable outcome 1]\\n• [Measurable outcome 2]\\n• [How you prove yourself in this role]",
+
+"visaPathways": "## VISA AND IMMIGRATION OPTIONS\\n\\n## OPTION 1: [Most relevant visa — e.g. H-1B / Express Entry / Skilled Worker Visa]\\nEligibility: [requirements]\\nProcess: [key steps]\\nTimeline: [realistic estimate]\\nOfficial link: [real government URL]\\n\\n## OPTION 2: [Second option]\\nEligibility: [requirements]\\nTimeline: [estimate]\\nOfficial link: [URL]\\n\\n## OPTION 3: REMOTE / DIGITAL NOMAD\\nBest countries for this profile: [list 3 with visa names]\\nRequirements: [brief]\\n\\n## KEY ADVICE\\n[2-3 honest sentences on best path for this specific candidate's situation]"
 }`
 
   let raw
