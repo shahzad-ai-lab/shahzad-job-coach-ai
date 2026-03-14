@@ -282,4 +282,16 @@ Total without scholarship: $330 (AI-900 + SC-900)
 **Next:** Pushed to production via Git to trigger Vercel deployment. Wait for user feedback on the V2 Streaming performance.
 
 ---
+
+### SESSION 10 — March 13, 2026
+**Discussed:** Massive expansion for the $25k Hackathon win. User requested 99% local data reliance (via Advanced Knowledge Routing/RAG) and 1% API fallback.
+**Files changed:** `MASTER_CAREER_REFERENCE.md`, `task.md`, `implementation_plan.md`, `CLAUDE.md`, `GEMINI.md`, `app/api/analyze/route.js`, `app/page.js`.
+**Key decisions:**
+- Implementing "Lightweight RAG" in Next.js to parse the massive Master Reference dynamically based on job keywords to avoid Gemini API token limits.
+- Expanded the Master Reference to include 100-year future projection (2026-2126) and total global inclusivity (all ages, demographics, widows, orphans, zero-skill paths).
+- Added two new "Wow" features: Card 13 (Global Visa/Immigration) and Card 14 (Recruiter's POV Red Flags).
+- Added 3D CSS tilt effects and Download to PDF functionality for all 14 cards.
+**Next:** Pushing the `feature/v2-master-expansion` branch to Vercel for live production testing.
+
+---
 *Last Updated: March 13, 2026 | Both CLAUDE.md and GEMINI.md must stay identical*

@@ -58,6 +58,7 @@ function checkAndIncrementRateLimit() {
 
 const CARDS = [
   { key: 'resumeScore',       title: 'Resume Score',       icon: '📊', g: 'linear-gradient(135deg,#00C6FF,#0072FF)' },
+  { key: 'recruiterPov',      title: 'Recruiter POV',      icon: '🚩', g: 'linear-gradient(135deg,#FF416C,#FF4B2B)' },
   { key: 'coverLetter',       title: 'Cover Letter',        icon: '✉️',  g: 'linear-gradient(135deg,#FF0099,#FF6B6B)' },
   { key: 'resumeRewrite',     title: 'Resume Rewrite',      icon: '📄',  g: 'linear-gradient(135deg,#7B2FBE,#C84B31)' },
   { key: 'skillsGap',         title: 'Skills Gap',          icon: '🎯',  g: 'linear-gradient(135deg,#FF6B35,#FACF39)' },
@@ -66,6 +67,7 @@ const CARDS = [
   { key: 'starStories',       title: 'STAR Stories',        icon: '⭐',  g: 'linear-gradient(135deg,#F7971E,#FFD200)' },
   { key: 'linkedinSummary',   title: 'LinkedIn Summary',    icon: '💼',  g: 'linear-gradient(135deg,#1CB5E0,#000851)' },
   { key: 'matchingJobs',      title: 'Matching Jobs',       icon: '🏢',  g: 'linear-gradient(135deg,#56CCF2,#2F80ED)' },
+  { key: 'visaPathways',      title: 'Global Visas',        icon: '🌍',  g: 'linear-gradient(135deg,#38EF7D,#00AEEF)' },
   { key: 'thankYouEmail',     title: 'Thank You Email',     icon: '💌',  g: 'linear-gradient(135deg,#DA22FF,#9733EE)' },
   { key: 'salaryNegotiation', title: 'Salary Negotiation',  icon: '💰',  g: 'linear-gradient(135deg,#11998E,#38EF7D)' },
   { key: 'actionPlan',        title: '30-60-90 Day Plan',   icon: '🗓️',  g: 'linear-gradient(135deg,#FF416C,#FF4B2B)' },
@@ -303,14 +305,14 @@ export default function Home() {
           <strong style={{ color:'#fff', fontWeight:800 }}>Land the interview.</strong>
         </p>
         <div style={{ display:'flex', justifyContent:'center', gap:8, flexWrap:'wrap', marginBottom:10 }}>
-          {['12 AI Tools','ATS Scoring','Salary Scripts','30-60-90 Plan'].map(t => (
+          {['14 AI Tools','Global Visas','Recruiter POV','30-60-90 Plan'].map(t => (
             <span key={t} style={{ padding:'5px 14px', borderRadius:999, background:'rgba(255,255,255,0.1)', fontSize:12, fontWeight:600, color:'rgba(255,255,255,0.8)', border:'1px solid rgba(255,255,255,0.15)' }}>{t}</span>
           ))}
         </div>
         {/* Welcome Banner */}
         <div style={{ maxWidth:780, margin:'12px auto 0', padding:'18px 24px', borderRadius:18, background:'linear-gradient(135deg,rgba(255,0,153,0.1),rgba(0,174,239,0.1))', border:'1px solid rgba(255,255,255,0.12)', textAlign:'left' }}>
           <p style={{ fontSize:14, color:'rgba(255,255,255,0.85)', lineHeight:1.8, margin:'0 0 10px' }}>
-            Thank you for visiting! These are <strong style={{ color:'#FACF39' }}>12 AI-powered tools built free for all humanity.</strong> We help you uplift your career — polish your cover letter, rewrite your resume, optimize your LinkedIn, prepare for interviews with Q&amp;A, craft STAR stories, discover matching jobs, score your resume against ATS, and identify your hard and soft skill gaps — plus much more.
+            Thank you for visiting! These are <strong style={{ color:'#FACF39' }}>14 AI-powered tools built free for all humanity.</strong> We help you uplift your career — from uncovering Recruiter Red Flags and exploring Global Visa pathways, to optimizing your LinkedIn and preparing for interviews.
           </p>
           <p style={{ fontSize:13, color:'rgba(255,255,255,0.5)', lineHeight:1.7, margin:0 }}>
             Enjoy the app. If you would like to build something similar — AI-powered apps or services for community, trial, or commercial use —{' '}
@@ -441,7 +443,7 @@ export default function Home() {
                   <div key={i} style={{ width:9, height:9, borderRadius:'50%', background:'linear-gradient(135deg,#FF0099,#FACF39)', animation:'bounce .9s ease infinite', animationDelay:`${i*.13}s` }} />
                 ))}
               </div>
-              <p style={{ color:'rgba(255,255,255,0.5)', fontSize:14 }}>Generating 12 AI results — about 30 seconds...</p>
+              <p style={{ color:'rgba(255,255,255,0.5)', fontSize:14 }}>Generating 14 AI results — about 30 seconds...</p>
             </div>
           )}
         </div>
@@ -449,10 +451,25 @@ export default function Home() {
         {/* Results */}
         {results && (
           <div>
-            <h2 style={{ textAlign:'center', fontSize:28, fontWeight:900, marginBottom:8, background:'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
-              Your 12 AI Results
-            </h2>
-            <p style={{ textAlign:'center', color:'rgba(255,255,255,0.4)', fontSize:13, marginBottom:28 }}>Click any card to view · Copy button on each result</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom:8, flexWrap:'wrap', gap: 10 }}>
+              <h2 style={{ fontSize:28, fontWeight:900, margin:0, background:'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
+                Your 14 AI Results
+              </h2>
+              {Object.keys(results).length > 0 && (
+                <button
+                  onClick={() => window.print()}
+                  className="hide-print"
+                  style={{
+                    padding: '8px 16px', borderRadius: 8, background: 'linear-gradient(135deg,#00C6FF,#0072FF)', border: 'none', color: '#fff', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,198,255,0.4)', transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  📥 Download All (PDF)
+                </button>
+              )}
+            </div>
+            <p className="hide-print" style={{ color:'rgba(255,255,255,0.4)', fontSize:13, marginBottom:28 }}>Click any card to view · Copy button on each result</p>
 
             {/* Cards Grid */}
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))', gap:10, marginBottom:28 }}>
@@ -460,17 +477,32 @@ export default function Home() {
                 <button
                   key={card.key}
                   onClick={() => setActiveCard(card.key)}
+                  onMouseEnter={e => {
+                    if (activeCard !== card.key) {
+                      e.currentTarget.style.transform = 'scale(1.05) translateY(-4px)'
+                      e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.5)'
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (activeCard !== card.key) {
+                      e.currentTarget.style.transform = 'scale(1) translateY(0)'
+                      e.currentTarget.style.boxShadow = 'none'
+                    }
+                  }}
                   style={{
                     borderRadius:16, padding:'14px 8px', textAlign:'center', cursor:'pointer',
                     background: activeCard === card.key ? card.g : 'rgba(255,255,255,0.06)',
                     border: activeCard === card.key ? '2px solid rgba(255,255,255,0.4)' : '2px solid rgba(255,255,255,0.08)',
                     boxShadow: activeCard === card.key ? '0 6px 20px rgba(0,0,0,0.4)' : 'none',
                     transform: activeCard === card.key ? 'scale(1.06)' : 'scale(1)',
-                    transition:'all .2s', fontFamily:'inherit', color:'#fff'
+                    transition:'all .3s cubic-bezier(0.25, 0.8, 0.25, 1)', fontFamily:'inherit', color:'#fff',
+                    position: 'relative', overflow: 'hidden'
                   }}
                 >
                   <div style={{ fontSize:26, marginBottom:6 }}>{card.icon}</div>
                   <div style={{ fontSize:10, fontWeight:700, lineHeight:1.3, opacity: activeCard === card.key ? 1 : 0.8 }}>{card.title}</div>
+                  {/* Subtle glass shine effect */}
+                  <div style={{ position:'absolute', top:0, left:'-100%', width:'50%', height:'100%', background:'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)', transform:'skewX(-20deg)', transition:'0.5s', opacity: activeCard === card.key ? 0 : 1 }} className="shine" />
                 </button>
               ))}
             </div>
@@ -499,11 +531,26 @@ export default function Home() {
                   </div>
                   <div style={{ background:'rgba(0,0,0,0.4)', borderRadius:16, padding:24, fontSize:15, whiteSpace:'pre-wrap', lineHeight:1.8, color:'rgba(255,255,255,0.95)', maxHeight:600, overflowY:'auto', border:'1px solid rgba(255,255,255,0.1)', boxShadow:'inset 0 4px 20px rgba(0,0,0,0.5)' }}>
                     {results[activeCard] || <span style={{color:'rgba(255,255,255,0.25)', fontStyle:'italic'}}>Waiting for AI to generate {card.title}...</span>}
-                    {loading && (!results[activeCard] || Object.keys(results).length < 12) && <span className="typing-cursor"></span>}
+                    {loading && (!results[activeCard] || Object.keys(results).length < 14) && <span className="typing-cursor"></span>}
                   </div>
                 </div>
               )
             })()}
+
+            {/* Print-only massive dump of all results */}
+            <div className="print-all-results" style={{ display: 'none' }}>
+               <h1 style={{ textAlign: 'center', marginBottom: '2rem', display: 'block !important' }}>Job Coach AI - Comprehensive Career Report</h1>
+               {CARDS.map(card => {
+                 if (!results[card.key]) return null;
+                 return (
+                   <div key={`print-${card.key}`} className="print-section" style={{ display: 'block !important' }}>
+                     <h3 style={{ display: 'block !important' }}>{card.icon} {card.title}</h3>
+                     <pre style={{ display: 'block !important' }}>{results[card.key]}</pre>
+                   </div>
+                 )
+               })}
+            </div>
+            
           </div>
         )}
       </div>
@@ -573,6 +620,16 @@ export default function Home() {
         @keyframes pulse-glow { 0%,100%{filter:drop-shadow(0 0 8px #FF009966)} 50%{filter:drop-shadow(0 0 24px #FF0099cc)} }
         @keyframes typing { 0%,100%{opacity:1} 50%{opacity:0} }
         .typing-cursor::after { content: '▋'; animation: typing 1s infinite steps(1); color: #00AEEF; margin-left: 6px; }
+        button:hover .shine { left: 100%; transition: 0.6s; }
+        @media print {
+          body { background: white !important; color: black !important; padding: 0 !important; }
+          .hide-print { display: none !important; }
+          .print-all-results { display: block !important; }
+          .print-section { page-break-inside: avoid; margin-bottom: 2rem; border-bottom: 1px solid #ccc; padding-bottom: 1rem; }
+          .print-section h3 { color: #000; font-size: 1.2rem; border-bottom: 2px solid #000; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+          .print-section pre { white-space: pre-wrap; font-size: 11pt; line-height: 1.5; font-family: sans-serif; }
+          div, header, p { display: none !important; } /* Hide everything by default */
+        }
         *{box-sizing:border-box}
         textarea::placeholder{color:rgba(255,255,255,0.25)}
         ::-webkit-scrollbar{width:6px}

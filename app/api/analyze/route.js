@@ -104,11 +104,56 @@ export async function POST(request) {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) return Response.json({ error: 'API key not configured.' }, { status: 500, headers: h })
 
-  // Read Master Reference (if available) to inject proprietary knowledge
+  // ── Lightweight Semantic Router (RAG) ───────────────────────────
   let masterGuide = ''
   try {
     const p = path.join(process.cwd(), 'MASTER_CAREER_REFERENCE.md')
-    if (fs.existsSync(p)) masterGuide = fs.readFileSync(p, 'utf-8').slice(0, 30000) // First 30k chars as seed
+    if (fs.existsSync(p)) {
+      const fullText = fs.readFileSync(p, 'utf-8')
+      const sections = fullText.split(/(?=^## )/m)
+      
+      // Always include table of contents (index 0) and the Global Visa/Future Paths if they are relevant globally
+      let relevantSections = [sections[0]] 
+      
+      const combinedInput = (resumeText + ' ' + jobPosting).toLowerCase()
+      
+      // Keywords that act as triggers for specific sections
+      const triggers = [
+        { k: ['visa', 'immigrat', 'relocat', 'move', 'country', 'sponsor'], match: 'VISA' },
+        { k: ['future', 'trend', 'ai ', 'automation', '203'], match: 'FUTURE' },
+        { k: ['student', 'kid', 'child', 'teen', 'senior', 'widow', 'orphan', 'no skill', 'zero skill'], match: 'INCLUSIVITY' },
+        { k: ['software', 'code', 'develop', 'engineer', 'tech', 'data'], match: 'TECHNOLOGY' },
+        { k: ['nurse', 'doctor', 'medic', 'health', 'clinic'], match: 'HEALTHCARE' },
+        { k: ['finance', 'bank', 'account', 'tax', 'audit'], match: 'FINANCE' },
+      ]
+
+      const activeTriggers = new Set()
+      for (const t of triggers) {
+        if (t.k.some(keyword => combinedInput.includes(keyword))) {
+          activeTriggers.add(t.match)
+        }
+      }
+
+      // Filter sections based on triggers
+      for (let i = 1; i < sections.length; i++) {
+        const sec = sections[i]
+        const header = sec.split('\\n')[0].toUpperCase()
+        
+        let shouldInclude = false
+        if (activeTriggers.has('VISA') && header.includes('VISA')) shouldInclude = true
+        if (activeTriggers.has('FUTURE') && header.includes('FUTURE')) shouldInclude = true
+        if (activeTriggers.has('INCLUSIVITY') && header.includes('INCLUSIVITY')) shouldInclude = true
+        if (activeTriggers.has('TECHNOLOGY') && (header.includes('TECHNOLOGY') || header.includes('SOFTWARE'))) shouldInclude = true
+        if (activeTriggers.has('HEALTHCARE') && header.includes('HEALTHCARE')) shouldInclude = true
+        if (activeTriggers.has('FINANCE') && header.includes('FINANCE')) shouldInclude = true
+
+        if (shouldInclude) {
+          relevantSections.push(sec)
+        }
+      }
+
+      masterGuide = relevantSections.join('\\n').slice(0, 45000) // Cap at ~15k tokens to stay extremely fast
+    }
   } catch (e) {
     console.warn("Could not read MASTER_CAREER_REFERENCE.md", e)
   }
@@ -132,7 +177,7 @@ JOB POSTING:
 ${jobPosting}
 
 ---
-You MUST output your response using EXACTLY the following 12 section headers, preceded by "### ", and followed by your detailed analysis. Do not use JSON. Do not deviate from the keys:
+You MUST output your response using EXACTLY the following 14 section headers, preceded by "### ", and followed by your detailed analysis. Do not use JSON. Do not deviate from the keys:
 
 ### resumeScore
 [Content: ATS SCORE /100, keywords found/missing, summary]
@@ -158,6 +203,10 @@ You MUST output your response using EXACTLY the following 12 section headers, pr
 [Content: Market salary research (search if needed), scripts, what to avoid]
 ### actionPlan
 [Content: 30-60-90 day onboarding plan]
+### visaPathways
+[Content: Analyze the candidate's likely location vs target job. Provide 3 specific Visa/Immigration pathways or remote work digital nomad options (e.g., H1-B, Express Entry, D8) using the Master Guide knowledge.]
+### recruiterPov
+[Content: Act as a ruthless Fortune 500 tech recruiter. List the top 3 instant "Red Flags" or rejection reasons in this resume, and exactly how the candidate must fix them immediately.]
 `
 
   for (const { name, timeout } of MODELS) {
