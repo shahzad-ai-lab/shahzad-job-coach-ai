@@ -1,6 +1,6 @@
 # CLAUDE.md + GEMINI.md — MASTER BLUEPRINT (SUPER COMPRESSED)
 ### Auto-loaded every session. Keep CLAUDE.md = GEMINI.md 100% identical always.
-**Last Updated: March 14, 2026 — Session 19 Complete**
+**Last Updated: March 14, 2026 — Session 20 Complete**
 **Rule: Start every new session with "Read CLAUDE.md and resume where we left off"**
 
 ---
@@ -25,7 +25,8 @@
 | Vercel | https://vercel.com/shahzadms-projects/shahzad-job-coach-ai |
 | Stack | Next.js 14 + Google Gemini AI + Serper.dev + Vercel + Tailwind CSS |
 | Hackathon 1 | $6,000 prize — SUBMITTED March 8 ✓ |
-| Status | V2 live — adding MVP features for world's most powerful AI career tool |
+| Hackathon 2 | In progress — deploy March 16 |
+| Status | MVP COMPLETE — 16 AI cards + chatbot + PWA + multi-language + live jobs |
 | Philosophy | Free · No login · Zero data storage · Works for all humans globally |
 
 ---
@@ -104,8 +105,8 @@ Serper is a Google Search API. $0.001/search. 2,500/month free. Gives us REAL-TI
 
 ---
 
-## 14 AI CARDS + LIVE JOBS (current state)
-All 14 cards powered by Gemini. Live Jobs powered by Serper.
+## 16 AI CARDS + LIVE JOBS + CHATBOT (current state — Session 20)
+All 16 cards powered by Gemini. Live Jobs powered by Serper. Chatbot = Gemini.
 
 | # | Key | Title | What it produces |
 |---|-----|-------|-----------------|
@@ -123,7 +124,10 @@ All 14 cards powered by Gemini. Live Jobs powered by Serper.
 | 12 | thankYouEmail | Thank You | Post-interview email |
 | 13 | salaryNegotiation | Salary Strategy | Market range + negotiation scripts |
 | 14 | actionPlan | 30-60-90 Plan | Week 1 + 30/60/90 day goals |
+| 15 | coldOutreach | Cold Outreach | LinkedIn connection + DM + cold email + follow-up scripts |
+| 16 | careerPivot | Career Pivot | Pivot score + 3 adjacent roles + 90-day plan |
 | + | liveJobs | Live Jobs | Serper Google Jobs — fresh postings with apply links |
+| + | chatbot | Career Chatbot | Floating 💬 button — Gemini AI, career-locked, 15/hr, suggested questions |
 
 ---
 
@@ -144,12 +148,15 @@ All 14 cards powered by Gemini. Live Jobs powered by Serper.
 ## WHAT WE'RE MISSING — MVP ROADMAP TO #1 TOOL ON EARTH
 
 ### TIER 1 — BUILD NEXT (high impact, low effort)
-| Feature | What it does | How to build |
-|---------|-------------|-------------|
-| **Card 15: Company Intel** | Before interview: CEO, news, culture, funding, Glassdoor rating | Serper `/news` + `/search` → Gemini summarizes |
-| **Card 16: Real Salary Intel** | Real current salary ranges (not AI guesses) | Serper searches Glassdoor/LinkedIn/Indeed → Gemini extracts ranges |
-| **PWA (Install on Phone)** | Add to Home Screen on any phone — works like native app | Add manifest.json + icon to Next.js (30 min, $0) |
-| **Market Demand Score** | Is this job title growing or shrinking in 2026? | Serper news search → Gemini trend analysis |
+| Feature | Status | How to build |
+|---------|--------|-------------|
+| **Chatbot** | ✅ DONE | /api/chat, floating button, career-locked |
+| **Cards 15-16** (Cold Outreach + Career Pivot) | ✅ DONE | Gemini prompt |
+| **PWA** | ✅ DONE | manifest.json + layout.js meta |
+| **Multi-language** | ✅ DONE | browser lang detect → Gemini |
+| **Card 17: Company Intel** | TODO | Serper `/news` + `/search` → Gemini brief |
+| **Card 18: Real Salary Intel** | TODO | Serper → synthesize actual ranges |
+| **Market Demand Score** | TODO | Serper news → trend analysis |
 
 ### TIER 2 — BUILD SOON (medium effort, major differentiation)
 | Feature | What it does | How to build |
@@ -258,15 +265,16 @@ cd JobCoachMobile && npx expo start     # scan QR → runs on phone immediately
 | 16–17 | Mar 14 | ATS stop words fix, red/green keyword colors, strict scoring, skillsGap hard+soft, certs with URLs, freelance platforms |
 | 18 | Mar 14 | v1/v2 folder structure, Live Jobs (Serper), CLAUDE.md updates |
 | 19 | Mar 14 | ATS algo complete (thresholds, knockouts, density, anatomy, recency, LinkedIn), mobile guide |
+| 20 | Mar 14 | Chatbot (/api/chat, floating panel, career-locked), Cards 15-16 (coldOutreach, careerPivot), PWA (manifest.json), multi-language, layout.js SEO |
 
 ---
 
 ## PENDING TASKS
-- [ ] **Shahzad: add SERPER_API_KEY** to .env.local + Vercel env vars (serper.dev free signup)
-- [ ] Build Card 15: Company Intelligence (Serper news → Gemini brief)
-- [ ] Build Card 16: Real Salary Intel (Serper search → Gemini synthesis)
-- [ ] Add PWA support (manifest.json — 30 min)
-- [ ] Daughter: start Expo mobile app (or I add PWA first)
+- [ ] **Shahzad: add SERPER_API_KEY** to .env.local + Vercel env vars (serper.dev — free 2,500/month, no credit card)
+- [ ] Add PWA icons: /public/icon-192.png + /public/icon-512.png (any 192×192 and 512×512 PNG)
+- [ ] Build Card 17: Company Intelligence (Serper news → Gemini brief)
+- [ ] Build Card 18: Real Salary Intel (Serper → actual ranges)
+- [ ] Daughter: Expo mobile app OR PWA already works (just add to home screen)
 - [ ] Book AI-900 exam ($165) — learn.microsoft.com
 - [ ] Book SC-900 exam ($165) — learn.microsoft.com
 
