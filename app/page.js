@@ -172,17 +172,48 @@ export default function Home() {
     // Client-side rate limit check
     const rl = checkAndIncrementRateLimit()
     if (!rl.allowed) { setError(rl.message); return }
-    setError(''); setLoading(true); setResults(null); setActiveCard(null)
+    setError(''); setLoading(true); setResults({}); setActiveCard('resumeScore')
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ resumeText, jobPosting }),
       })
-      const data = await res.json()
-      if (data.error === 'rate_limited') throw new Error(data.message)
-      if (data.error) throw new Error(data.error)
-      setResults(data); setActiveCard('resumeScore')
-      if (data._meta?.remaining !== undefined) setRemaining(data._meta.remaining)
+      if (!res.ok) {
+        let msg = 'Error'
+        try { const d = await res.json(); msg = d.message || d.error } catch {}
+        throw new Error(msg)
+      }
+
+      // Stream parsing
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let fullText = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        
+        fullText += decoder.decode(value, { stream: true })
+        
+        const parts = fullText.split('### ')
+        const newResults = {}
+        for (let i = 1; i < parts.length; i++) {
+          const p = parts[i]
+          const firstNewline = p.indexOf('\\n')
+          if (firstNewline === -1) continue // Title not fully typed yet
+          const key = p.slice(0, firstNewline).trim()
+          const content = p.slice(firstNewline + 1)
+          if (CARDS.find(c => c.key === key)) {
+            newResults[key] = content.trimStart()
+          }
+        }
+        setResults(prev => ({ ...prev, ...newResults }))
+      }
+      
+      // Attempt to fetch fresh rate limit remainder if we can
+      const s = getRateLimitState()
+      setRemaining(Math.max(0, CLIENT_HOURLY_LIMIT - s.count))
+      
     } catch (err) { setError(err.message) }
     finally { setLoading(false) }
   }
@@ -445,28 +476,30 @@ export default function Home() {
             </div>
 
             {/* Active Result */}
-            {activeCard && results[activeCard] && (() => {
+            {activeCard && (() => {
               const card = CARDS.find(c => c.key === activeCard)
               return (
-                <div style={{ ...s.card, border:'1px solid rgba(255,255,255,0.2)', boxShadow:'0 12px 48px rgba(0,0,0,0.4)' }}>
+                <div style={{ ...s.card, border:'1px solid rgba(255,255,255,0.2)', boxShadow:'0 12px 48px rgba(0,0,0,0.6)' }}>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
                     <h3 style={{ margin:0, fontSize:22, fontWeight:900, background:card.g, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', display:'flex', alignItems:'center', gap:10 }}>
                       <span style={{ fontSize:28 }}>{card.icon}</span> {card.title}
                     </h3>
                     <button
-                      onClick={() => copyToClipboard(results[activeCard], activeCard)}
+                      onClick={() => copyToClipboard(results[activeCard] || '', activeCard)}
+                      disabled={!results[activeCard]}
                       style={{
                         background: copied === activeCard ? 'linear-gradient(135deg,#11998E,#38EF7D)' : 'rgba(255,255,255,0.12)',
                         color: '#fff', border:'1px solid rgba(255,255,255,0.2)', borderRadius:12,
-                        padding:'9px 20px', cursor:'pointer', fontSize:13, fontWeight:700,
-                        transition:'all .2s', fontFamily:'inherit'
+                        padding:'9px 20px', cursor: results[activeCard] ? 'pointer' : 'not-allowed', fontSize:13, fontWeight:700,
+                        transition:'all .2s', fontFamily:'inherit', opacity: results[activeCard] ? 1 : 0.5
                       }}
                     >
                       {copied === activeCard ? '✓ Copied!' : '📋 Copy'}
                     </button>
                   </div>
-                  <div style={{ background:'rgba(0,0,0,0.3)', borderRadius:14, padding:20, fontSize:14, whiteSpace:'pre-wrap', lineHeight:1.75, color:'rgba(255,255,255,0.9)', maxHeight:540, overflowY:'auto', border:'1px solid rgba(255,255,255,0.08)' }}>
-                    {results[activeCard]}
+                  <div style={{ background:'rgba(0,0,0,0.4)', borderRadius:16, padding:24, fontSize:15, whiteSpace:'pre-wrap', lineHeight:1.8, color:'rgba(255,255,255,0.95)', maxHeight:600, overflowY:'auto', border:'1px solid rgba(255,255,255,0.1)', boxShadow:'inset 0 4px 20px rgba(0,0,0,0.5)' }}>
+                    {results[activeCard] || <span style={{color:'rgba(255,255,255,0.25)', fontStyle:'italic'}}>Waiting for AI to generate {card.title}...</span>}
+                    {loading && (!results[activeCard] || Object.keys(results).length < 12) && <span className="typing-cursor"></span>}
                   </div>
                 </div>
               )
@@ -538,6 +571,8 @@ export default function Home() {
       <style>{`
         @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
         @keyframes pulse-glow { 0%,100%{filter:drop-shadow(0 0 8px #FF009966)} 50%{filter:drop-shadow(0 0 24px #FF0099cc)} }
+        @keyframes typing { 0%,100%{opacity:1} 50%{opacity:0} }
+        .typing-cursor::after { content: '▋'; animation: typing 1s infinite steps(1); color: #00AEEF; margin-left: 6px; }
         *{box-sizing:border-box}
         textarea::placeholder{color:rgba(255,255,255,0.25)}
         ::-webkit-scrollbar{width:6px}
