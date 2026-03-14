@@ -1,532 +1,285 @@
-# CLAUDE.md + GEMINI.md — SINGLE MASTER BLUEPRINT
-### Auto-loaded every session. One file = full project truth. Keep both files identical.
-### RULE: Every 10 minutes during active work → paste latest update into this file.
-**Last Updated: March 14, 2026 — SESSION 16 COMPLETE**
-
----
-
-## AUTO-SAVE PROTOCOL (Read This First Every Session)
-
-**For Claude:** Every ~10 minutes of active conversation, append a dated update block:
-```
-### UPDATE [DATE TIME]
-- What was discussed/built/decided
-- Any errors + fixes
-- Files changed
-- Next action
-```
-This prevents all work being lost if session hits token limit.
-
-**For Shahzad:** When starting any new session say:
-> "Read CLAUDE.md and resume where we left off"
+# CLAUDE.md + GEMINI.md — MASTER BLUEPRINT (SUPER COMPRESSED)
+### Auto-loaded every session. Keep CLAUDE.md = GEMINI.md 100% identical always.
+**Last Updated: March 14, 2026 — Session 19 Complete**
+**Rule: Start every new session with "Read CLAUDE.md and resume where we left off"**
 
 ---
 
 ## OWNER
-
 | | |
 |-|-|
 | Name | Shahzad Muhammad |
 | Location | Mississauga, Ontario, Canada |
 | OS | Windows 11 Pro + VS Code |
-| Style | Vibe coding — Claude does all technical work |
-| UI | Bold vibrant gradients always |
+| Style | Vibe coding — Claude does ALL technical work |
+| UI | Bold vibrant gradients always. No plain/boring UI ever. |
 | Mission | Free AI tools for underserved populations globally |
-| Status | Career professional → founder transition |
 
 ---
 
 ## PROJECT — JOB COACH AI
-
 | | |
 |-|-|
 | Live App | https://shahzad-job-coach-ai.vercel.app |
 | GitHub | https://github.com/shahzad-ai-lab/shahzad-job-coach-ai |
 | Vercel | https://vercel.com/shahzadms-projects/shahzad-job-coach-ai |
-| Stack | Next.js 14 + Google Gemini AI + Vercel + Tailwind CSS |
-| Built | 48 hours — March 6–8, 2026 |
-| Hackathon 1 | AI Hackathon — $6,000 prize — SUBMITTED March 8 ✓ |
-| Status | Post-hackathon — V2 in planning — Next hackathon coming |
-| Features | 12 AI career cards, file upload, rate limiting, user info bar |
-| Philosophy | Free, no login, zero data storage |
-
-### 12 AI Cards (Gemini JSON keys):
-resumeScore · coverLetter · resumeRewrite · skillsGap · interviewPrep · introScripts · starStories · linkedinSummary · matchingJobs · thankYouEmail · salaryNegotiation · actionPlan
+| Stack | Next.js 14 + Google Gemini AI + Serper.dev + Vercel + Tailwind CSS |
+| Hackathon 1 | $6,000 prize — SUBMITTED March 8 ✓ |
+| Status | V2 live — adding MVP features for world's most powerful AI career tool |
+| Philosophy | Free · No login · Zero data storage · Works for all humans globally |
 
 ---
 
-## EVERY FILE AND FOLDER — A TO Z
-
-### ROOT FILES
-
-| File | Type | What It Does | Status |
-|------|------|-------------|--------|
-| `.env.local` | ENV | Gemini API key for local dev. NEVER commit. Key = `GEMINI_API_KEY=AIzaSy...` | Safe in .gitignore |
-| `.gitignore` | Git | Ignores: .env.local, node_modules/, .next/, *.log | Safe in .gitignore |
-| `CLAUDE.md` | MD | THIS FILE — master blueprint, auto-loaded by Claude | Updated every session |
-| `GEMINI.md` | MD | Identical copy of CLAUDE.md — for Gemini AI sessions | Keep 100% in sync |
-| `SESSION_LOG.md` | MD | Full session history log Sessions 1–6 | Up to date |
-| `STORY.md` | MD | Full project development narrative | Up to date (Sessions 1-8) |
-| `EXECUTIVE_SUMMARY.md` | MD | Hackathon judge-facing doc, ~389 lines | Complete |
-| `PROGRESS.md` | MD | Build tracker — status board, build log | Up to date (12 cards, V1 done) |
-| `MASTER_CAREER_REFERENCE.md` | MD | 48-section global career database, 640KB, 10,200 lines, v4.0 | COMPLETE |
-| `shahzad-job-coach-ai-master-guide.md` | MD | Original 24-section hackathon prep guide | Historical reference |
-| `package.json` | JSON | Dependencies: next 14.2.5, react 18, @google/generative-ai, pdf-parse, mammoth, tailwindcss | Active |
-| `package-lock.json` | JSON | Auto-generated npm lock — NEVER edit manually | Auto |
-| `next.config.js` | JS | serverComponentsExternalPackages: ['pdf-parse','mammoth'] — critical for Vercel | Active |
-| `tailwind.config.js` | JS | Scans ./app/**/*.{js,ts,jsx,tsx,mdx} for classes | Active |
-| `postcss.config.js` | JS | Plugins: tailwindcss + autoprefixer | Active |
-| `credentials.txt` | TXT | ⚠️ SENSITIVE: GitHub URL, API key (AIzaSy...), Vercel URL, password — NEVER commit | Add to .gitignore NOW |
-| `deploy.ps1` | PS1 | git add route.js → commit → push (API-only deploy) | Working |
-| `push.ps1` | PS1 | git add route.js + page.js → commit → push (full deploy) | Working |
-| `build.ps1` | PS1 | npm run build (test build locally) | Working |
-| `git-push.ps1` | PS1 | Initial repo setup: git init → first commit → git remote add → push. Run ONCE only — already done | Historical |
-| `vercel-deploy.ps1` | PS1 | Direct Vercel CLI deploy (npm install -g vercel → vercel --prod). Emergency use | Working |
-| `test-api.ps1` | PS1 | POSTs test resume+job to live API → prints response. Run after every deploy to verify | Working |
-| `AI_Hackathon_all-projects.xlsx` | XLSX | All competitor projects submitted to March 2026 hackathon | Reference |
-| `screencapture-...2026-03-07...png` | PNG | Screenshot of live app March 7, 2026 (before 12-card redesign) | Reference |
-| `Maximize Your Job Search...mp4` | MP4 | Demo/promo video for hackathon and social media | Submitted |
-
-### APP CODE FILES (`app/`)
-
-| File | Lines | What It Does |
-|------|-------|-------------|
-| `app/globals.css` | 3 | @tailwind base/components/utilities — that's it |
-| `app/layout.js` | 14 | Root layout. Title="Job Coach AI". Body=bg-gray-950 text-white |
-| `app/page.js` | 549 | ENTIRE frontend. Rate limiting (localStorage jcai_rl), 12 CARDS array, Home() component, ipapi.co + wttr.in for user info bar, rotating quotes, usage dots, file upload, analyze button, results render |
-| `app/api/analyze/route.js` | 228 | CORE AI ENGINE. Gemini call + rate limiting + security. Models: gemini-flash-latest → gemini-flash-lite-latest (fallback). sanitize() strips HTML+injection. extractJSON() strips markdown fences. Rate refund on AI failure. Returns 12 keys + _meta{remaining,windowReset} |
-| `app/api/upload/route.js` | 65 | File parser. Accepts PDF (pdf-parse) + DOCX (mammoth) + TXT. Max 10MB / 12,000 chars. Returns {text, charCount} |
-| `app/api/test/route.js` | 50 | Diagnostic. GET /api/test → tests 5 Gemini models → returns which one works. Use when API broken. Models tested: gemini-2.0-flash-lite, gemini-2.0-flash, gemini-2.0-flash-001, gemini-flash-latest, gemini-2.5-flash |
-
-### AUTO-GENERATED & BACKUP FOLDERS (never edit, never commit)
-
-| Folder | What It Is |
-|--------|-----------|
-| `.next/` | Next.js build output. Generated by `npm run build`. Contains BUILD_ID, route manifests, compiled server code, static chunks |
-| `node_modules/` | All npm packages (~300MB). Generated by `npm install`. Key packages: next, react, @google/generative-ai, pdf-parse, mammoth, tailwindcss |
-| `.git/` | Git version history. Branch=main. Remote=github.com/shahzad-ai-lab/shahzad-job-coach-ai |
-| `_v1_archive/` | Exact copy of the V1 `app/` directory as it was submitted for the hackathon. Kept for safe reference. |
-
-### CLAUDE MEMORY SYSTEM (outside project folder)
-
-Location: `C:\Users\ShahzadMuhammad\.claude\projects\c--Project-Code-Claude-shahzad-job-coach-ai\`
-
-| File | What It Is |
-|------|-----------|
-| `memory/MEMORY.md` | Index of memory files — auto-loaded by Claude |
-| `memory/user_profile.md` | Shahzad profile: vibe coder, Windows 11, vibrant UI preference |
-| `memory/project_jobcoach.md` | Project facts: URL, GitHub, hackathon details |
-| `*.jsonl` (6 files) | Full conversation transcripts — every session ever run |
+## FOLDER STRUCTURE (current — Mar 14)
+```
+shahzad-job-coach-ai/          ← ROOT
+├── CLAUDE.md                  ← THIS FILE (auto-loaded by Claude)
+├── GEMINI.md                  ← IDENTICAL COPY (auto-loaded by Gemini)
+├── .env.local                 ← NEVER COMMIT: GEMINI_API_KEY + SERPER_API_KEY
+├── .gitignore                 ← blocks: .env.local, node_modules, .next, credentials.txt
+├── package.json               ← next 14.2.5, react 18, @google/generative-ai, pdf-parse, mammoth
+├── next.config.js             ← serverComponentsExternalPackages: pdf-parse, mammoth
+├── tailwind.config.js         ← scans app/**
+├── postcss.config.js
+├── app/
+│   ├── page.js                ← ENTIRE FRONTEND (~800 lines)
+│   ├── layout.js              ← root layout, bg-gray-950
+│   ├── globals.css            ← @tailwind only
+│   └── api/
+│       ├── analyze/route.js   ← CORE AI ENGINE (Gemini, RAG, rate limit, 14 cards)
+│       ├── jobs/route.js      ← LIVE JOBS (Serper.dev Google Jobs API)
+│       ├── upload/route.js    ← file parser: PDF/DOCX/TXT max 10MB
+│       └── test/route.js      ← diagnostic: tests Gemini models
+├── v1/                        ← LEGACY: all hackathon docs, scripts, archive, media
+│   ├── _v1_archive/           ← exact V1 app snapshot
+│   ├── SESSION_LOG.md, STORY.md, PROGRESS.md, EXECUTIVE_SUMMARY.md
+│   ├── *.ps1 scripts, credentials.txt, *.xlsx, *.png, *.mp4
+│   └── shahzad-job-coach-ai-master-guide.md
+└── v2/
+    └── MASTER_CAREER_REFERENCE.md  ← 640KB, 48-section career database, v4.0
+```
 
 ---
 
-## GEMINI API TECHNICAL REFERENCE
+## API KEYS — TWO SEPARATE KEYS REQUIRED
+| Key | Service | Where to get | Where to add |
+|-----|---------|-------------|--------------|
+| `GEMINI_API_KEY` | Google AI Studio | aistudio.google.com | .env.local + Vercel env vars |
+| `SERPER_API_KEY` | Serper.dev | serper.dev (free 2,500/mo) | .env.local + Vercel env vars |
 
+**These are SEPARATE companies. Gemini key ≠ Serper key. Both needed for full app.**
+
+---
+
+## GEMINI API SETTINGS
 | Setting | Value |
 |---------|-------|
 | Primary model | `gemini-flash-latest` |
-| Fallback model | `gemini-flash-lite-latest` |
-| API version | `v1beta` |
+| Fallback | `gemini-flash-lite-latest` |
 | maxOutputTokens | 8192 |
 | Temperature | 0.7 |
-| Vercel timeout | 60 seconds (maxDuration export) |
-| Key env var | `GEMINI_API_KEY` |
-| Rate limit | 5/hour per IP — progressive backoff 1h/3h/6h |
+| Vercel timeout | 60s (`export const maxDuration = 60`) |
+| Rate limit | 5/hr per IP → backoff 1h/3h/6h |
 | Input limits | Resume: 6,000 chars / Job: 3,000 chars / Body: 50KB |
 
-### Gemini Prompt (what gets sent):
-Single prompt asking for ONLY raw JSON with 12 keys. Includes full resume + job posting. Each key has detailed format instructions (e.g., resumeScore format: ATS SCORE: XX/100, keywords found/missing, subscores). Returns one JSON object — no markdown.
+---
 
-### Security Layers:
-1. Client-side rate limit (localStorage) — 5/hr, backoff 1h/3h/6h
-2. Server-side rate limit (in-memory Map by IP) — same limits
-3. Input sanitization — strips HTML, null bytes, 7 prompt injection patterns
-4. Security headers on every response — X-Frame-Options DENY, X-XSS-Protection, CSP, no-store
-5. Body size guard — 50KB max
-6. Input truncation — resume 6K, job 3K chars
+## SERPER.DEV — WHAT IT DOES + WHY WE USE IT
+Serper is a Google Search API. $0.001/search. 2,500/month free. Gives us REAL-TIME Google data.
 
-### All Errors Fixed (history):
-| Error | Fix |
-|-------|-----|
-| 404 model not found | Changed to gemini-flash-latest |
-| SDK version conflict | Pinned @google/generative-ai |
-| 9s Vercel timeout | Added export const maxDuration = 60 |
-| 12 parallel calls = quota exhaustion | Single combined prompt |
-| sleep(15000) causing timeout | Removed sleep |
-| JSON truncation | Raised maxOutputTokens 4096 → 8192 |
-| Edit string not found (Claude tool) | Read exact lines first, match precisely |
-| 640KB file too large to read | Use offset+limit in Read tool |
+**What Serper enables (vs Gemini which uses training data from the past):**
+| Serper API Type | Endpoint | What we use it for |
+|----------------|----------|-------------------|
+| Google Jobs | `/jobs` | Live job postings, last 1-2 weeks, direct apply links ✅ BUILT |
+| Google Search | `/search` | Real-time salary data, company intel, market demand |
+| Google News | `/news` | Company news before interview, industry trends |
+
+**Currently built with Serper:**
+- `/api/jobs` — Live Jobs search: job title + location + timeframe → returns 10 jobs with apply links
+
+**Planned with Serper (next MVP features):**
+- Card 15: Company Intelligence (news + culture + CEO + funding before interview)
+- Card 16: Real-Time Salary Intel (searches Glassdoor/LinkedIn/Indeed → synthesizes actual ranges)
+- Market demand signal (is this job title growing or shrinking in 2026?)
 
 ---
 
-## SESSION HISTORY — ALL SESSIONS
+## 14 AI CARDS + LIVE JOBS (current state)
+All 14 cards powered by Gemini. Live Jobs powered by Serper.
 
-| Session | Date | Built |
-|---------|------|-------|
-| 1 | Mar 6–7 | Base app, 6 cards, Vercel deploy |
-| 2 | Mar 7–8 | 12 cards, UI redesign, file upload |
-| 3 | Mar 8 | Security: rate limiting, sanitization, headers, STORY.md |
-| 4 | Mar 7–8 | User info bar, rotating quotes, usage dots, welcome banner |
-| 5 | Mar 11 | MASTER_CAREER_REFERENCE §22–29 (v1→v2, 21→29 sections) |
-| 6 | Mar 11–12 | MASTER_CAREER_REFERENCE §30–48 COMPLETE (v2→v4, 48 sections) |
-| 7 | Mar 13 | CLAUDE.md + GEMINI.md master blueprints. Hackathon Q&A answers. V2 planning started |
-
----
-
-## HACKATHON Q&A ANSWERS (500 chars each — copy-paste ready)
-
-**Q: $1M AI solution?**
-I'd build a free AI Career Coach for the 1.4 billion people locked out of opportunity — no resume writer, no LinkedIn, no connections. One tool that speaks their language, knows their country's job market, visa paths, and skills gaps, and tells them exactly what to do next. Not another tool for Silicon Valley. For the refugee, the single mother, the factory worker whose job just vanished. Talent is universal. Opportunity is not. I'd fix that.
-
-**Q: Certification, timeline, cost?**
-I'm pursuing Microsoft AI-900 (Azure AI Fundamentals) and SC-900 (Security, Compliance & Identity). Timeline: 3 months for both. Support needed: exam vouchers ($165 each) and Microsoft Learn course access (free). Without scholarship: $330 total for both exams. Free study paths at learn.microsoft.com. Both validate core AI and cybersecurity literacy — my foundation. Next: AZ-500 and SC-200 for cloud security.
-
-**Q: Where live + icons?**
-Mississauga, Ontario, Canada — one of the world's most diverse cities, minutes from Toronto's tech hub. My icons: Elon Musk for betting everything on impossible ideas, Jensen Huang for making AI the new electricity, and Bruce Schneier for proving cybersecurity is a human problem, not just technical. They think in decades, not quarters. That mindset — build what matters, protect what's real — drives everything I do.
-
-**Q: Founder or professional? Economic access? 12-month goals?**
-Both — career professional transitioning into founder. Economic access means removing the zip-code lottery: your birthplace shouldn't determine your earning power. In 12 months I want to launch my AI career coaching platform commercially, earn Microsoft AI-900 and SC-900, land my first paying clients, and connect with founders who build for the underserved. Mississauga to global — that's the plan.
-
-**Q: How found community? Top 3 challenges in 90 days?**
-Found you through LinkedIn while researching AI communities in Toronto. My top 3 challenges to solve in 90 days: one — fund my Microsoft AI-900 and SC-900 exam vouchers; two — get my AI career coaching platform in front of real users and generate first revenue; three — break into Canada's tech network from Mississauga without the "who you know" barrier. Community is the shortcut I've been missing.
+| # | Key | Title | What it produces |
+|---|-----|-------|-----------------|
+| 1 | resumeScore | ATS Score | Score + thresholds + keywords + knockout check + composite weights + achievement density + resume anatomy |
+| 2 | recruiterPov | Recruiter POV | 6-second impression + red flags + LinkedIn cross-check + engagement signals |
+| 3 | coverLetter | Cover Letter | 3-paragraph targeted letter |
+| 4 | resumeRewrite | Resume Rewrite | Full ATS-optimized rewrite |
+| 5 | skillsGap | Skills Gap | Hard/soft matched+missing + upskilling roadmap with URLs + certifications |
+| 6 | interviewPrep | Interview Prep | 5 questions + answers + questions to ask |
+| 7 | introScripts | Intro Scripts | 1/2/3 minute scripts |
+| 8 | starStories | STAR Stories | 3 behavioral stories |
+| 9 | linkedinSummary | LinkedIn | About section optimized |
+| 10 | matchingJobs | Matching Jobs | Full-time roles + freelance platforms (Upwork/Toptal/Contra/etc) |
+| 11 | visaPathways | Global Visas | 3 visa options with official government URLs |
+| 12 | thankYouEmail | Thank You | Post-interview email |
+| 13 | salaryNegotiation | Salary Strategy | Market range + negotiation scripts |
+| 14 | actionPlan | 30-60-90 Plan | Week 1 + 30/60/90 day goals |
+| + | liveJobs | Live Jobs | Serper Google Jobs — fresh postings with apply links |
 
 ---
 
-## CERTIFICATIONS ROADMAP
-
-| Cert | Cost | Timeline | Link |
-|------|------|---------|------|
-| AI-900 Azure AI Fundamentals | $165 | 3 months | learn.microsoft.com |
-| SC-900 Security & Compliance | $165 | 3 months | learn.microsoft.com |
-| AZ-500 Azure Security Engineer | $165 | Month 4–6 | learn.microsoft.com |
-| SC-200 Security Operations Analyst | $165 | Month 7–9 | learn.microsoft.com |
-
-Total without scholarship: $330 (AI-900 + SC-900)
-
----
-
-## V2 PLANNING (Next Hackathon)
-
-**Status:** Hackathon 1 complete — now planning V2 release + entering next hackathon
-**V2 Ideas (to be defined):**
-- [ ] Define V2 features
-- [ ] Identify next hackathon date/prize/requirements
-- [ ] Build plan for V2
+## ATS ALGORITHM — FULLY IMPLEMENTED (2026 standard)
+✅ Composite weighted score (Skills 40%, Experience+Recency 25%, Soft 15%, Education 10%, Format 10%)
+✅ Score thresholds shown (80%+=auto-shortlist, 60-79%=manual, 50-59%=borderline, <50%=auto-reject)
+✅ Knockout question identification (work auth, visa, license, location requirements)
+✅ Achievement density audit (count quantified bullets, rewrites weak ones)
+✅ Resume anatomy check (length, single column, no graphics, file type, standard headings)
+✅ Recency decay (flags skills used 3+ years ago)
+✅ Semantic NLP matching via Gemini (not just keyword matching)
+✅ 6-second recruiter scan simulation
+✅ LinkedIn cross-check warning
+✅ Engagement signals coaching (respond fast, update profile, apply within 48h)
 
 ---
 
-## COMMANDS CHEAT SHEET
+## WHAT WE'RE MISSING — MVP ROADMAP TO #1 TOOL ON EARTH
 
+### TIER 1 — BUILD NEXT (high impact, low effort)
+| Feature | What it does | How to build |
+|---------|-------------|-------------|
+| **Card 15: Company Intel** | Before interview: CEO, news, culture, funding, Glassdoor rating | Serper `/news` + `/search` → Gemini summarizes |
+| **Card 16: Real Salary Intel** | Real current salary ranges (not AI guesses) | Serper searches Glassdoor/LinkedIn/Indeed → Gemini extracts ranges |
+| **PWA (Install on Phone)** | Add to Home Screen on any phone — works like native app | Add manifest.json + icon to Next.js (30 min, $0) |
+| **Market Demand Score** | Is this job title growing or shrinking in 2026? | Serper news search → Gemini trend analysis |
+
+### TIER 2 — BUILD SOON (medium effort, major differentiation)
+| Feature | What it does | How to build |
+|---------|-------------|-------------|
+| **Card 17: Cold Outreach DM** | LinkedIn message to hiring manager (beyond thank you) | Gemini prompt — no extra API |
+| **Card 18: Portfolio Gap** | What GitHub projects to build to get this exact job | Gemini + Serper search job postings for patterns |
+| **Card 19: Career Pivot Map** | What adjacent roles this candidate can realistically move to | Gemini analysis |
+| **Multi-language support** | Spanish, Arabic, French, Hindi — serve 5B more people | `navigator.language` detect → pass to Gemini |
+| **Job comparison tool** | Upload 2 job descriptions → AI picks which one to pursue | Second textarea → modified prompt |
+
+### TIER 3 — FUTURE MOAT (complex, unique)
+| Feature | What it does | Why nobody has it free |
+|---------|-------------|----------------------|
+| **AI Mock Interview** | Voice/text Q&A drill — real-time feedback | Web Speech API + Gemini (free) |
+| **Resume version manager** | Save different resume versions per job type | localStorage only (no backend, privacy preserved) |
+| **Networking script generator** | LinkedIn connection requests, follow-up sequences | Gemini prompt |
+| **Reference letter writer** | Professional reference request emails | Gemini prompt |
+
+### COMPETITOR GAP ANALYSIS
+| What they charge | Their price | We offer |
+|-----------------|-------------|---------|
+| Jobscan ATS scan | $50/month | ✅ FREE + deeper (anatomy + knockouts + density) |
+| Zety resume builder | $25/month | ✅ FREE full rewrite |
+| Final Round AI interview | $200/month | ✅ FREE prep (text, adding voice soon) |
+| LinkedIn Premium insights | $40/month | ✅ FREE recruiter POV + engagement signals |
+| Teal HQ job tracker | $29/month | ✅ FREE (no tracking needed — live search via Serper) |
+| Pathrise career coaching | $5,000 success fee | FREE AI coaching (human touch = our only gap) |
+
+**Our edge: 14+ tools FREE + real-time data (Serper) + global (visa) + zero login + mobile PWA + serves ALL humans (refugee, widow, student, senior, career changer)**
+
+---
+
+## MOBILE APP — GUIDE FOR DAUGHTER
+**Goal: Same app on Android + iOS. Same Gemini key (stays on Vercel server — phone never sees it).**
+
+**Option A: PWA — Fastest (30 min, $0, no app store)**
+- I add manifest.json to Next.js → users tap "Add to Home Screen" → native app experience
+- Works Android + iOS. No app store. No cost. Do this first.
+
+**Option B: Expo React Native — Full App**
+```bash
+npm install -g expo-cli
+npx create-expo-app JobCoachMobile
+cd JobCoachMobile && npx expo start     # scan QR → runs on phone immediately
+```
+- Same JavaScript/React she knows from web
+- Calls same Vercel URLs: `https://shahzad-job-coach-ai.vercel.app/api/analyze`
+- Test FREE via Expo Go app on any phone
+- Publish: Google Play $25 one-time | App Store $99/year (needs Mac)
+- NO new AI key — Gemini stays on server
+
+---
+
+## SECURITY LAYERS (all active)
+1. Client rate limit: localStorage `jcai_rl` — 5/hr, backoff 1h/3h/6h
+2. Server rate limit: in-memory Map by IP — same limits
+3. Input sanitization: strips HTML, null bytes, 7 injection patterns
+4. Security headers: X-Frame-Options DENY, CSP, no-store, nosniff
+5. Body guard: 50KB max
+6. Input truncation: resume 6K, job 3K chars
+
+---
+
+## COMMANDS
 | Task | Command |
 |------|---------|
 | Run locally | `npm run dev` → localhost:3000 |
-| Build | `npm run build` |
-| Deploy | `git push origin main` (auto-deploys to Vercel) |
-| Full push | Run `push.ps1` |
-| Emergency deploy | Run `vercel-deploy.ps1` |
-| Test live API | Run `test-api.ps1` |
-| Check Gemini models | https://shahzad-job-coach-ai.vercel.app/api/test |
-| Install packages | `npm install` |
+| Build check | `npm run build` |
+| Deploy | `git add . && git commit -m "msg" && git push origin main` |
+| Check models | https://shahzad-job-coach-ai.vercel.app/api/test |
 
 ---
 
-## WORKING RULES — PERMANENT
+## KNOWN ERRORS + FIXES (permanent reference)
+| Error | Fix |
+|-------|-----|
+| 404 model not found | Use `gemini-flash-latest` not `gemini-2.0-flash` |
+| Vercel 9s timeout | `export const maxDuration = 60` in route.js |
+| JSON truncation | maxOutputTokens = 8192 |
+| SSE stream breaks on Vercel | Reverted to single JSON response (not streaming) |
+| `tools:[{googleSearch}]` kills API | Removed — gemini-flash-latest doesn't support it |
+| Edit string not found | Read exact lines first with offset+limit, then edit |
+| 640KB file too large | Read with offset+limit in chunks |
+| Stop words showing as missing keywords | STOP_WORDS expanded to 200+ words, min length >3 chars |
 
-1. Update CLAUDE.md + GEMINI.md every ~10 min during active work
-2. Write ALL work to .md files — never leave in chat only
-3. One master file per topic — no fragmentation
-4. Read offset+limit for MASTER_CAREER_REFERENCE.md (640KB — too large to read whole)
-5. credentials.txt — NEVER commit to GitHub — add to .gitignore
-6. Both CLAUDE.md and GEMINI.md = identical content always
-7. When tokens low: save immediately + write "SAFE TO END SESSION"
+---
+
+## CERTIFICATIONS ROADMAP (Shahzad)
+| Cert | Cost | Timeline |
+|------|------|---------|
+| AI-900 Azure AI Fundamentals | $165 | 3 months |
+| SC-900 Security & Compliance | $165 | 3 months |
+| AZ-500 Azure Security Engineer | $165 | Month 4–6 |
+| SC-200 Security Operations Analyst | $165 | Month 7–9 |
+
+---
+
+## SESSION HISTORY (compressed)
+| Sessions | Date | What was built |
+|----------|------|---------------|
+| 1–4 | Mar 6–8 | V1: 12 cards, file upload, deploy, security, user info bar — HACKATHON SUBMITTED ✓ |
+| 5–6 | Mar 11–12 | MASTER_CAREER_REFERENCE.md v4.0 (48 sections, 640KB) |
+| 7–8 | Mar 13 | CLAUDE.md/GEMINI.md blueprints, hackathon Q&A, V2 planning |
+| 9–14 | Mar 13 | V2 build: streaming (failed), RAG, 14 cards, wizard (removed), V1 stability restore |
+| 15 | Mar 13 | Removed wizard, fixed download .txt, markdown rendering, enforced Guide |
+| 16–17 | Mar 14 | ATS stop words fix, red/green keyword colors, strict scoring, skillsGap hard+soft, certs with URLs, freelance platforms |
+| 18 | Mar 14 | v1/v2 folder structure, Live Jobs (Serper), CLAUDE.md updates |
+| 19 | Mar 14 | ATS algo complete (thresholds, knockouts, density, anatomy, recency, LinkedIn), mobile guide |
 
 ---
 
 ## PENDING TASKS
-
-- [ ] Git commit + push all changes
-- [ ] Define V2 features for next hackathon
-- [ ] Implement V2 super-fast, responsive architecture
-- [ ] Book AI-900 exam ($165)
-- [ ] Book SC-900 exam ($165)
-
----
-
-## CONVERSATION LOG (Append updates here every ~10 minutes)
-
-### SESSION 7 — March 13, 2026
-**Discussed:** Hackathon community Q&A answers (5 questions, 500 chars each). Built CLAUDE.md + GEMINI.md as master blueprints. User wants both files as identical replicas covering every file/folder A to Z.
-**Files changed:** CLAUDE.md (created/rewritten), GEMINI.md (created/rewritten), SESSION_LOG.md (updated)
-**Key decisions:** CLAUDE.md auto-loads every Claude session. GEMINI.md auto-loads every Gemini session. Both = same content. V2 + next hackathon coming.
-**Next:** Git commit + push. Define V2. Add credentials.txt to .gitignore.
+- [ ] **Shahzad: add SERPER_API_KEY** to .env.local + Vercel env vars (serper.dev free signup)
+- [ ] Build Card 15: Company Intelligence (Serper news → Gemini brief)
+- [ ] Build Card 16: Real Salary Intel (Serper search → Gemini synthesis)
+- [ ] Add PWA support (manifest.json — 30 min)
+- [ ] Daughter: start Expo mobile app (or I add PWA first)
+- [ ] Book AI-900 exam ($165) — learn.microsoft.com
+- [ ] Book SC-900 exam ($165) — learn.microsoft.com
 
 ---
 
-### SESSION 8 — March 13, 2026
-**Discussed:** Verified token limits (Google Gemini, 8192 output tokens). Synchronized `.md` files. Prepared V2 migration with focus on ultra-fast performance, vibrant UI, and facilitating humanity globally.
-**Files changed:** CLAUDE.md, GEMINI.md, PROGRESS.md, STORY.md, task.md.
-**Key decisions:** Centralized logs. Confirmed `credentials.txt` is secure in `.gitignore`. Moving immediately to Git push, then presenting V2 plan (super fast loading, highly attractive, humanity-focused scope).
-**Next:** Auto-deploy via Vercel (push to GitHub), architect V2 features.
+## WORKING RULES — PERMANENT
+1. CLAUDE.md + GEMINI.md = identical always. Update every ~10 min during work.
+2. `npm run build` must pass before every git push
+3. Never commit .env.local or credentials.txt
+4. Read MASTER_CAREER_REFERENCE.md with offset+limit (640KB — never read whole)
+5. When tokens low: save to CLAUDE.md + write "SAFE TO END SESSION"
+6. Bold vibrant gradients always — never plain/boring UI
+7. No `tools:[{googleSearch}]` in Gemini API body — it breaks the call
 
 ---
-
-### SESSION 9 — March 13, 2026
-**Discussed:** V2 Kickoff execution. Approved architecture for Gemini API Streaming, Web Grounding (Google Search), and local `MASTER_CAREER_REFERENCE.md` injection to avoid database storage. Kept Next.js instead of Python for speed/edge reasons.
-**Files changed:** `_v1_archive/` (created), `CLAUDE.md`, `GEMINI.md`, `task.md`, `implementation_plan.md`, `app/api/analyze/route.js`, `app/page.js`.
-**Key decisions:**
-- Backed up entire V1 `app` directory to `_v1_archive/` so we never lose the hackathon state.
-- Utilized `fs.readFileSync` for Master Reference file parsing into the Gemini context.
-- Migrated `/api/analyze` to use Gemini `streamGenerateContent` with `alt=sse` decoded securely.
-- Redesigned `app/page.js` to render a real-time markdown stream with a glowing CSS typing cursor and full glassmorphism depth.
-**Next:** Pushed to production via Git to trigger Vercel deployment. Wait for user feedback on the V2 Streaming performance.
-
----
-
-### SESSION 10 — March 13, 2026
-**Discussed:** Massive expansion for the $25k Hackathon win. User requested 99% local data reliance (via Advanced Knowledge Routing/RAG) and 1% API fallback.
-**Files changed:** `MASTER_CAREER_REFERENCE.md`, `task.md`, `implementation_plan.md`, `CLAUDE.md`, `GEMINI.md`, `app/api/analyze/route.js`, `app/page.js`.
-**Key decisions:**
-- Implementing "Lightweight RAG" in Next.js to parse the massive Master Reference dynamically based on job keywords to avoid Gemini API token limits.
-- Expanded the Master Reference to include 100-year future projection (2026-2126) and total global inclusivity (all ages, demographics, widows, orphans, zero-skill paths).
-- Added two new "Wow" features: Card 13 (Global Visa/Immigration) and Card 14 (Recruiter's POV Red Flags).
-- Added 3D CSS tilt effects and Download to PDF functionality for all 14 cards.
-**Next:** Pushing the `feature/v2-master-expansion` branch to Vercel for live production testing.
-
----
-
-### SESSION 11 — March 13, 2026
-**Discussed:** User reported that the 14 AI tools were stuck blinking on the live Vercel deployment and that the UI felt too similar to V1. User requested deep-dive pre-questions and updated footer branding to "Google Gemini AntiGravity".
-**Files changed:** `app/page.js`, `app/api/analyze/route.js`, `task.md`, `CLAUDE.md`, `GEMINI.md`.
-**Key decisions:**
-- **Bug Fix:** Rewrote the SSE `ReadableStream` parser in `route.js` because Vercel/Next.js edge was dropping chunks formatted as `data: {...}` when they were split across network packets. Added strict JSON chunking.
-- **Deep Dive UI:** Built a highly visible "Pre-Analysis Deep Dive 🎯" questionnaire above the analyze button.
-- **API Integration:** Passed the new `deepDiveGoal` input back through the Semantic RAG Router and aggressively prompted Gemini to prioritize solving this custom goal across all 14 tools.
-**Next:** Pushing a rapid hotfix to GitHub to trigger Vercel deployment so the user can test the resolved streaming interface and novel UI.
-
----
-
-### SESSION 12 — March 13, 2026
-**Discussed:** User requested we avoid overwhelming visitors with all 14 tools at once and suggested utilizing modern SaaS frameworks (Supabase, Pinecone). Decided to stay serverless to respect the "Zero-Data Storage" privacy constraint.
-**Files changed:** `app/page.js`, `app/api/analyze/route.js`, `task.md`, `implementation_plan.md`, `CLAUDE.md`, `GEMINI.md`.
-**Key decisions:**
-- **Progressive UI Wizard:** Rebuilt the home page to display a "Goal Selection Wizard" (Job Hunt, Immigration, Career Change, Full Power).
-- **Dynamic Optimization:** Altered the API so it dynamically filters the 14 prompts down to only what is needed (e.g., 3 targets for Immigration), vastly increasing API speed and lowering compute burn.
-**Next:** V2 Hackathon Scope is exactly 100% complete and deployed to Vercel edge via GitHub.
-
----
-
-### SESSION 13 — March 13, 2026
-**Discussed:** User reported 14 AI tools were completely blank ("Waiting for AI...") on the live Vercel site. Ran thorough debugs across all integration files.
-**Files changed:** `app/api/analyze/route.js`, `CLAUDE.md`, `GEMINI.md`.
-**Key decisions:**
-- **Hotfix:** Found that during the V2 transition, our SSE stream parsing algorithm regex (`/^data:\s*(.+)$/s`) and new line splitters were double-escaped as `\\s` and `\\n`, causing the Vercel edge to silently fail to match the incoming data stream and buffer infinitely. Ran an automated script to repair the syntax across the backend.
-**Next:** Pushing the hotfix to GitHub immediately.
-
----
-
-### SESSION 14 — March 13, 2026
-**Discussed:** User reported 14 AI tools were *still* returning empty responses after the regex patch, and demanded we revert the core engine back to the 100% reliable architecture used in Version 1 while keeping the V2 visual features.
-**Files changed:** `app/api/analyze/route.js`, `app/page.js`, `CLAUDE.md`, `GEMINI.md`.
-**Key decisions:**
-- **Architectural Revert:** Stripped out the Vercel Edge `ReadableStream` implementation. Re-implemented the V1 `callGemini` wrapper and robust JSON extraction algorithm (`extractJSON`) directly into the V2 API route.
-- **Frontend Alignment:** Reverted `handleAnalyze` in `app/page.js` to wait for and parse a single robust JSON payload (`await res.json()`) instead of breaking on corrupted stream chunks, guaranteeing 100% reliability on Vercel's standard serverless runtime.
-**Next:** Pushing the V1 stability restore to Vercel and awaiting user testing before beginning Phase 10 Splash Screen development.
-
----
-
-### SESSION 15 — March 13, 2026
-**Discussed:** User requested the removal of the Goal Selection Wizard, fixing the "Download All" button to provide full text, and improving the AI output formatting to look more professional (bold headers, bullet points, no asterisks). Further demanded that Gemini use the Master Guide directly to provide definitive answers rather than asking clarifying questions.
-**Files changed:** `app/page.js`, `app/api/analyze/route.js`, `CLAUDE.md`, `GEMINI.md`.
-**Key decisions:**
-- **UI Revert:** Stripped out the Goal Selection Wizard and Deep Dive sections, restoring the original flow where all 14 tools are processed at once.
-- **Output Formatting:** Built a `renderText` function in React to convert raw markdown tags (`#`, `**`, `*`) into structured CSS elements (Headers, Strong tags, Bullets) for a professional look.
-- **Export Fix:** Rewrote the Download Report function to output a clean `.txt` blob containing all generated cards.
-- **Backend Enforcement:** Aggressively updated the Gemini prompt to demand immediate, final answers utilizing the `MASTER_CAREER_REFERENCE.md` without asking follow-up questions.
-**Next:** Pushing formatting updates to GitHub/Vercel and awaiting user review.
-
----
-
-### SESSION 16 — March 14, 2026
-**Discussed:** User reviewed live app, found duplicate buttons/headings, UI not compact, all V2 features missing from screen. Requested full V2 rebuild locally before pushing.
-**Bug fixed:** Removed `tools:[{googleSearch:{}}]` from route.js — this was silently killing ALL Gemini API calls. Fixed prompt format hints (were double-bracketed, garbled).
-**Files changed:** `app/page.js` (FULL REWRITE), `app/api/analyze/route.js` (bug fix + prompt fix), `.gitignore` (added credentials.txt), `CLAUDE.md`, `GEMINI.md`
-**Build status:** `npm run build` — PASSED CLEAN, zero errors
-**Git push:** route.js fix pushed to GitHub/Vercel (commit 0bfcfcd)
-**page.js NOT YET pushed** — built locally, awaiting user green light
-
-**What is NOW in app/page.js (V2 COMPLETE):**
-- Splash screen — 1.8s auto-dismiss, click to skip, animated progress bar
-- Instant ATS Score — 100% client-side, useMemo, SVG circle ring, keyword badges, zero API
-- ATS algorithm — extracts keywords (80-word stop list removes filler English words), compares resume vs job, score = matched/total*100
-- 14 cards — resumeScore·recruiterPov·coverLetter·resumeRewrite·skillsGap·interviewPrep·introScripts·starStories·linkedinSummary·matchingJobs·visaPathways·thankYouEmail·salaryNegotiation·actionPlan
-- Per-card shimmer loading — overlay animation on cards not yet generated
-- Green dot indicator — shows which cards have results
-- RenderText component — # h1 blue, ## h2 gold, bullets pink •, numbered gold, **bold** inline, LABEL: gold, NO dangerouslySetInnerHTML
-- Share button — navigator.share with clipboard fallback
-- Download .txt — all 14 cards exported
-- Error display — red banner with × dismiss
-- Drag-drop file upload — both resume AND job description
-- Mobile responsive — all grids auto-fit/minmax, works at 360px
-- User info bar — location, OS, weather, usage dots
-- Welcome banner — AI layoffs context, career migration, visa mention
-- NO duplicate buttons or sections
-- Footer — "Built by Shahzad · Mississauga · Google Gemini AntiGravity · Free for All Humanity"
-
-**What is in app/api/analyze/route.js (V2 COMPLETE):**
-- googleSearch tool REMOVED (was breaking API)
-- Explicit 14-key prompt with detailed format templates
-- RAG system — reads MASTER_CAREER_REFERENCE.md, injects relevant sections by keyword triggers
-- Rate limiting — 5/hr per IP, backoff 1h/3h/6h
-- Security headers, input sanitization, request size guard
-- Models: gemini-flash-latest → gemini-flash-lite-latest (fallback)
-- deepDiveGoal removed (was unused)
-
-**TEST SCENARIO — paste these to test:**
-RESUME: "Sarah Ahmed, Software Engineer, Toronto. React, TypeScript, Node.js, Python, PostgreSQL, AWS, Docker. 4 years experience. Led team of 4, rebuilt customer portal in React/TypeScript, reduced load time 60%. BSc Computer Science UofT 2021."
-JOB: "Senior Full-Stack Engineer, FinTech startup Toronto. React, TypeScript, Node.js required. 3+ years. AWS preferred. $110,000-$140,000 CAD."
-
-**PENDING — needs user to approve then push:**
-- [ ] `git push origin main` — to deploy V2 page.js to Vercel
-- [ ] Folder reorganization: create v1/ and v2/ folders, move docs
-
-**Next action:** User says "green light" → push. User says changes needed → edit then push.
-
----
-
-### SESSION 17 — March 14, 2026
-**Discussed:** User tested live app. Issues found: (1) Local ATS showing English filler words like "reviewed","profile","thought","seen","huge" as missing keywords — stop list too small. (2) Missing keywords showed with red border only — user wants red background. (3) AI ATS Score 96/100 vs local 40/100 — confusing, needed explanation. (4) Hard+soft skills sections missing in skillsGap output. (5) No certifications with URLs. (6) No freelance/contract platform suggestions. (7) Scoring too generous — needs to be strict/brutally honest.
-**Files changed:** `app/page.js`, `app/api/analyze/route.js`
-**Build:** PASSED CLEAN
-**Git push:** commit 3694b66 — live on Vercel
-
-**Fixes applied:**
-- Stop words expanded from ~60 to ~200 words — filters ALL English narrative/HR jargon (reviewed, profile, thought, seen, huge, start-up, mission-driven, based, etc.)
-- Min keyword length changed from >2 to >3 chars (eliminates short noise)
-- Local score renamed: "Quick Word Match Score — Instant, No API"
-- Added explanation text: explains difference between local word match vs AI semantic scoring
-- Missing keywords: SOLID RED background (rgba 0.3) + bright red text — clearly distinguished
-- Matched keywords: SOLID GREEN background (rgba 0.22) — clearly distinguished
-- skillsGap prompt: now requires HARD SKILLS MATCHED + HARD SKILLS MISSING + SOFT SKILLS MATCHED + SOFT SKILLS MISSING + UPSKILLING ROADMAP with real URLs + CERTIFICATIONS with provider/cost/URL
-- matchingJobs prompt: now includes FREELANCE/CONTRACT section with: Upwork, Toptal, Flexiple, Gun.io, Contra, LinkedIn Services + industry-specific platforms
-- Scoring instruction: "Be brutally honest — no false hope. Most resumes score 40-75. Only 90+ if genuinely exceptional."
-- All AI cards now use ## headings and • bullets — proper formatting throughout
-- visaPathways: now includes official government URLs
-- recruiterPov: now includes WHAT WORKS WELL section + verdict (STRONG PASS/PASS/BORDERLINE/REJECT)
-
----
-
-### SESSION 18 — March 14, 2026
-**Discussed:** (1) Folder reorganization — v1/v2 structure. (2) Google Jobs live search integration. (3) User asked about competitor job sites, resume builders, AI career tools, algorithms, and mobile app dev for daughter.
-**Files changed:** `app/api/jobs/route.js` (NEW), `app/page.js`, `app/api/analyze/route.js`, `CLAUDE.md`, `GEMINI.md`
-**Build:** PASSED CLEAN
-**Git push:** commit cbe77eb — live on Vercel
-
-**Folder restructure DONE:**
-- Root: CLAUDE.md + GEMINI.md + Next.js files only
-- `v1/`: all legacy hackathon docs, scripts, archive, media, credentials
-- `v2/`: MASTER_CAREER_REFERENCE.md (active knowledge base)
-- route.js path updated: `process.cwd()/v2/MASTER_CAREER_REFERENCE.md`
-
-**Live Jobs feature DONE:**
-- New `/api/jobs/route.js` — calls Serper.dev Google Jobs API
-- Requires `SERPER_API_KEY` in `.env.local` AND Vercel env vars (free: 2,500 searches/month at serper.dev)
-- UI: job title + location (auto-filled from IP) + timeframe dropdown (24h/1w/2w/1m)
-- Returns jobs with: title, company, location, posted date, job type, salary, source, apply link
-- Rate limited: 10 searches/hr per IP
-
-**SERPER KEY SETUP (Shahzad must do once):**
-1. Go to https://serper.dev — sign up free
-2. Copy API key from dashboard
-3. Add to `.env.local`: `SERPER_API_KEY=your_key_here`
-4. Add to Vercel: Dashboard → Project → Settings → Environment Variables → add `SERPER_API_KEY`
-
-**Mobile app research (for daughter):**
-Best FREE path for student building Android + iOS for same app:
-- **Expo (React Native)** — BEST CHOICE: free, one codebase, calls existing Vercel API, beginner-friendly
-  - Install: `npm install -g expo-cli` → `npx create-expo-app JobCoachMobile`
-  - Just replaces web fetch with React Native components calling same `/api/analyze` URL
-  - Android: free to sideload; Google Play = $25 one-time
-  - iOS: needs Mac + Apple Developer = $99/year for App Store; OR use Expo Go app for testing
-- **Flutter** — also free/excellent but requires learning Dart
-- **PWA** — simplest: just add manifest.json + service worker to existing Next.js app → installs on any phone from browser. Zero cost. No app store needed.
-- **Thunkable / MIT App Inventor** — no-code, good for beginners, but limited API flexibility
-
-**Competitor landscape (summary):**
-- LinkedIn: AI job matching, Easy Apply, Skills assessments — but paid for full features
-- Indeed: Sponsored + organic, AI resume review — free basic
-- Zety/Novoresume/Rezi: Resume builders with ATS scan — $20-30/month
-- Jobscan: Resume vs JD keyword match — $50/month. We do this FREE.
-- Teal HQ: Free job tracker + AI resume — closest competitor
-- Final Round AI / Interview.io: AI interview practice — paid
-- Our edge: 14 tools FREE, no login, no storage, global (visa pathways), strict ATS
-
-**Algorithms behind platforms:**
-- ATS scoring: keyword density + section detection + format penalties (no tables, images)
-- LinkedIn: TF-IDF skills match + engagement signals (apply rate, click rate) + recency
-- Resume match: cosine similarity on BERT embeddings (semantic match, not just keywords)
-- Salary prediction: regression model on title + YoE + location + company size
-- Job recommendation: collaborative filtering (users like you applied to X) + content-based
-
-**Next actions:**
-- [ ] User must add SERPER_API_KEY to .env.local AND Vercel env vars
-- [ ] Daughter: start with Expo for mobile (free, React Native)
-- [ ] Consider PWA (add to home screen) as zero-cost mobile solution
-
----
-
-### SESSION 19 — March 14, 2026
-**Discussed:** User reviewed ATS algorithm document. 3 questions: (1) what's already done, (2) is Serper mandatory, (3) mobile app guide.
-**Files changed:** `app/api/analyze/route.js`, `CLAUDE.md`, `GEMINI.md`
-**Build:** PASSED | **Git:** commit b7cfa64 — live on Vercel
-
-**ATS Algorithm — what was missing, now added:**
-- resumeScore: Score interpretation thresholds (80%+=auto-shortlist, 60-79%=manual, 50-59%=borderline, <50%=auto-reject)
-- resumeScore: Knockout question identification (work auth, visa, licenses, location, years required)
-- resumeScore: Composite weighted breakdown (skills 40%, experience+recency 25%, soft 15%, education 10%, format 10%)
-- resumeScore: Recency decay (flags skills used 3+ years ago vs recently)
-- resumeScore: Achievement density audit (count quantified bullets, rewrites weak ones)
-- resumeScore: Resume anatomy check (length, single column, no graphics, file type, standard headings)
-- recruiterPov: 6-second first impression simulation
-- recruiterPov: LinkedIn cross-check warning (date/title consistency)
-- recruiterPov: Engagement signals coaching (respond fast, update profile, apply within 48h)
-
-**Serper API — answers:**
-- YES mandatory for Live Jobs feature. NO for the 14 AI cards (those use Gemini only)
-- It is a SEPARATE service, SEPARATE company, SEPARATE key from Gemini
-- The Gemini key (AIzaSy...) is Google AI Studio ONLY — stays there forever
-- Serper is serper.dev — free 2,500/month — different company entirely
-- Setup: serper.dev → sign up → copy key → add SERPER_API_KEY to .env.local AND Vercel env vars
-- If user skips Serper: Live Jobs section shows error message, everything else works fine
-
-**Mobile App — complete guide:**
-SAME infrastructure — mobile app calls same Vercel URLs. No new AI key needed.
-
-OPTION A — PWA (easiest, free, zero app store):
-- Add manifest.json to Next.js → users tap "Add to Home Screen" → looks like native app
-- Works on Android + iOS. $0 cost. Ready in 1 hour.
-
-OPTION B — Expo React Native (best for real app):
-```bash
-npm install -g expo-cli
-npx create-expo-app JobCoachMobile
-cd JobCoachMobile
-npx expo start
-```
-- Replace web fetch with same fetch() calls to same Vercel API URLs
-- Test FREE with Expo Go app on any phone (scan QR code)
-- Android publish: Google Play $25 one-time
-- iOS publish: Apple Developer $99/year (needs Mac)
-- Same GEMINI_API_KEY stays on Vercel server — mobile app never sees it (security preserved)
-- Same Serper key if live jobs on mobile
-
-OPTION C — Flutter (also free, Google-backed, excellent):
-- Language: Dart (similar to Java/Swift)
-- Harder than Expo but better performance
-- Daughter recommendation: Start with Expo if she knows JavaScript/React. Flutter if starting from zero.
-
-**Next actions:**
-- [ ] Shahzad: add SERPER_API_KEY to .env.local + Vercel
-- [ ] For daughter mobile: decide PWA (instant) or Expo (full app)
-
----
-*Last Updated: March 14, 2026 | Both CLAUDE.md and GEMINI.md must stay identical*
+*Last Updated: March 14, 2026 | CLAUDE.md = GEMINI.md always*
