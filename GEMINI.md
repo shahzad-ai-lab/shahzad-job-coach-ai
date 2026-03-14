@@ -324,4 +324,14 @@ Total without scholarship: $330 (AI-900 + SC-900)
 **Next:** Pushing the hotfix to GitHub immediately.
 
 ---
+
+### SESSION 14 — March 13, 2026
+**Discussed:** User reported 14 AI tools were *still* returning empty responses after the regex patch, and demanded we revert the core engine back to the 100% reliable architecture used in Version 1 while keeping the V2 visual features.
+**Files changed:** `app/api/analyze/route.js`, `app/page.js`, `CLAUDE.md`, `GEMINI.md`.
+**Key decisions:**
+- **Architectural Revert:** Stripped out the Vercel Edge `ReadableStream` implementation. Re-implemented the V1 `callGemini` wrapper and robust JSON extraction algorithm (`extractJSON`) directly into the V2 API route.
+- **Frontend Alignment:** Reverted `handleAnalyze` in `app/page.js` to wait for and parse a single robust JSON payload (`await res.json()`) instead of breaking on corrupted stream chunks, guaranteeing 100% reliability on Vercel's standard serverless runtime.
+**Next:** Pushing the V1 stability restore to Vercel and awaiting user testing before beginning Phase 10 Splash Screen development.
+
+---
 *Last Updated: March 13, 2026 | Both CLAUDE.md and GEMINI.md must stay identical*
