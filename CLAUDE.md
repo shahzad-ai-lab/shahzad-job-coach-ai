@@ -333,4 +333,16 @@ Total without scholarship: $330 (AI-900 + SC-900)
 **Next:** Pushing the V1 stability restore to Vercel and awaiting user testing before beginning Phase 10 Splash Screen development.
 
 ---
+
+### SESSION 15 — March 13, 2026
+**Discussed:** User requested the removal of the Goal Selection Wizard, fixing the "Download All" button to provide full text, and improving the AI output formatting to look more professional (bold headers, bullet points, no asterisks). Further demanded that Gemini use the Master Guide directly to provide definitive answers rather than asking clarifying questions.
+**Files changed:** `app/page.js`, `app/api/analyze/route.js`, `CLAUDE.md`, `GEMINI.md`.
+**Key decisions:**
+- **UI Revert:** Stripped out the Goal Selection Wizard and Deep Dive sections, restoring the original flow where all 14 tools are processed at once.
+- **Output Formatting:** Built a `renderText` function in React to convert raw markdown tags (`#`, `**`, `*`) into structured CSS elements (Headers, Strong tags, Bullets) for a professional look.
+- **Export Fix:** Rewrote the Download Report function to output a clean `.txt` blob containing all generated cards.
+- **Backend Enforcement:** Aggressively updated the Gemini prompt to demand immediate, final answers utilizing the `MASTER_CAREER_REFERENCE.md` without asking follow-up questions.
+**Next:** Pushing formatting updates to GitHub/Vercel and awaiting user review.
+
+---
 *Last Updated: March 13, 2026 | Both CLAUDE.md and GEMINI.md must stay identical*

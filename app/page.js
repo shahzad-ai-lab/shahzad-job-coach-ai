@@ -73,14 +73,6 @@ const CARDS = [
   { key: 'actionPlan',        title: '30-60-90 Day Plan',   icon: '🗓️',  g: 'linear-gradient(135deg,#FF416C,#FF4B2B)' },
 ]
 
-const JOURNEYS = [
-  { id: 'job_search', icon: '🚀', title: 'Find a Job Fast', desc: 'Optimize your resume and prep for interviews.', keys: ['resumeScore', 'resumeRewrite', 'coverLetter', 'recruiterPov', 'matchingJobs'] },
-  { id: 'relocation', icon: '🌍', title: 'Immigration Path', desc: 'Explore global work visas and action plans.', keys: ['visaPathways', 'actionPlan', 'matchingJobs'] },
-  { id: 'career_change', icon: '🔄', title: 'Career Pivot', desc: 'Identify skill gaps and rebrand yourself.', keys: ['skillsGap', 'resumeRewrite', 'linkedinSummary', 'introScripts'] },
-  { id: 'interview', icon: '🎤', title: 'Ace the Interview', desc: 'Master STAR stories and salary negotiations.', keys: ['interviewPrep', 'starStories', 'salaryNegotiation', 'thankYouEmail'] },
-  { id: 'full_power', icon: '⚡', title: 'Full AI Power', desc: 'Run all 14 elite tools simultaneously (Slowest).', keys: CARDS.map(c => c.key) },
-]
-
 export default function Home() {
   const [resumeText, setResumeText]   = useState('')
   const [jobPosting, setJobPosting]   = useState('')
@@ -98,8 +90,6 @@ export default function Home() {
   const [userInfo, setUserInfo]       = useState(null)
   const [weather, setWeather]         = useState('')
   const [remaining, setRemaining]     = useState(CLIENT_HOURLY_LIMIT)
-  const [deepDiveGoal, setDeepDiveGoal] = useState('')
-  const [activeJourney, setActiveJourney] = useState(null)
   const fileRef    = useRef(null)
   const jobFileRef = useRef(null)
 
@@ -181,20 +171,19 @@ export default function Home() {
   async function handleAnalyze() {
     if (!resumeText.trim()) { setError('Please add your resume text or upload a file.'); return }
     if (!jobPosting.trim()) { setError('Please paste the job description.'); return }
-    if (!activeJourney) { setError('Please select a goal journey first.'); return }
 
     // Client-side rate limit check
     const rl = checkAndIncrementRateLimit()
     if (!rl.allowed) { setError(rl.message); return }
     setError(''); setLoading(true); setResults({}); setActiveCard(null)
     
-    const requestedKeys = JOURNEYS.find(j => j.id === activeJourney)?.keys || CARDS.map(c => c.key)
+    const requestedKeys = CARDS.map(c => c.key)
     setActiveCard(requestedKeys[0])
 
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeText, jobPosting, deepDiveGoal, requestedKeys }),
+        body: JSON.stringify({ resumeText, jobPosting, requestedKeys }),
       })
       if (!res.ok) {
         let msg = 'Error'
@@ -216,6 +205,44 @@ export default function Home() {
 
   function copyToClipboard(text, key) {
     navigator.clipboard.writeText(text); setCopied(key); setTimeout(() => setCopied(''), 2000)
+  }
+
+  function downloadReport() {
+    let content = "JOB COACH AI 2026 - COMPREHENSIVE CAREER REPORT\n"
+    content += "=================================================\n\n"
+    CARDS.forEach(card => {
+      if (results && results[card.key]) {
+        content += `--- ${card.title.toUpperCase()} ---\n`
+        content += results[card.key] + "\n\n"
+      }
+    })
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'Job_Coach_AI_Report.txt'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  function renderText(text) {
+    if (!text) return null;
+    return text.split('\n').map((line, i) => {
+      // Handle # headings
+      if (line.trim().startsWith('#')) {
+        const cleanLine = line.replace(/^#+\s*/, '')
+                            .replace(/\*/g, '') // remove any bold marks inside headings
+        return <h4 key={i} style={{ margin: '16px 0 8px', color: '#FACF39', fontSize: 18, fontWeight: 800 }}>{cleanLine}</h4>
+      }
+      
+      // Clean up lists (convert * or - to bullet points, strip bold marks entirely)
+      const cleanLine = line.replace(/^[\*\-]\s/, '• ')
+                            .replace(/\*\*/g, '') // remove all double asterisks
+                            .replace(/\*/g, '')   // remove any leftover single asterisks
+                            .replace(/#/g, '')    // remove stray hashes
+      
+      return <div key={i} style={{ minHeight: 20, marginBottom: 4 }}>{cleanLine}</div>
+    })
   }
 
   const s = {
@@ -337,57 +364,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Journey Selection Wizard */}
-        <div style={{ maxWidth: 800, margin: '0 auto 40px', padding: '24px', background: 'rgba(255,0,153,0.05)', borderRadius: '24px', border: '1px solid rgba(255,0,153,0.15)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
-          <h3 style={{ margin: '0 0 8px', fontSize: 24, fontWeight: 800, textAlign: 'center', background: 'linear-gradient(135deg,#FF0099,#FACF39)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            Choose Your Goal Today
-          </h3>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, textAlign: 'center', marginBottom: 24 }}>
-            We customize the AI tools explicitly to match your objective.
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
-            {JOURNEYS.map(j => {
-              const isActive = activeJourney === j.id
-              return (
-                <button
-                  key={j.id}
-                  onClick={() => setActiveJourney(j.id)}
-                  style={{
-                    background: isActive ? 'linear-gradient(135deg,rgba(0,198,255,0.2),rgba(0,114,255,0.2))' : 'rgba(255,255,255,0.05)',
-                    border: `1px solid ${isActive ? 'rgba(0,198,255,0.6)' : 'rgba(255,255,255,0.1)'}`,
-                    borderRadius: 16, padding: '16px 12px', cursor: 'pointer', textAlign: 'left',
-                    transition: 'all 0.2s', boxShadow: isActive ? '0 0 20px rgba(0,198,255,0.3)' : 'none',
-                    transform: isActive ? 'translateY(-2px)' : 'none'
-                  }}
-                >
-                  <div style={{ fontSize: 28, marginBottom: 8 }}>{j.icon}</div>
-                  <div style={{ color: '#fff', fontSize: 15, fontWeight: 700, marginBottom: 4 }}>{j.title}</div>
-                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, lineHeight: 1.4 }}>{j.desc}</div>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Input Grid / Deep Dive (Only visible if a journey is selected) */}
-        {activeJourney && (
-          <div style={{ animation: 'fade-in 0.5s ease' }}>
-            {/* Deep Dive Questionnaire */}
-            <div style={{ maxWidth: 800, margin: '0 auto 24px', padding: '24px', background: 'rgba(255,255,255,0.04)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <h3 style={{ margin: '0 0 12px', fontSize: 18, fontWeight: 700, color: '#FACF39', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>🎯</span> Pre-Analysis Deep Dive
-              </h3>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 16 }}>
-                Help the AI understand your specific situation for hyper-personalized advice (Optional).
-              </p>
-              <textarea 
-                value={deepDiveGoal} 
-                onChange={e => setDeepDiveGoal(e.target.value)} 
-                placeholder="E.g., I am a single mother re-entering the workforce after 5 years, seeking remote work in tech. Or: I need an H1-B visa sponsor in the USA." 
-                style={{ ...s.textarea, height: 80 }} 
-              />
-            </div>
-
+        {/* Input Grid / Deep Dive */}
+        <div style={{ animation: 'fade-in 0.5s ease' }}>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))', gap:20, marginBottom:20 }}>
 
               {/* Resume Upload */}
@@ -490,7 +468,7 @@ export default function Home() {
                 onMouseLeave={e => { e.currentTarget.style.transform='scale(1)'; e.currentTarget.style.boxShadow= loading ? 'none' : '0 8px 40px rgba(250,207,57,0.5)' }}
               >
                 <span style={{ fontSize:26 }}>{loading ? '✨' : '🚀'}</span>
-                {loading ? 'Analyzing with AI...' : `Generate ${JOURNEYS.find(j=>j.id===activeJourney)?.keys.length || 14} Results`}
+                {loading ? 'Analyzing with AI...' : `Generate 14 Results`}
               </button>
               {loading && (
                 <div style={{ marginTop:20 }}>
@@ -504,7 +482,6 @@ export default function Home() {
               )}
             </div>
           </div>
-        )}
 
         {/* Results */}
         {results && (
@@ -515,7 +492,7 @@ export default function Home() {
               </h2>
               {Object.keys(results).length > 0 && (
                 <button
-                  onClick={() => window.print()}
+                  onClick={downloadReport}
                   className="hide-print"
                   style={{
                     padding: '8px 16px', borderRadius: 8, background: 'linear-gradient(135deg,#00C6FF,#0072FF)', border: 'none', color: '#fff', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,198,255,0.4)', transition: 'all 0.2s'
@@ -523,7 +500,7 @@ export default function Home() {
                   onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
                   onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
                 >
-                  📥 Download All (PDF)
+                  📥 Download All (.txt)
                 </button>
               )}
             </div>
@@ -588,27 +565,13 @@ export default function Home() {
                     </button>
                   </div>
                   <div style={{ background:'rgba(0,0,0,0.4)', borderRadius:16, padding:24, fontSize:15, whiteSpace:'pre-wrap', lineHeight:1.8, color:'rgba(255,255,255,0.95)', maxHeight:600, overflowY:'auto', border:'1px solid rgba(255,255,255,0.1)', boxShadow:'inset 0 4px 20px rgba(0,0,0,0.5)' }}>
-                    {results[activeCard] || <span style={{color:'rgba(255,255,255,0.25)', fontStyle:'italic'}}>Waiting for AI to generate {card.title}...</span>}
+                    {renderText(results[activeCard]) || <span style={{color:'rgba(255,255,255,0.25)', fontStyle:'italic'}}>Waiting for AI to generate {card.title}...</span>}
                     {loading && (!results[activeCard] || Object.keys(results).length < 14) && <span className="typing-cursor"></span>}
                   </div>
                 </div>
               )
             })()}
 
-            {/* Print-only massive dump of all results */}
-            <div className="print-all-results" style={{ display: 'none' }}>
-               <h1 style={{ textAlign: 'center', marginBottom: '2rem', display: 'block !important' }}>Job Coach AI - Comprehensive Career Report</h1>
-               {CARDS.map(card => {
-                 if (!results[card.key]) return null;
-                 return (
-                   <div key={`print-${card.key}`} className="print-section" style={{ display: 'block !important' }}>
-                     <h3 style={{ display: 'block !important' }}>{card.icon} {card.title}</h3>
-                     <pre style={{ display: 'block !important' }}>{results[card.key]}</pre>
-                   </div>
-                 )
-               })}
-            </div>
-            
           </div>
         )}
       </div>
@@ -680,15 +643,6 @@ export default function Home() {
         @keyframes typing { 0%,100%{opacity:1} 50%{opacity:0} }
         .typing-cursor::after { content: '▋'; animation: typing 1s infinite steps(1); color: #00AEEF; margin-left: 6px; }
         button:hover .shine { left: 100%; transition: 0.6s; }
-        @media print {
-          body { background: white !important; color: black !important; padding: 0 !important; }
-          .hide-print { display: none !important; }
-          .print-all-results { display: block !important; }
-          .print-section { page-break-inside: avoid; margin-bottom: 2rem; border-bottom: 1px solid #ccc; padding-bottom: 1rem; }
-          .print-section h3 { color: #000; font-size: 1.2rem; border-bottom: 2px solid #000; padding-bottom: 0.5rem; margin-bottom: 1rem; }
-          .print-section pre { white-space: pre-wrap; font-size: 11pt; line-height: 1.5; font-family: sans-serif; }
-          div, header, p { display: none !important; } /* Hide everything by default */
-        }
         *{box-sizing:border-box}
         textarea::placeholder{color:rgba(255,255,255,0.25)}
         ::-webkit-scrollbar{width:6px}

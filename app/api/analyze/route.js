@@ -139,7 +139,6 @@ export async function POST(request) {
     const body = await request.json()
     resumeText = truncate(sanitize(body.resumeText || ''), MAX_RESUME)
     jobPosting = truncate(sanitize(body.jobPosting || ''), MAX_JOB)
-    deepDiveGoal = truncate(sanitize(body.deepDiveGoal || ''), 1000)
     requestedKeys = Array.isArray(body.requestedKeys) && body.requestedKeys.length > 0 ? body.requestedKeys : null
   } catch {
     return Response.json({ error: 'Invalid request.' }, { status: 400, headers: h })
@@ -159,7 +158,7 @@ export async function POST(request) {
       const sections = fullText.split(/(?=^## )/m)
       
       let relevantSections = [sections[0]] 
-      const combinedInput = (resumeText + ' ' + jobPosting + ' ' + deepDiveGoal + ' ' + (requestedKeys || []).join(' ')).toLowerCase()
+      const combinedInput = (resumeText + ' ' + jobPosting + ' ' + (requestedKeys || []).join(' ')).toLowerCase()
       
       const triggers = [
         { k: ['visa', 'immigrat', 'relocat', 'move', 'country', 'sponsor', 'visapathways'], match: 'VISA' },
@@ -217,13 +216,10 @@ export async function POST(request) {
   const keysToUse = requestedKeys || Object.keys(ALL_PROMPT_SECTIONS)
   const jsonFormatHint = keysToUse.map(k => `"${k}": "[${ALL_PROMPT_SECTIONS[k]}]"`).join(',\n')
 
-  const prompt = `You are an expert career coach and ATS specialist. 
-Analyze the resume and job posting carefully in the context of global best practices.
-If you lack specific details about a country's market context, visas, or salaries, USE THE GOOGLE SEARCH TOOL to find live data and augment your answer.
+  const prompt = `You are an expert career coach and ATS specialist powered by the Google Gemini AntiGravity team.
+Analyze the resume and job posting carefully using the comprehensive global knowledge provided below.
 
-CRITICAL USER CONTEXT (DEEP DIVE GOAL):
-The user has provided this specific goal/context for you. You MUST prioritize tailoring your analysis to solve this specific goal:
-"${deepDiveGoal || 'No specific deep dive goal provided. Provide standard excellent coaching.'}"
+CRITICAL INSTRUCTION: Analyze the text and generate a complete, expert-level response instantly. Do NOT ask clarifying questions. Provide a final formatted result. The user expects all formatting to be perfect headers using # or lists. Do not use * asterisks for bolding, just rely on raw structure since our UI parses it. Always provide max features and recommendations using the absolute maximum of your knowledge capability.
 
 Use this proprietary career knowledge to aid your analysis:
 ${masterGuide}
@@ -237,7 +233,7 @@ JOB POSTING:
 ${jobPosting}
 
 ---
-Return ONLY raw JSON with exactly these keys: ${JSON.stringify(keysToUse)}. No markdown around the JSON. Fill every field with massive, beautifully formatted text. Use \n characters for newlines inside the JSON strings.
+Return ONLY raw JSON with exactly these keys: ${JSON.stringify(keysToUse)}. No markdown around the JSON. Fill every field with massive, beautifully formatted text. Use \\n characters for newlines inside the JSON strings.
 
 {
 ${jsonFormatHint}
