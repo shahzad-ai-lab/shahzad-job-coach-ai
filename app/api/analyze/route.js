@@ -133,14 +133,14 @@ export async function POST(request) {
     return Response.json({ error: 'Request too large.' }, { status: 413, headers: h })
   }
 
-  let resumeText, jobPosting, requestedKeys
+  let resumeText, jobPosting, requestedKeys, langInstruction = ''
   try {
     const body = await request.json()
     resumeText = truncate(sanitize(body.resumeText || ''), MAX_RESUME)
     jobPosting = truncate(sanitize(body.jobPosting || ''), MAX_JOB)
     requestedKeys = Array.isArray(body.requestedKeys) && body.requestedKeys.length > 0 ? body.requestedKeys : null
     const lang = typeof body.lang === 'string' && body.lang.length <= 5 ? body.lang : 'en'
-    const langInstruction = lang !== 'en' ? `\nIMPORTANT: Respond in the user's language (detected: ${lang}). Keep all JSON keys in English but write all VALUES in ${lang}.\n` : ''
+    langInstruction = lang !== 'en' ? `\nIMPORTANT: Respond in the user's language (detected: ${lang}). Keep all JSON keys in English but write all VALUES in ${lang}.\n` : ''
   } catch {
     return Response.json({ error: 'Invalid request.' }, { status: 400, headers: h })
   }
