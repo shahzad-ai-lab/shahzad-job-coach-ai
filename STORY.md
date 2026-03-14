@@ -2,10 +2,9 @@
 **Author:** Shahzad Muhammad
 **AI Pair Programmer:** Anthropic Claude Sonnet 4.6 (Claude Code)
 **Hackathon:** AI Hackathon March 2026
-**Prize:** $6,000 USD
 **Deadline:** Sunday March 8, 2026 — 12:00 PM EST
 **Live URL:** https://shahzad-job-coach-ai.vercel.app
-**GitHub:** https://github.com/shahzad-ai-lab/shahzad-job-coach-ai
+**GitHub:** TBA
 
 ---
 
@@ -53,7 +52,7 @@ Job Coach AI 2026 is a free, AI-powered career coaching web application. Upload 
 **Timestamp:** March 6–7, 2026
 
 **User Input:**
-"Build a Job Coach AI app for hackathon deadline Sunday March 8 noon EST prize $6000 stack Next.js Google Gemini Vercel GitHub"
+"Build a Job Coach AI app for hackathon deadline Sunday March 8 noon EST prize $ stack Next.js Google Gemini Vercel GitHub"
 
 **Claude Actions:**
 1. Created GitHub account: `shahzad-ai-lab`
@@ -401,4 +400,100 @@ Job Coach AI 2026 is an AI-assisted tool for career guidance purposes only. The 
 
 ---
 
-*Built with love by Shahzad · Powered by Anthropic Claude Sonnet 4.6 + Google Gemini AI · March 2026*
+### Session 6 — Post-Hackathon: Master Reference Mega-Expansion
+**Timestamp:** March 11, 2026
+
+**User Input:**
+"extend MASTER_CAREER_REFERENCE.md — add cost of living, tax by country, countries welcoming expats, skills shortage lists all countries, lifelong learning, dying jobs/industries, free education worldwide, power search index — keep compacting to .md so no work is lost"
+
+**Changes Made:**
+
+**MASTER_CAREER_REFERENCE.md expanded: 5,406 → 6,442 lines | 324KB → 400KB | Version 1.0 → 2.0**
+
+**8 new sections added (§22–§29):**
+
+**§22 — Global Cost of Living Index 2026**
+- 50+ countries with full data: COL index, rent index, monthly budget
+- Top 10 most expensive cities globally (Zurich → Copenhagen)
+- Top 10 most affordable cities for expat professionals (Medellín → Porto)
+- Monthly budget breakdown by region (Western Europe / SE Asia / LatAm / Gulf / Eastern Europe)
+
+**§23 — Global Tax Guide 2026**
+- 70+ countries: personal income tax top rates, social security
+- Corporate tax rates by country (Hungary 9% → Brazil 34%)
+- VAT/GST rates worldwide
+- 18 special tax regimes for expats (Portugal NHR/IFICI, Spain Beckham Law, Netherlands 30% Ruling, UAE 0%, Italy flat tax, etc.)
+
+**§24 — Expatriate Welcome Index**
+- Tier 1: Most open countries (Canada, Germany, UAE, Portugal, NZ, Australia, Malta, Estonia, Georgia, Singapore, Netherlands, Ireland, Denmark, Thailand)
+- Tier 2: Moderately open (Japan, South Korea, Taiwan, France, Sweden, Saudi Arabia, Bahrain)
+- Tier 3: More restrictive (USA H-1B lottery, China, Brazil, India)
+- Complete digital nomad visa list: 30+ countries with income requirements, duration, key benefits
+
+**§25 — Global Skills Shortage List A-Z**
+- Australia: detailed shortage by sector (healthcare, construction, IT, education, mining, aged care)
+- Canada: NOC codes with shortage occupations and provincial hotspots
+- UK: Shortage Occupation List by sector
+- Germany: Engpassberufe by sector
+- USA: BLS high-demand occupations with growth projections
+- New Zealand: Green List Tier 1 and Tier 2 complete
+- Singapore: EP/ONE Pass target sectors
+- UAE: Golden Visa target professions
+- Japan: All 16 SSW sectors detailed
+- Global Cross-Country Master Index: 18 shortage occupations mapped to all countries + visa routes
+
+**§26 — Lifelong Learning Framework**
+- T-shaped skill model explained with visual
+- 7 domains of lifelong learning (Digital/AI, Communication, Critical Thinking, EQ, Financial Literacy, Health/Cognitive, Networking)
+- 55 soft skills complete master list
+- Cross-industry hard skills with highest ROI
+- Learning resource tiers: Free (YouTube/Khan/MIT) → Low Cost → Mid → Certifications → Low-Cost Degrees
+- The formula: 1 hour/day = 365 hours/year = 9 work-weeks professional development
+
+**§27 — What Will Be Obsolete: Dying Jobs/Industries/Skills 2026–2076**
+- 18 jobs being eliminated by AI/automation (data entry 95% → basic CS rep 80% → cashier 70%)
+- 15 industries in structural decline (coal → print media → physical retail → ICE manufacturing)
+- Skills to avoid investing in vs. skills safe from automation
+- Career pivot framework (5-step: diagnose → map adjacent → credentials → network → adjacent possible)
+
+**§28 — Global Education Pathways**
+- Countries with tuition-free universities (Germany, Norway, France, Brazil, Argentina, etc.)
+- 18 low-cost accredited degree programs worldwide ($60/credit to $22K full degree)
+- 18 fully funded scholarships (Chevening, DAAD, Fulbright, Gates Cambridge, Rhodes, MEXT, etc.)
+- 15 free/low-cost vocational training programs (TAFE, Dual System Germany, AWS re/Start, Google Certificates)
+
+**§29 — Power Search Index**
+- Quick search by country (18 major destination countries with all data in one row)
+- Quick search by profession (18 professions with best countries, salary, visa, shortage level)
+- Quick search by visa type (12 visa categories with processing speed and PR pathway)
+- Quick search by income target ($15K to $300K+ pathways)
+- Quick search by skill A–Z (35 skill categories mapped to sections + best markets)
+
+**Added 19 new sections (§30–§48):**
+- §30–§48 completely documented covering refugee resources, credential recognition, workplace rights, women, youth, relocation, financial planning, cultural intellligence, language learning, salary transparency, AI tools, mental health, entrepreneurship, climate risk, side hustles, geopolitical risk, and disability accommodations.
+
+**SESSION_LOG.md created & updated:**
+- Complete session continuity file: all user inputs + Claude outputs recorded
+- What to do next (priority list)
+
+---
+
+### Session 7 & 8 — Single Master Blueprints & V2 Kickoff
+**Timestamp:** March 13, 2026
+
+**User Input:**
+"are you able to read my project what is your limit tokens i need you to work help me prepare file i want you to read all .md files then merge into claude.md and gemini.md and our convesration keep continue save it there only i need to push to my github but how will i implement this is my 2nd round of version two i want to release it... any brilliant idea to run this free with facilitate all humanity to use this tools"
+
+**Changes Made:**
+- Reverified `credentials.txt` was in `.gitignore` (safeguarded).
+- Updated `PROGRESS.md` and `STORY.md` to cleanly align all the 12-card, V1 submission, and Master Reference v4.0 completion details.
+- Prepared the blueprint updates in `CLAUDE.md` and `GEMINI.md`.
+- Scheduled a push to GitHub via `push.ps1`.
+- Initiated V2 Planning with a focus on:
+  1. **Purpose:** Facilitating humanity with premium career tooling.
+  2. **Performance:** Super-fast loading Next.js edge architecture.
+  3. **Aesthetics:** Vibrant, highly attractive, dark-mode gradient UI to impress the globe.
+
+---
+
+*Built with love by Shahzad · Powered by Google Gemini AI · March 2026*
