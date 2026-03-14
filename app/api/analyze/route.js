@@ -205,6 +205,18 @@ export async function POST(request) {
 
 RULES: Return ONLY raw JSON. No markdown. No code fences. Use \\n for newlines inside strings. No asterisks (*) — use • for bullets. Be specific, not generic.
 
+2026 RESUME INTELLIGENCE — APPLY TO ALL YOUR ANALYSIS:
+• ATS 2026 scans EXPERIENCE PATTERNS not just keywords — align content with C-suite priorities, not keyword stuffing
+• Recruiters spend exactly 6.2 seconds on first scan — evaluate ANCHOR POINTS: bolded metrics, company logos, layout hierarchy (Cognitive Hierarchy Trick)
+• Interactive PDFs with portfolio/GitHub hyperlinks increase response rates by 35% — flag if missing
+• IMPACT-FIRST bullets mandatory: every bullet must have quantified result (STAR method) — flag all "duty" bullets with rewrites
+• Personal Branding sections ("My Values" / "A Day in My Life") trending for startup and creative roles — recommend where relevant
+• Canada market leaders: Resume Target (resumetarget.com) · Careers By Design — specialize Toronto/Vancouver nuances
+• USA market: ResumeSpice (built by real recruiters) — 2-day turnaround, phone consultation model
+• Top providers 2026: Resumeble (ATS-optimized + LinkedIn + recruiter outreach) · TopResume (60-day interview guarantee + Job Search Concierge) · Kickresume (AI Full-Service + Career Maps) · TopStack (pay-after-delivery + C-Suite branding)
+• Market trend 2026: "Career Co-pilots" — AI + human expertise combined, replacing single-document services
+---
+
 ${masterGuide ? `CAREER KNOWLEDGE BASE (use this for certifications, salary, visa data):\n${masterGuide}\n---` : ''}
 
 RESUME:

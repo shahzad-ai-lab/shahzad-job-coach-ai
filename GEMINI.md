@@ -10,31 +10,30 @@
 | Mission | Free AI tools for underserved humans globally |
 | Live | https://shahzad-job-coach-ai.vercel.app |
 | GitHub | https://github.com/shahzad-ai-lab/shahzad-job-coach-ai |
-| Vercel | https://vercel.com/shahzadms-projects/shahzad-job-coach-ai |
 | Stack | Next.js 14 + Gemini AI + Serper.dev + Vercel + Tailwind |
 | H1 | $6,000 hackathon — SUBMITTED Mar 8 ✓ |
-| H2 | Deploy Mar 16 — MVP COMPLETE |
-| Status | 16 cards + chatbot + PWA + multilang + live jobs — LIVE |
+| Status | 17 cards + chatbot + PWA + multilang + live jobs + country hero — LIVE |
 | Rules | Free · No login · Zero storage · Bold vibrant gradients always |
 
 ---
 
-## API KEYS (2 separate — both needed)
-| Var | Service | Get it | Add to |
-|-----|---------|--------|--------|
-| `GEMINI_API_KEY` | Google AI Studio | aistudio.google.com | .env.local + Vercel |
-| `SERPER_API_KEY` | Serper.dev | serper.dev (free 2500/mo, no card) | .env.local + Vercel |
+## API KEYS
+| Var | Service | Get it |
+|-----|---------|--------|
+| `GEMINI_API_KEY` | Google AI Studio | aistudio.google.com |
+| `SERPER_API_KEY` | Serper.dev | serper.dev (free 2500/mo, no card) |
+Both → `.env.local` + Vercel environment variables
 
 ---
 
 ## FOLDER STRUCTURE
 ```
 root/  CLAUDE.md · GEMINI.md · .env.local · package.json · next.config.js · tailwind/postcss
-app/   page.js(~1150L) · layout.js · globals.css
-       api/analyze/route.js · api/chat/route.js · api/jobs/route.js · api/upload/route.js · api/test/route.js
-public/ manifest.json · [need: icon-192.png + icon-512.png]
+app/   page.js(~1570L) · layout.js · globals.css
+       api/analyze/route.js(~290L) · api/chat/route.js · api/jobs/route.js · api/upload/route.js · api/test/route.js
+public/ manifest.json · [NEED: icon-192.png + icon-512.png for stores]
 v1/    legacy docs, scripts, archive, media, credentials
-v2/    MASTER_CAREER_REFERENCE.md (640KB, 48 sections)
+v2/    MASTER_CAREER_REFERENCE.md (640KB, 48 sections — read with offset+limit only)
 ```
 
 ---
@@ -44,78 +43,98 @@ model: `gemini-flash-latest` → fallback `gemini-flash-lite-latest` | tokens: 8
 
 ---
 
-## 16 AI CARDS + EXTRAS
-| # | key | Title |
-|---|-----|-------|
-| 1 | resumeScore | ATS Score — score + thresholds + knockouts + composite weights + density + anatomy |
-| 2 | recruiterPov | Recruiter POV — 6-sec impression + red flags + LinkedIn cross-check + engagement |
-| 3 | coverLetter | Cover Letter |
-| 4 | resumeRewrite | Resume Rewrite |
-| 5 | skillsGap | Skills Gap — hard+soft matched/missing + certs with URLs |
-| 6 | interviewPrep | Interview Prep — 5 Q&A + questions to ask |
-| 7 | starStories | STAR Stories |
-| 8 | linkedinSummary | LinkedIn About |
-| 9 | introScripts | Intro Scripts 1/2/3 min |
-| 10 | matchingJobs | Matching Jobs + freelance platforms |
-| 11 | visaPathways | Global Visas — official govt URLs |
-| 12 | thankYouEmail | Thank You Email |
-| 13 | salaryNegotiation | Salary Strategy |
-| 14 | actionPlan | 30-60-90 Plan |
-| 15 | coldOutreach | Cold Outreach — LinkedIn DM + cold email + follow-up |
-| 16 | careerPivot | Career Pivot — pivot score + 3 adjacent roles + 90-day plan |
-| + | liveJobs | Live Jobs (Serper) — fresh postings, apply links |
-| + | chatbot | Career Chatbot — floating 💬, career-locked, 15/hr, suggested Qs |
+## 17 AI CARDS + EXTRAS
+| # | key | What it does |
+|---|-----|-------------|
+| 1 | resumeScore | ATS score + thresholds (80+=shortlist, <50=reject) + knockouts + composite weights + achievement density + anatomy check + recency decay |
+| 2 | recruiterPov | 6.2-sec impression + red flags + LinkedIn cross-check + engagement signals |
+| 3 | coverLetter | 3-para targeted cover letter |
+| 4 | resumeRewrite | Full rewrite with impact-first STAR bullets |
+| 5 | skillsGap | Hard+soft matched/missing + certs with URLs + training links |
+| 6 | interviewPrep | 5 Q&A + questions to ask |
+| 7 | starStories | 3 STAR behavioral stories |
+| 8 | linkedinSummary | LinkedIn About optimized |
+| 9 | introScripts | 1/2/3-min intro scripts |
+| 10 | matchingJobs | Titles + companies + boards + 7-country recruiters + freelance platforms |
+| 11 | visaPathways | Visa options + govt URLs |
+| 12 | thankYouEmail | Post-interview email |
+| 13 | salaryNegotiation | Salary table by level (Entry→Exec) + negotiation scripts |
+| 14 | actionPlan | 30-60-90 day onboarding plan |
+| 15 | coldOutreach | LinkedIn DM + cold email + follow-up |
+| 16 | careerPivot | Pivot score + 3 adjacent roles + 90-day plan |
+| 17 | countryLaws | Labor laws + resume compliance + tax/payroll + worker rights + GRC |
+| + | liveJobs | Serper Google Jobs — fresh postings, apply links, post-results only |
+| + | chatbot | Floating 💬 career-locked chatbot, 15/hr, suggested Qs |
+
+---
+
+## 2026 RESUME INTELLIGENCE (injected into every AI analysis)
+- **ATS pattern scanning**: 2026 ATS reads experience patterns, not just keywords — align with C-suite priorities
+- **6.2-second scan**: Cognitive Hierarchy Trick — anchor points (bolded metrics + logos) guide recruiter eye
+- **Interactive PDFs**: portfolio/GitHub hyperlinks +35% response rate — flag if missing
+- **Impact-first bullets**: STAR method mandatory — flag all duty bullets, rewrite with metrics
+- **Personal Branding**: "My Values" / "Day in My Life" trending for startup/creative roles
+- **Canada specialists**: Resume Target · Careers By Design (Toronto/Vancouver nuances)
+- **USA specialists**: ResumeSpice (recruiter-built, 2-day turnaround)
+- **Top 2026 providers**: Resumeble (ATS+LinkedIn+recruiter outreach) · TopResume (60-day guarantee + Job Search Concierge) · Kickresume (AI Full-Service + Career Maps) · TopStack (pay-after-delivery + C-Suite)
+- **Market trend**: "Career Co-pilots" — AI + human expertise replacing single-doc services
+
+---
+
+## COUNTRY HERO BANNER (live on app)
+Shows after location detects: flag + country name + GPS + timezone + currency + GDP + population + IT workforce + key industries + 100-year roadmap + legal essentials
+Data: `getMarketPulse(country, code)` — 12 markets (CA/US/GB/AU/IN/PK/AE/DE/SG/NZ/NG/ZA) + global fallback
+Fields per market: `stats · laws · gdp · pop · it · industries · future`
 
 ---
 
 ## WHAT'S DONE ✅ vs TODO
-**DONE:** ATS algo · 16 cards · chatbot · PWA manifest · multi-language · live jobs · security · RAG · file upload · Country Hero Banner (flag+GPS+GDP+IT+industries+100yr roadmap) · getMarketPulse 12 markets expanded · manifest.json screenshots+shortcuts for store
+**DONE:** ATS algo · 17 cards · chatbot · PWA manifest · multilang · live jobs (Serper) · security · RAG (MASTER_CAREER_REFERENCE) · file upload PDF/DOCX/TXT · Country Hero Banner · getMarketPulse 12 markets · 2026 Resume Intelligence injected · manifest.json store-ready
 
 **TODO:**
-- [ ] Shahzad: add SERPER_API_KEY to .env.local + Vercel
+- [ ] Shahzad: add SERPER_API_KEY to .env.local + Vercel env vars
 - [ ] Add /public/icon-192.png + icon-512.png (any 192×192 + 512×512 PNG) — REQUIRED for stores
-- [ ] MOBILE STORES: go to pwabuilder.com → enter URL → download Android APK + iOS Xcode project → submit to stores
-- [ ] Google Play Store: $25 one-time · Apple App Store: $99/year
 - [ ] Book AI-900 $165 + SC-900 $165 — learn.microsoft.com
 
-## MOBILE APP — HOW TO PUBLISH (no new code needed)
-The app is already a full PWA (manifest.json + apple meta + HTTPS on Vercel).
-**Fastest path to both stores:**
-1. Go to **pwabuilder.com** → enter `https://shahzad-job-coach-ai.vercel.app`
-2. Click "Package for Stores" → downloads Android TWA + iOS Xcode project
-3. Android: upload APK to Google Play Console ($25 one-time) → submit
-4. iOS: open Xcode project → Archive → submit to App Store Connect ($99/yr)
-**Must have first:** icon-192.png + icon-512.png in /public/ (create any simple PNG)
+---
+
+## MOBILE APP — PUBLISH TO STORES (no new code needed)
+App is full PWA (manifest.json + apple meta + HTTPS). To submit to stores:
+1. **pwabuilder.com** → enter `https://shahzad-job-coach-ai.vercel.app` → Package for Stores
+2. Downloads: Android TWA APK + iOS Xcode project
+3. Google Play Console: $25 one-time | Apple App Store: $99/year
+4. **Prerequisite**: icon-192.png + icon-512.png must exist in /public/ first
 
 ---
 
 ## SECURITY (all active)
-client rate limit localStorage `jcai_rl` · server rate limit Map by IP · sanitize HTML+injection · headers DENY/CSP/nosniff/no-store · 50KB body guard · truncate inputs
+client RL: localStorage `jcai_rl` 5/hr · server RL: Map by IP · sanitize HTML+injection · headers DENY/CSP/nosniff · 50KB body guard · input truncation
 
 ---
 
-## KNOWN FIXES (permanent)
+## KNOWN FIXES (permanent — never repeat these mistakes)
 | Error | Fix |
 |-------|-----|
 | 404 model | Use `gemini-flash-latest` |
 | Vercel timeout | `export const maxDuration = 60` |
 | JSON truncation | maxOutputTokens 8192 |
-| SSE breaks | Use single JSON response (not streaming) |
-| `tools:[{googleSearch}]` | NEVER add — kills Gemini calls silently |
+| SSE streaming | NEVER use — single JSON response only |
+| `tools:[{googleSearch}]` | NEVER add — silently kills all Gemini calls |
 | Edit not found | Read exact lines with offset+limit first |
 | 640KB file | Read with offset+limit only |
 | Stop words in ATS | STOP_WORDS 200+ words, minLen >3 |
+| langInstruction undefined | Declare `let langInstruction = ''` OUTSIDE try block |
 
 ---
 
 ## COMMANDS
-`npm run dev` · `npm run build` · `git add . && git commit -m "msg" && git push origin main`
+`npm run dev` → localhost:3000 | `npm run build` | `git add . && git commit -m "msg" && git push origin main`
 Test models: https://shahzad-job-coach-ai.vercel.app/api/test
 
 ---
 
 ## SESSION LOG (compressed)
-S1-4 Mar6-8: V1 12cards deploy security H1 submitted | S5-6 Mar11-12: MASTER_REF v4 640KB | S7-14 Mar13: V2 RAG streaming(failed→reverted) 14cards wizard(removed) | S15-17 Mar13-14: stopwords ATScolors skillsGap certs freelance strictScoring | S18 Mar14: v1/v2 folders liveJobs Serper | S19 Mar14: ATS algo complete mobile guide | S20 Mar14: chatbot 16cards PWA multilang | S21 Mar14: liveJobs merged into MatchingJobs card, 7-country recruiters, fix langInstruction bug | S22 Mar14: Job Market Pulse bar (7-country hardcoded, animated pills), Your Market banner in Job Hunt panel, Live Jobs search moved post-results with country label, Quick Start 3-chip row above analyze button | S23 Mar14: Country Hero Banner (flag+GPS+timezone+currency+GDP+pop+IT+industries+100yr roadmap), getMarketPulse expanded 12 markets with 6 fields each, manifest.json screenshots+shortcuts for store submission, mobile app guide (pwabuilder.com)
+S1-4 Mar6-8: V1 12cards deploy security H1 submitted | S5-6 Mar11-12: MASTER_REF v4 640KB 48sections | S7-14 Mar13: V2 RAG streaming(failed→reverted) 14cards wizard(removed) | S15-17 Mar13-14: stopwords ATScolors skillsGap certs freelance strictScoring | S18 Mar14: v1/v2 folders liveJobs Serper | S19 Mar14: ATS algo complete | S20 Mar14: chatbot 16cards PWA multilang | S21 Mar14: liveJobs merged matchingJobs 7-country recruiters fix-langInstruction | S22 Mar14: MarketPulse bar YourMarket banner post-results liveJobs quickStart chips | S23 Mar14: CountryHero banner GDP+IT+industries+100yr, getMarketPulse 12markets, 2026ResumeIntelligence injected prompts, manifest store-ready, mobile app guide
 
 ---
 *CLAUDE.md = GEMINI.md always · Update every ~10min · Build must pass before push*
