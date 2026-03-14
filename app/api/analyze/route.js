@@ -77,7 +77,6 @@ async function callGemini(prompt, apiKey) {
         signal: controller.signal,
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          tools: [{ googleSearch: {} }],
           generationConfig: { temperature: 0.7, maxOutputTokens: 8192 },
         }),
       })
@@ -134,7 +133,7 @@ export async function POST(request) {
     return Response.json({ error: 'Request too large.' }, { status: 413, headers: h })
   }
 
-  let resumeText, jobPosting, deepDiveGoal, requestedKeys
+  let resumeText, jobPosting, requestedKeys
   try {
     const body = await request.json()
     resumeText = truncate(sanitize(body.resumeText || ''), MAX_RESUME)
@@ -196,49 +195,38 @@ export async function POST(request) {
   rateEntry.count += 1
   ipStore.set(ip, rateEntry)
 
-  const ALL_PROMPT_SECTIONS = {
-    resumeScore: "### resumeScore\n[Content: ATS SCORE /100, keywords found/missing, summary]",
-    coverLetter: "### coverLetter\n[Content: 3-paragraph tailored cover letter]",
-    resumeRewrite: "### resumeRewrite\n[Content: Full rewritten resume]",
-    skillsGap: "### skillsGap\n[Content: Hard/soft skills matching and top 3 actions]",
-    interviewPrep: "### interviewPrep\n[Content: 5 expected questions and strategies]",
-    starStories: "### starStories\n[Content: 3 tailored STAR behavioral stories]",
-    linkedinSummary: "### linkedinSummary\n[Content: Tailored LinkedIn About section]",
-    introScripts: "### introScripts\n[Content: 1-min, 2-min, 3-min introduction scripts]",
-    matchingJobs: "### matchingJobs\n[Content: 5 similar roles to consider]",
-    thankYouEmail: "### thankYouEmail\n[Content: Post-interview email template]",
-    salaryNegotiation: "### salaryNegotiation\n[Content: Market salary research (search if needed), scripts, what to avoid]",
-    actionPlan: "### actionPlan\n[Content: 30-60-90 day onboarding plan]",
-    visaPathways: "Analyze the candidate's likely location vs target job. Provide 3 specific Visa/Immigration pathways or remote work digital nomad options (e.g., H1-B, Express Entry, D8) using the Master Guide knowledge.",
-    recruiterPov: "Act as a ruthless Fortune 500 tech recruiter. List the top 3 instant 'Red Flags' or rejection reasons in this resume, and exactly how the candidate must fix them immediately."
-  }
+  const keysToUse = requestedKeys || ['resumeScore','coverLetter','resumeRewrite','skillsGap','interviewPrep','starStories','linkedinSummary','introScripts','matchingJobs','thankYouEmail','salaryNegotiation','actionPlan','visaPathways','recruiterPov']
 
-  const keysToUse = requestedKeys || Object.keys(ALL_PROMPT_SECTIONS)
-  const jsonFormatHint = keysToUse.map(k => `"${k}": "[${ALL_PROMPT_SECTIONS[k]}]"`).join(',\n')
+  const prompt = `You are an expert career coach and ATS specialist powered by Google Gemini. Analyze the resume and job posting below. Return ONLY a raw JSON object — no markdown, no code fences, no extra text before or after.
 
-  const prompt = `You are an expert career coach and ATS specialist powered by the Google Gemini AntiGravity team.
-Analyze the resume and job posting carefully using the comprehensive global knowledge provided below.
+CRITICAL: Do NOT ask clarifying questions. Provide complete final answers immediately. Use newline characters (\\n) inside JSON strings. Do NOT use asterisks (*) for bold — use plain structured text with headers and bullet points (•).
 
-CRITICAL INSTRUCTION: Analyze the text and generate a complete, expert-level response instantly. Do NOT ask clarifying questions. Provide a final formatted result. The user expects all formatting to be perfect headers using # or lists. Do not use * asterisks for bolding, just rely on raw structure since our UI parses it. Always provide max features and recommendations using the absolute maximum of your knowledge capability.
+${masterGuide ? `Use this career knowledge database to inform your analysis:\n${masterGuide}\n---` : ''}
 
-Use this proprietary career knowledge to aid your analysis:
-${masterGuide}
-
----
 RESUME:
 ${resumeText}
 
----
 JOB POSTING:
 ${jobPosting}
 
----
-Return ONLY raw JSON with exactly these keys: ${JSON.stringify(keysToUse)}. No markdown around the JSON. Fill every field with massive, beautifully formatted text. Use \\n characters for newlines inside the JSON strings.
+Return a JSON object with EXACTLY these keys filled with detailed, expert content:
 
 {
-${jsonFormatHint}
-}
-`
+"resumeScore": "ATS SCORE: XX/100\\n\\nKEYWORDS FOUND:\\n• keyword1\\n• keyword2\\n\\nKEYWORDS MISSING:\\n• keyword1\\n• keyword2\\n\\nSCORES:\\nHard Skills: X/10\\nSoft Skills: X/10\\nExperience Match: X/10\\nEducation Match: X/10\\n\\nSUMMARY:\\n2-3 sentences on strengths and gaps.",
+"coverLetter": "3-paragraph professional cover letter body (no date/header/subject). Paragraph 1: strong hook referencing the role. Paragraph 2: 2-3 specific achievements matching the job. Paragraph 3: confident call to action.",
+"resumeRewrite": "Full rewritten resume optimized for ATS and this specific job. Include: Summary, Skills, Experience with bullet points using strong action verbs, Education.",
+"skillsGap": "HARD SKILLS MATCH:\\n• list each\\n\\nHARD SKILLS MISSING:\\n• list each\\n\\nSOFT SKILLS MATCH:\\n• list each\\n\\nSOFT SKILLS MISSING:\\n• list each\\n\\nTOP 3 ACTIONS:\\n1. ...\\n2. ...\\n3. ...",
+"interviewPrep": "Q1: [question]\\nStrategy: [how to answer]\\n\\nQ2: [question]\\nStrategy: [how to answer]\\n\\nQ3: [question]\\nStrategy: [how to answer]\\n\\nQ4: [question]\\nStrategy: [how to answer]\\n\\nQ5: [question]\\nStrategy: [how to answer]",
+"starStories": "STORY 1 — [Situation title]\\nS: [Situation]\\nT: [Task]\\nA: [Action — 2-3 steps]\\nR: [Result with metric]\\n\\nSTORY 2 — [Situation title]\\nS: ...\\nT: ...\\nA: ...\\nR: ...\\n\\nSTORY 3 — [Situation title]\\nS: ...\\nT: ...\\nA: ...\\nR: ...",
+"linkedinSummary": "3-4 sentence first-person LinkedIn About section targeting this role. Opens with a hook, includes top skills, ends with value proposition.",
+"introScripts": "1-MINUTE INTRO (Phone Screen):\\n[Full script]\\n\\n2-MINUTE INTRO (Hiring Manager):\\n[Full script]\\n\\n3-MINUTE INTRO (Technical Round):\\n[Full script including specific project examples and tech stack]",
+"matchingJobs": "RECOMMENDED ROLES TO APPLY:\\n\\n1. [Job Title] at [Company Type]\\nWhy: [reason]\\nKeywords to add: [keywords]\\n\\n2. [Job Title] at [Company Type]\\nWhy: [reason]\\nKeywords to add: [keywords]\\n\\n3. [Job Title] at [Company Type]\\nWhy: [reason]\\n\\n4. [Job Title]\\nWhy: [reason]\\n\\n5. [Job Title]\\nWhy: [reason]",
+"thankYouEmail": "SUBJECT: Thank you — [Role] Interview\\n\\nDear [Hiring Manager Name],\\n\\n[Para 1: Thank them, reference something specific discussed]\\n\\n[Para 2: Reinforce top 2 qualifications]\\n\\n[Para 3: Enthusiasm and next steps]\\n\\nBest regards,\\n[Your Name]",
+"salaryNegotiation": "MARKET SALARY RANGE:\\nExpected for this role: $XX,000 – $XX,000\\n\\nOPENING STATEMENT:\\n[Script to use when asked salary expectations]\\n\\nCOUNTEROFFER SCRIPT:\\n[Script when offer is below target]\\n\\nBENEFITS TO NEGOTIATE:\\n• Benefit 1\\n• Benefit 2\\n• Benefit 3\\n\\nNEVER SAY:\\n• Mistake 1\\n• Mistake 2",
+"actionPlan": "30-DAY PLAN (Learn):\\n• Week 1: ...\\n• Week 2: ...\\n• Week 3: ...\\n• Week 4: ...\\n\\n60-DAY PLAN (Contribute):\\n• ...\\n\\n90-DAY PLAN (Lead):\\n• ...\\n\\nFIRST DAY CHECKLIST:\\n• ...\\n• ...\\n• ...",
+"visaPathways": "VISA AND IMMIGRATION PATHWAYS:\\n\\nOption 1: [Visa type e.g. H-1B / Express Entry / Skilled Worker]\\nEligibility: [requirements]\\nProcess: [steps]\\nTimeline: [estimate]\\n\\nOption 2: [Visa type]\\nEligibility: [requirements]\\n\\nOption 3: [Digital Nomad / Remote Work option]\\nCountries: [list]\\nRequirements: [brief]\\n\\nKEY ADVICE: [2-3 sentences on best path for this candidate]",
+"recruiterPov": "RECRUITER VERDICT: [Pass / Borderline / Reject]\\n\\nRED FLAG 1: [Issue]\\nFix: [Exact action to take]\\n\\nRED FLAG 2: [Issue]\\nFix: [Exact action to take]\\n\\nRED FLAG 3: [Issue]\\nFix: [Exact action to take]\\n\\nQUICK WINS (do these today):\\n• ...\\n• ...\\n• ..."
+}`
 
   let raw
   try {
