@@ -314,7 +314,10 @@ export default function Home() {
   const [chatLoading, setChatLoading] = useState(false)
   const chatEndRef = useRef(null)
 
-  // ── Live Jobs state ─────────────────────────────────────────────────────────
+  // ── Auto Live Jobs (merged into Matching Jobs card) ──────────────────────────
+  const [autoJobs, setAutoJobs]       = useState(null)
+  const [autoJobsLoading, setAutoJobsLoading] = useState(false)
+  // ── Live Jobs state (standalone search) ─────────────────────────────────────
   const [liveJobs, setLiveJobs]       = useState(null)
   const [jobsLoading, setJobsLoading] = useState(false)
   const [jobsError, setJobsError]     = useState('')
@@ -419,8 +422,28 @@ export default function Home() {
       setResults(data)
       const s = getRLS(); setRemaining(Math.max(0, CLIENT_HOURLY_LIMIT - s.count))
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+      // Auto-fetch live jobs using first meaningful line of job posting
+      const titleLine = jobText.split('\n').map(l => l.trim()).find(l => l.length > 3 && l.length < 80) || ''
+      const loc = searchLocation || (userInfo ? `${userInfo.city}, ${userInfo.country}` : '')
+      autoFetchJobs(titleLine, loc)
     } catch (err) { setError(err.message); setErrorDismissed(false) }
     finally { setLoading(false) }
+  }
+
+  // ── Auto-fetch live jobs after analysis (merged into Matching Jobs card) ─────
+  async function autoFetchJobs(jobTitle, location) {
+    if (!jobTitle) return
+    setAutoJobsLoading(true); setAutoJobs(null)
+    try {
+      const res = await fetch('/api/jobs', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobTitle, location, timeframe: 'w' }),
+      })
+      const data = await res.json()
+      if (res.ok) setAutoJobs(data.jobs || [])
+      else setAutoJobs([])
+    } catch { setAutoJobs([]) }
+    finally { setAutoJobsLoading(false) }
   }
 
   // ── Share / Download ────────────────────────────────────────────────────────
@@ -954,6 +977,67 @@ export default function Home() {
                             </span>
                       }
                     </div>
+
+                    {/* ── Live Jobs auto-loaded inside Matching Jobs card ── */}
+                    {activeCard === 'matchingJobs' && (
+                      <div style={{ marginTop: 24 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, padding: '12px 16px', background: 'rgba(56,239,125,0.08)', borderRadius: 12, border: '1px solid rgba(56,239,125,0.2)' }}>
+                          <span style={{ fontSize: 20 }}>🔴</span>
+                          <div>
+                            <div style={{ fontWeight: 800, fontSize: 15, color: '#38EF7D' }}>LIVE JOBS — Posted This Week</div>
+                            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Auto-searched from Google Jobs based on your job description</div>
+                          </div>
+                          {autoJobsLoading && <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+                            {[0,1,2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#38EF7D', animation: 'bounce .9s ease infinite', animationDelay: `${i*0.2}s` }} />)}
+                          </div>}
+                        </div>
+
+                        {autoJobsLoading && <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, fontStyle: 'italic' }}>Fetching live jobs from Google...</p>}
+
+                        {autoJobs && autoJobs.length === 0 && (
+                          <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
+                            No live jobs found automatically. Use the search below to find jobs manually, or add your SERPER_API_KEY to Vercel to enable this feature.
+                          </p>
+                        )}
+
+                        {autoJobs && autoJobs.length > 0 && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, margin: '0 0 6px' }}>
+                              {autoJobs.length} live jobs found · Click Apply Now to go directly to the application
+                            </p>
+                            {autoJobs.map((job, i) => (
+                              <div key={i} style={{
+                                background: 'rgba(56,239,125,0.05)', borderRadius: 12, padding: '14px 16px',
+                                border: '1px solid rgba(56,239,125,0.15)',
+                                display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap',
+                              }}>
+                                <div style={{ flex: 1, minWidth: 180 }}>
+                                  <div style={{ fontWeight: 800, fontSize: 14, color: '#fff', marginBottom: 3 }}>{job.title}</div>
+                                  <div style={{ fontSize: 13, color: '#38EF7D', fontWeight: 700, marginBottom: 4 }}>{job.company}</div>
+                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, fontSize: 11 }}>
+                                    {job.location && <span style={{ color: 'rgba(255,255,255,0.45)' }}>📍 {job.location}</span>}
+                                    {job.posted   && <span style={{ color: '#FACF39' }}>🕐 {job.posted}</span>}
+                                    {job.jobType  && <span style={{ color: 'rgba(255,255,255,0.35)' }}>💼 {job.jobType}</span>}
+                                    {job.salary   && <span style={{ color: '#38EF7D' }}>💰 {job.salary}</span>}
+                                    {job.via      && <span style={{ color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>{job.via}</span>}
+                                  </div>
+                                </div>
+                                {job.link && job.link !== '#' && (
+                                  <a href={job.link} target="_blank" rel="noopener noreferrer" style={{
+                                    background: 'linear-gradient(135deg,#38EF7D,#11998E)', color: '#001a0e',
+                                    fontWeight: 800, fontSize: 12, padding: '8px 14px', borderRadius: 8,
+                                    textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0,
+                                    boxShadow: '0 3px 10px rgba(56,239,125,0.3)',
+                                  }}>
+                                    Apply Now →
+                                  </a>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )
               })()}
