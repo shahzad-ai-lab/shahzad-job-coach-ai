@@ -90,12 +90,13 @@ export async function POST(request) {
     return Response.json({ error: 'Request too large.' }, { status: 413, headers: h })
   }
 
-  let resumeText, jobPosting, deepDiveGoal
+  let resumeText, jobPosting, deepDiveGoal, requestedKeys
   try {
     const body = await request.json()
     resumeText = truncate(sanitize(body.resumeText || ''), MAX_RESUME)
     jobPosting = truncate(sanitize(body.jobPosting || ''), MAX_JOB)
     deepDiveGoal = truncate(sanitize(body.deepDiveGoal || ''), 1000)
+    requestedKeys = Array.isArray(body.requestedKeys) && body.requestedKeys.length > 0 ? body.requestedKeys : null
   } catch {
     return Response.json({ error: 'Invalid request.' }, { status: 400, headers: h })
   }
@@ -113,14 +114,11 @@ export async function POST(request) {
       const fullText = fs.readFileSync(p, 'utf-8')
       const sections = fullText.split(/(?=^## )/m)
       
-      // Always include table of contents (index 0) and the Global Visa/Future Paths if they are relevant globally
       let relevantSections = [sections[0]] 
+      const combinedInput = (resumeText + ' ' + jobPosting + ' ' + deepDiveGoal + ' ' + (requestedKeys || []).join(' ')).toLowerCase()
       
-      const combinedInput = (resumeText + ' ' + jobPosting + ' ' + deepDiveGoal).toLowerCase()
-      
-      // Keywords that act as triggers for specific sections
       const triggers = [
-        { k: ['visa', 'immigrat', 'relocat', 'move', 'country', 'sponsor'], match: 'VISA' },
+        { k: ['visa', 'immigrat', 'relocat', 'move', 'country', 'sponsor', 'visapathways'], match: 'VISA' },
         { k: ['future', 'trend', 'ai ', 'automation', '203'], match: 'FUTURE' },
         { k: ['student', 'kid', 'child', 'teen', 'senior', 'widow', 'orphan', 'no skill', 'zero skill'], match: 'INCLUSIVITY' },
         { k: ['software', 'code', 'develop', 'engineer', 'tech', 'data'], match: 'TECHNOLOGY' },
@@ -130,16 +128,12 @@ export async function POST(request) {
 
       const activeTriggers = new Set()
       for (const t of triggers) {
-        if (t.k.some(keyword => combinedInput.includes(keyword))) {
-          activeTriggers.add(t.match)
-        }
+        if (t.k.some(keyword => combinedInput.includes(keyword))) activeTriggers.add(t.match)
       }
 
-      // Filter sections based on triggers
       for (let i = 1; i < sections.length; i++) {
         const sec = sections[i]
         const header = sec.split('\\n')[0].toUpperCase()
-        
         let shouldInclude = false
         if (activeTriggers.has('VISA') && header.includes('VISA')) shouldInclude = true
         if (activeTriggers.has('FUTURE') && header.includes('FUTURE')) shouldInclude = true
@@ -147,13 +141,10 @@ export async function POST(request) {
         if (activeTriggers.has('TECHNOLOGY') && (header.includes('TECHNOLOGY') || header.includes('SOFTWARE'))) shouldInclude = true
         if (activeTriggers.has('HEALTHCARE') && header.includes('HEALTHCARE')) shouldInclude = true
         if (activeTriggers.has('FINANCE') && header.includes('FINANCE')) shouldInclude = true
-
-        if (shouldInclude) {
-          relevantSections.push(sec)
-        }
+        if (shouldInclude) relevantSections.push(sec)
       }
 
-      masterGuide = relevantSections.join('\\n').slice(0, 45000) // Cap at ~15k tokens to stay extremely fast
+      masterGuide = relevantSections.join('\\n').slice(0, 45000)
     }
   } catch (e) {
     console.warn("Could not read MASTER_CAREER_REFERENCE.md", e)
@@ -162,12 +153,32 @@ export async function POST(request) {
   rateEntry.count += 1
   ipStore.set(ip, rateEntry)
 
+  const ALL_PROMPT_SECTIONS = {
+    resumeScore: "### resumeScore\\n[Content: ATS SCORE /100, keywords found/missing, summary]",
+    coverLetter: "### coverLetter\\n[Content: 3-paragraph tailored cover letter]",
+    resumeRewrite: "### resumeRewrite\\n[Content: Full rewritten resume]",
+    skillsGap: "### skillsGap\\n[Content: Hard/soft skills matching and top 3 actions]",
+    interviewPrep: "### interviewPrep\\n[Content: 5 expected questions and strategies]",
+    starStories: "### starStories\\n[Content: 3 tailored STAR behavioral stories]",
+    linkedinSummary: "### linkedinSummary\\n[Content: Tailored LinkedIn About section]",
+    introScripts: "### introScripts\\n[Content: 1-min, 2-min, 3-min introduction scripts]",
+    matchingJobs: "### matchingJobs\\n[Content: 5 similar roles to consider]",
+    thankYouEmail: "### thankYouEmail\\n[Content: Post-interview email template]",
+    salaryNegotiation: "### salaryNegotiation\\n[Content: Market salary research (search if needed), scripts, what to avoid]",
+    actionPlan: "### actionPlan\\n[Content: 30-60-90 day onboarding plan]",
+    visaPathways: "### visaPathways\\n[Content: Analyze the candidate's likely location vs target job. Provide 3 specific Visa/Immigration pathways or remote work digital nomad options (e.g., H1-B, Express Entry, D8) using the Master Guide knowledge.]",
+    recruiterPov: "### recruiterPov\\n[Content: Act as a ruthless Fortune 500 tech recruiter. List the top 3 instant 'Red Flags' or rejection reasons in this resume, and exactly how the candidate must fix them immediately.]"
+  }
+
+  const keysToUse = requestedKeys || Object.keys(ALL_PROMPT_SECTIONS)
+  const dynamicSections = keysToUse.map(k => ALL_PROMPT_SECTIONS[k]).join('\\n')
+
   const prompt = `You are an expert career coach and ATS specialist. 
 Analyze the resume and job posting carefully in the context of global best practices.
 If you lack specific details about a country's market context, visas, or salaries, USE THE GOOGLE SEARCH TOOL to find live data and augment your answer.
 
 CRITICAL USER CONTEXT (DEEP DIVE GOAL):
-The user has provided this specific goal/context for you. You MUST prioritize tailoring your entire 14-tool analysis to solve this specific goal:
+The user has provided this specific goal/context for you. You MUST prioritize tailoring your analysis to solve this specific goal:
 "${deepDiveGoal || 'No specific deep dive goal provided. Provide standard excellent coaching.'}"
 
 Use this proprietary career knowledge to aid your analysis:
@@ -182,36 +193,9 @@ JOB POSTING:
 ${jobPosting}
 
 ---
-You MUST output your response using EXACTLY the following 14 section headers, preceded by "### ", and followed by your detailed analysis. Do not use JSON. Do not deviate from the keys:
+You MUST output your response using EXACTLY the following ${keysToUse.length} section headers, preceded by "### ", and followed by your detailed analysis. Do not use JSON. Do not deviate from the keys:
 
-### resumeScore
-[Content: ATS SCORE /100, keywords found/missing, summary]
-### coverLetter
-[Content: 3-paragraph tailored cover letter]
-### resumeRewrite
-[Content: Full rewritten resume]
-### skillsGap
-[Content: Hard/soft skills matching and top 3 actions]
-### interviewPrep
-[Content: 5 expected questions and strategies]
-### starStories
-[Content: 3 tailored STAR behavioral stories]
-### linkedinSummary
-[Content: Tailored LinkedIn About section]
-### introScripts
-[Content: 1-min, 2-min, 3-min introduction scripts]
-### matchingJobs
-[Content: 5 similar roles to consider]
-### thankYouEmail
-[Content: Post-interview email template]
-### salaryNegotiation
-[Content: Market salary research (search if needed), scripts, what to avoid]
-### actionPlan
-[Content: 30-60-90 day onboarding plan]
-### visaPathways
-[Content: Analyze the candidate's likely location vs target job. Provide 3 specific Visa/Immigration pathways or remote work digital nomad options (e.g., H1-B, Express Entry, D8) using the Master Guide knowledge.]
-### recruiterPov
-[Content: Act as a ruthless Fortune 500 tech recruiter. List the top 3 instant "Red Flags" or rejection reasons in this resume, and exactly how the candidate must fix them immediately.]
+${dynamicSections}
 `
 
   for (const { name, timeout } of MODELS) {

@@ -73,6 +73,14 @@ const CARDS = [
   { key: 'actionPlan',        title: '30-60-90 Day Plan',   icon: '🗓️',  g: 'linear-gradient(135deg,#FF416C,#FF4B2B)' },
 ]
 
+const JOURNEYS = [
+  { id: 'job_search', icon: '🚀', title: 'Find a Job Fast', desc: 'Optimize your resume and prep for interviews.', keys: ['resumeScore', 'resumeRewrite', 'coverLetter', 'recruiterPov', 'matchingJobs'] },
+  { id: 'relocation', icon: '🌍', title: 'Immigration Path', desc: 'Explore global work visas and action plans.', keys: ['visaPathways', 'actionPlan', 'matchingJobs'] },
+  { id: 'career_change', icon: '🔄', title: 'Career Pivot', desc: 'Identify skill gaps and rebrand yourself.', keys: ['skillsGap', 'resumeRewrite', 'linkedinSummary', 'introScripts'] },
+  { id: 'interview', icon: '🎤', title: 'Ace the Interview', desc: 'Master STAR stories and salary negotiations.', keys: ['interviewPrep', 'starStories', 'salaryNegotiation', 'thankYouEmail'] },
+  { id: 'full_power', icon: '⚡', title: 'Full AI Power', desc: 'Run all 14 elite tools simultaneously (Slowest).', keys: CARDS.map(c => c.key) },
+]
+
 export default function Home() {
   const [resumeText, setResumeText]   = useState('')
   const [jobPosting, setJobPosting]   = useState('')
@@ -91,6 +99,7 @@ export default function Home() {
   const [weather, setWeather]         = useState('')
   const [remaining, setRemaining]     = useState(CLIENT_HOURLY_LIMIT)
   const [deepDiveGoal, setDeepDiveGoal] = useState('')
+  const [activeJourney, setActiveJourney] = useState(null)
   const fileRef    = useRef(null)
   const jobFileRef = useRef(null)
 
@@ -172,14 +181,20 @@ export default function Home() {
   async function handleAnalyze() {
     if (!resumeText.trim()) { setError('Please add your resume text or upload a file.'); return }
     if (!jobPosting.trim()) { setError('Please paste the job description.'); return }
+    if (!activeJourney) { setError('Please select a goal journey first.'); return }
+
     // Client-side rate limit check
     const rl = checkAndIncrementRateLimit()
     if (!rl.allowed) { setError(rl.message); return }
-    setError(''); setLoading(true); setResults({}); setActiveCard('resumeScore')
+    setError(''); setLoading(true); setResults({}); setActiveCard(null)
+    
+    const requestedKeys = JOURNEYS.find(j => j.id === activeJourney)?.keys || CARDS.map(c => c.key)
+    setActiveCard(requestedKeys[0])
+
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeText, jobPosting, deepDiveGoal }),
+        body: JSON.stringify({ resumeText, jobPosting, deepDiveGoal, requestedKeys }),
       })
       if (!res.ok) {
         let msg = 'Error'
@@ -206,7 +221,7 @@ export default function Home() {
           if (firstNewline === -1) continue // Title not fully typed yet
           const key = p.slice(0, firstNewline).trim()
           const content = p.slice(firstNewline + 1)
-          if (CARDS.find(c => c.key === key)) {
+          if (requestedKeys.includes(key)) {
             newResults[key] = content.trimStart()
           }
         }
@@ -332,10 +347,72 @@ export default function Home() {
 
       <div style={s.container}>
 
-        {/* Input Grid */}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))', gap:20, marginBottom:20 }}>
+        {/* The 14 Tools Display to ensure users know the full capabilities immediately */}
+        <div style={{ maxWidth: 900, margin: '0 auto 40px' }}>
+          <h2 style={{ fontSize: 18, color: 'rgba(255,255,255,0.6)', textAlign: 'center', marginBottom: 16, fontWeight: 600 }}>Explore our 14 Free Tools</h2>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 12 }}>
+            {CARDS.map(c => (
+              <span key={c.key} style={{ padding: '6px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', fontSize: 13, color: 'rgba(255,255,255,0.85)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span>{c.icon}</span> {c.title}
+              </span>
+            ))}
+          </div>
+        </div>
 
-          {/* Resume Upload */}
+        {/* Journey Selection Wizard */}
+        <div style={{ maxWidth: 800, margin: '0 auto 40px', padding: '24px', background: 'rgba(255,0,153,0.05)', borderRadius: '24px', border: '1px solid rgba(255,0,153,0.15)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+          <h3 style={{ margin: '0 0 8px', fontSize: 24, fontWeight: 800, textAlign: 'center', background: 'linear-gradient(135deg,#FF0099,#FACF39)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            Choose Your Goal Today
+          </h3>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, textAlign: 'center', marginBottom: 24 }}>
+            We customize the AI tools explicitly to match your objective.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+            {JOURNEYS.map(j => {
+              const isActive = activeJourney === j.id
+              return (
+                <button
+                  key={j.id}
+                  onClick={() => setActiveJourney(j.id)}
+                  style={{
+                    background: isActive ? 'linear-gradient(135deg,rgba(0,198,255,0.2),rgba(0,114,255,0.2))' : 'rgba(255,255,255,0.05)',
+                    border: `1px solid ${isActive ? 'rgba(0,198,255,0.6)' : 'rgba(255,255,255,0.1)'}`,
+                    borderRadius: 16, padding: '16px 12px', cursor: 'pointer', textAlign: 'left',
+                    transition: 'all 0.2s', boxShadow: isActive ? '0 0 20px rgba(0,198,255,0.3)' : 'none',
+                    transform: isActive ? 'translateY(-2px)' : 'none'
+                  }}
+                >
+                  <div style={{ fontSize: 28, marginBottom: 8 }}>{j.icon}</div>
+                  <div style={{ color: '#fff', fontSize: 15, fontWeight: 700, marginBottom: 4 }}>{j.title}</div>
+                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, lineHeight: 1.4 }}>{j.desc}</div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Input Grid / Deep Dive (Only visible if a journey is selected) */}
+        {activeJourney && (
+          <div style={{ animation: 'fade-in 0.5s ease' }}>
+            {/* Deep Dive Questionnaire */}
+            <div style={{ maxWidth: 800, margin: '0 auto 24px', padding: '24px', background: 'rgba(255,255,255,0.04)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <h3 style={{ margin: '0 0 12px', fontSize: 18, fontWeight: 700, color: '#FACF39', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>🎯</span> Pre-Analysis Deep Dive
+              </h3>
+              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 16 }}>
+                Help the AI understand your specific situation for hyper-personalized advice (Optional).
+              </p>
+              <textarea 
+                value={deepDiveGoal} 
+                onChange={e => setDeepDiveGoal(e.target.value)} 
+                placeholder="E.g., I am a single mother re-entering the workforce after 5 years, seeking remote work in tech. Or: I need an H1-B visa sponsor in the USA." 
+                style={{ ...s.textarea, height: 80 }} 
+              />
+            </div>
+
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))', gap:20, marginBottom:20 }}>
+
+              {/* Resume Upload */}
           <div style={s.card}>
             <h2 style={{ margin:'0 0 16px', fontSize:20, fontWeight:800, background:'linear-gradient(90deg,#00C6FF,#0072FF)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', display:'flex', alignItems:'center', gap:8 }}>
               <span>📋</span> Your Resume
@@ -410,60 +487,46 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Error */}
-        {error && (
-          <div style={{ background:'rgba(255,60,60,0.15)', border:'1px solid rgba(255,60,60,0.4)', color:'#FF9090', borderRadius:14, padding:'12px 20px', marginBottom:20, fontSize:13, display:'flex', alignItems:'center', gap:10 }}>
-            ⚠️ {error}
+            {/* Error */}
+            {error && (
+              <div style={{ background:'rgba(255,60,60,0.15)', border:'1px solid rgba(255,60,60,0.4)', color:'#FF9090', borderRadius:14, padding:'12px 20px', marginBottom:20, fontSize:13, display:'flex', alignItems:'center', gap:10 }}>
+                ⚠️ {error}
+              </div>
+            )}
+
+            {/* Analyze Button */}
+            <div style={{ textAlign:'center', marginBottom:24 }}>
+              <button
+                onClick={handleAnalyze}
+                disabled={loading}
+                style={{
+                  background: loading ? 'rgba(255,255,255,0.2)' : 'linear-gradient(135deg,#FACF39,#FF9500)',
+                  color: loading ? 'rgba(255,255,255,0.5)' : '#1a0a00',
+                  fontWeight:900, fontSize:22, border:'none', cursor: loading ? 'not-allowed' : 'pointer',
+                  padding:'18px 60px', borderRadius:20,
+                  boxShadow: loading ? 'none' : '0 8px 40px rgba(250,207,57,0.5)',
+                  transition:'all .2s', display:'inline-flex', alignItems:'center', gap:12,
+                  letterSpacing:.5
+                }}
+                onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform='scale(1.06)'; e.currentTarget.style.boxShadow='0 12px 48px rgba(250,207,57,0.7)' } }}
+                onMouseLeave={e => { e.currentTarget.style.transform='scale(1)'; e.currentTarget.style.boxShadow= loading ? 'none' : '0 8px 40px rgba(250,207,57,0.5)' }}
+              >
+                <span style={{ fontSize:26 }}>{loading ? '✨' : '🚀'}</span>
+                {loading ? 'Analyzing with AI...' : `Generate ${JOURNEYS.find(j=>j.id===activeJourney)?.keys.length || 14} Results`}
+              </button>
+              {loading && (
+                <div style={{ marginTop:20 }}>
+                  <div style={{ display:'flex', justifyContent:'center', gap:8, marginBottom:10 }}>
+                    {[0,1,2,3,4].map(i => (
+                      <div key={i} style={{ width:9, height:9, borderRadius:'50%', background:'linear-gradient(135deg,#FF0099,#FACF39)', animation:'bounce .9s ease infinite', animationDelay:`${i*.13}s` }} />
+                    ))}
+                  </div>
+                  <p style={{ color:'rgba(255,255,255,0.5)', fontSize:14 }}>Generating AI results — about 15-30 seconds...</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
-
-        {/* Deep Dive Questionnaire */}
-        <div style={{ maxWidth: 800, margin: '0 auto 24px', padding: '24px', background: 'rgba(255,255,255,0.04)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <h3 style={{ margin: '0 0 12px', fontSize: 18, fontWeight: 700, color: '#FACF39', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span>🎯</span> Pre-Analysis Deep Dive
-          </h3>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 16 }}>
-            Help the AI understand your specific situation for hyper-personalized advice (Optional).
-          </p>
-          <textarea 
-            value={deepDiveGoal} 
-            onChange={e => setDeepDiveGoal(e.target.value)} 
-            placeholder="E.g., I am a single mother re-entering the workforce after 5 years, seeking remote work in tech. Or: I need an H1-B visa sponsor in the USA." 
-            style={{ ...s.textarea, height: 80 }} 
-          />
-        </div>
-
-        {/* Analyze Button */}
-        <div style={{ textAlign:'center', marginBottom:24 }}>
-          <button
-            onClick={handleAnalyze}
-            disabled={loading}
-            style={{
-              background: loading ? 'rgba(255,255,255,0.2)' : 'linear-gradient(135deg,#FACF39,#FF9500)',
-              color: loading ? 'rgba(255,255,255,0.5)' : '#1a0a00',
-              fontWeight:900, fontSize:22, border:'none', cursor: loading ? 'not-allowed' : 'pointer',
-              padding:'18px 60px', borderRadius:20,
-              boxShadow: loading ? 'none' : '0 8px 40px rgba(250,207,57,0.5)',
-              transition:'all .2s', display:'inline-flex', alignItems:'center', gap:12,
-              letterSpacing:.5
-            }}
-            onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform='scale(1.06)'; e.currentTarget.style.boxShadow='0 12px 48px rgba(250,207,57,0.7)' } }}
-            onMouseLeave={e => { e.currentTarget.style.transform='scale(1)'; e.currentTarget.style.boxShadow= loading ? 'none' : '0 8px 40px rgba(250,207,57,0.5)' }}
-          >
-            <span style={{ fontSize:26 }}>{loading ? '✨' : '🚀'}</span>
-            {loading ? 'Analyzing with AI...' : 'Analyze Now — Free'}
-          </button>
-          {loading && (
-            <div style={{ marginTop:20 }}>
-              <div style={{ display:'flex', justifyContent:'center', gap:8, marginBottom:10 }}>
-                {[0,1,2,3,4].map(i => (
-                  <div key={i} style={{ width:9, height:9, borderRadius:'50%', background:'linear-gradient(135deg,#FF0099,#FACF39)', animation:'bounce .9s ease infinite', animationDelay:`${i*.13}s` }} />
-                ))}
-              </div>
-              <p style={{ color:'rgba(255,255,255,0.5)', fontSize:14 }}>Generating 14 AI results — about 30 seconds...</p>
-            </div>
-          )}
-        </div>
 
         {/* Results */}
         {results && (
@@ -633,6 +696,7 @@ export default function Home() {
       </footer>
 
       <style>{`
+        @keyframes fade-in { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
         @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
         @keyframes pulse-glow { 0%,100%{filter:drop-shadow(0 0 8px #FF009966)} 50%{filter:drop-shadow(0 0 24px #FF0099cc)} }
         @keyframes typing { 0%,100%{opacity:1} 50%{opacity:0} }
