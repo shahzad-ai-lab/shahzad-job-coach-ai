@@ -291,6 +291,13 @@ export default function Home() {
   const [userInfo, setUserInfo]       = useState(null)
   const [weather, setWeather]         = useState('')
   const [remaining, setRemaining]     = useState(CLIENT_HOURLY_LIMIT)
+  // ── Live Jobs state ─────────────────────────────────────────────────────────
+  const [liveJobs, setLiveJobs]       = useState(null)
+  const [jobsLoading, setJobsLoading] = useState(false)
+  const [jobsError, setJobsError]     = useState('')
+  const [searchTitle, setSearchTitle] = useState('')
+  const [searchLocation, setSearchLocation] = useState('')
+  const [timeframe, setTimeframe]     = useState('w2')
 
   const fileRef    = useRef(null)
   const jobFileRef = useRef(null)
@@ -318,6 +325,7 @@ export default function Home() {
       .then(r => r.json())
       .then(d => {
         setUserInfo({ city: d.city || '—', region: d.region || '—', country: d.country_name || '—', os: detectOS() })
+        if (d.city && d.country_name) setSearchLocation(`${d.city}, ${d.country_name}`)
         const loc = encodeURIComponent((d.city || '') + ',' + (d.country_code || ''))
         return fetch(`https://wttr.in/${loc}?format=%c+%C+%t&m`)
       })
@@ -391,6 +399,26 @@ export default function Home() {
   }
 
   // ── Share / Download ────────────────────────────────────────────────────────
+  // ── Live Jobs: search Google Jobs via Serper ────────────────────────────────
+  async function fetchLiveJobs() {
+    if (!searchTitle.trim()) { setJobsError('Enter a job title to search.'); return }
+    setJobsLoading(true); setJobsError(''); setLiveJobs(null)
+    try {
+      const res = await fetch('/api/jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobTitle: searchTitle.trim(), location: searchLocation.trim(), timeframe }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setJobsError(data.error || 'Search failed.'); return }
+      setLiveJobs(data.jobs || [])
+    } catch (e) {
+      setJobsError('Network error — check connection.')
+    } finally {
+      setJobsLoading(false)
+    }
+  }
+
   async function handleShare() {
     const url = window.location.href
     if (navigator.share) {
@@ -880,6 +908,127 @@ export default function Home() {
               })()}
             </div>
           )}
+
+          {/* ── Live Jobs from Google ─────────────────────────────────────────── */}
+          <div style={{ ...glass, marginTop: 40, border: '1px solid rgba(56,239,125,0.25)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+              <span style={{ fontSize: 28 }}>🔍</span>
+              <div>
+                <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(135deg,#38EF7D,#00AEEF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  Live Jobs — Fresh from Google
+                </h2>
+                <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
+                  Real job postings · Posted in last 1–2 weeks · Direct apply links
+                </p>
+              </div>
+            </div>
+
+            {/* Search inputs */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 12, marginBottom: 12 }}>
+              <input
+                value={searchTitle}
+                onChange={e => setSearchTitle(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && fetchLiveJobs()}
+                placeholder="Job title (e.g. Software Engineer)"
+                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
+              />
+              <input
+                value={searchLocation}
+                onChange={e => setSearchLocation(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && fetchLiveJobs()}
+                placeholder="Location (e.g. Toronto, Canada)"
+                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
+              />
+              <select
+                value={timeframe}
+                onChange={e => setTimeframe(e.target.value)}
+                style={{ background: 'rgba(30,20,50,0.95)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'inherit', cursor: 'pointer' }}
+              >
+                <option value="d">Past 24 hours</option>
+                <option value="w">Past 1 week</option>
+                <option value="w2">Past 2 weeks</option>
+                <option value="m">Past 1 month</option>
+              </select>
+            </div>
+
+            <button
+              onClick={fetchLiveJobs}
+              disabled={jobsLoading}
+              style={{
+                background: jobsLoading ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg,#38EF7D,#00AEEF)',
+                color: jobsLoading ? 'rgba(255,255,255,0.4)' : '#001a0e',
+                fontWeight: 800, fontSize: 15, border: 'none',
+                cursor: jobsLoading ? 'not-allowed' : 'pointer',
+                padding: '12px 32px', borderRadius: 12,
+                boxShadow: jobsLoading ? 'none' : '0 6px 24px rgba(56,239,125,0.35)',
+                transition: 'all .2s', display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 16,
+              }}
+            >
+              <span>{jobsLoading ? '⏳' : '🔍'}</span>
+              {jobsLoading ? 'Searching Google Jobs...' : 'Search Fresh Jobs'}
+            </button>
+
+            {/* Error */}
+            {jobsError && (
+              <div style={{ background: 'rgba(255,60,60,0.15)', border: '1px solid rgba(255,60,60,0.3)', borderRadius: 10, padding: '10px 14px', color: '#FF9090', fontSize: 13, marginBottom: 14 }}>
+                ⚠️ {jobsError}
+              </div>
+            )}
+
+            {/* Job cards */}
+            {liveJobs !== null && (
+              liveJobs.length === 0
+                ? <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, fontStyle: 'italic' }}>No jobs found for this search. Try a broader title or different location.</p>
+                : <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, margin: '0 0 4px' }}>
+                      Found {liveJobs.length} jobs · Powered by Google Jobs
+                    </p>
+                    {liveJobs.map((job, i) => (
+                      <div key={i} style={{
+                        background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '16px 18px',
+                        border: '1px solid rgba(56,239,125,0.12)',
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+                        gap: 14, flexWrap: 'wrap',
+                      }}>
+                        <div style={{ flex: 1, minWidth: 200 }}>
+                          <div style={{ fontSize: 15, fontWeight: 800, color: '#fff', marginBottom: 4 }}>{job.title}</div>
+                          <div style={{ fontSize: 13, color: '#38EF7D', fontWeight: 700, marginBottom: 4 }}>{job.company}</div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, fontSize: 11 }}>
+                            {job.location && <span style={{ color: 'rgba(255,255,255,0.45)', display: 'flex', alignItems: 'center', gap: 4 }}>📍 {job.location}</span>}
+                            {job.posted   && <span style={{ color: '#FACF39', display: 'flex', alignItems: 'center', gap: 4 }}>🕐 {job.posted}</span>}
+                            {job.jobType  && <span style={{ color: 'rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', gap: 4 }}>💼 {job.jobType}</span>}
+                            {job.salary   && <span style={{ color: '#38EF7D', display: 'flex', alignItems: 'center', gap: 4 }}>💰 {job.salary}</span>}
+                            {job.via      && <span style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>{job.via}</span>}
+                          </div>
+                          {job.snippet && (
+                            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: '8px 0 0', lineHeight: 1.6, maxHeight: 54, overflow: 'hidden' }}>
+                              {job.snippet.slice(0, 180)}{job.snippet.length > 180 ? '…' : ''}
+                            </p>
+                          )}
+                        </div>
+                        {job.link && job.link !== '#' && (
+                          <a
+                            href={job.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              background: 'linear-gradient(135deg,#FF0099,#FF6B35)',
+                              color: '#fff', fontWeight: 800, fontSize: 13,
+                              padding: '10px 18px', borderRadius: 10,
+                              textDecoration: 'none', whiteSpace: 'nowrap',
+                              boxShadow: '0 4px 14px rgba(255,0,153,0.35)',
+                              display: 'inline-flex', alignItems: 'center', gap: 6,
+                              flexShrink: 0,
+                            }}
+                          >
+                            Apply Now →
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+            )}
+          </div>
 
           {/* ── Privacy / Disclaimer footer card ────────────────────────────── */}
           <div style={{ ...glass, marginTop: 40, padding: '20px 24px' }}>
