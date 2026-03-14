@@ -196,6 +196,72 @@ export async function POST(request) {
     console.warn("Could not read MASTER_CAREER_REFERENCE.md", e)
   }
 
+  // ── Country Companies RAG ─────────────────────────────────────────────────
+  let companyIntel = ''
+  try {
+    const cp = path.join(process.cwd(), 'v2', 'COMPANIES_BY_COUNTRY.md')
+    if (fs.existsSync(cp)) {
+      const companyText = fs.readFileSync(cp, 'utf-8')
+      const countrySections = companyText.split(/^## /m)
+      // Extract userCountry from langInstruction context (already parsed above)
+      const body2UserCountry = typeof langInstruction === 'string'
+        ? (langInstruction.match(/USER LOCATION: ([^.]+)\./) || [])[1]?.trim().toUpperCase() || ''
+        : ''
+      const jobText = (jobPosting + ' ' + resumeText).toUpperCase()
+      // Try to find matching country section
+      const countryKeys = {
+        'AUSTRALIA': ['AUSTRALIA','SYDNEY','MELBOURNE','BRISBANE','PERTH'],
+        'BRAZIL': ['BRAZIL','SÃO PAULO','RIO DE JANEIRO'],
+        'CANADA': ['CANADA','TORONTO','VANCOUVER','CALGARY','MONTREAL','OTTAWA'],
+        'CHINA': ['CHINA','BEIJING','SHANGHAI','SHENZHEN','GUANGZHOU'],
+        'DENMARK': ['DENMARK','COPENHAGEN'],
+        'FINLAND': ['FINLAND','HELSINKI'],
+        'FRANCE': ['FRANCE','PARIS','LYON'],
+        'GERMANY': ['GERMANY','BERLIN','MUNICH','FRANKFURT','HAMBURG'],
+        'INDIA': ['INDIA','BANGALORE','MUMBAI','HYDERABAD','DELHI','PUNE','CHENNAI'],
+        'INDONESIA': ['INDONESIA','JAKARTA'],
+        'IRELAND': ['IRELAND','DUBLIN'],
+        'ISRAEL': ['ISRAEL','TEL AVIV'],
+        'ITALY': ['ITALY','MILAN','ROME'],
+        'JAPAN': ['JAPAN','TOKYO','OSAKA'],
+        'MEXICO': ['MEXICO','CIUDAD DE MEXICO'],
+        'NETHERLANDS': ['NETHERLANDS','AMSTERDAM'],
+        'NEW ZEALAND': ['NEW ZEALAND','AUCKLAND','WELLINGTON'],
+        'NIGERIA': ['NIGERIA','LAGOS','ABUJA'],
+        'PAKISTAN': ['PAKISTAN','KARACHI','LAHORE','ISLAMABAD'],
+        'SAUDI ARABIA': ['SAUDI','RIYADH','JEDDAH'],
+        'SINGAPORE': ['SINGAPORE'],
+        'SOUTH AFRICA': ['SOUTH AFRICA','JOHANNESBURG','CAPE TOWN'],
+        'SOUTH KOREA': ['SOUTH KOREA','KOREA','SEOUL'],
+        'SPAIN': ['SPAIN','MADRID','BARCELONA'],
+        'SWEDEN': ['SWEDEN','STOCKHOLM'],
+        'SWITZERLAND': ['SWITZERLAND','ZURICH','GENEVA'],
+        'TAIWAN': ['TAIWAN','TAIPEI'],
+        'TURKEY': ['TURKEY','ISTANBUL'],
+        'UNITED ARAB EMIRATES': ['UAE','DUBAI','ABU DHABI','EMIRATES'],
+        'UNITED KINGDOM': ['UNITED KINGDOM','UK','LONDON','MANCHESTER','EDINBURGH'],
+        'UNITED STATES': ['UNITED STATES','USA','US ','NEW YORK','SAN FRANCISCO','SEATTLE','AUSTIN','CHICAGO','BOSTON'],
+        'VIETNAM': ['VIETNAM','HO CHI MINH','HANOI'],
+      }
+      let matchedCountry = ''
+      for (const [key, aliases] of Object.entries(countryKeys)) {
+        if (aliases.some(a => body2UserCountry.includes(a) || jobText.includes(a))) {
+          matchedCountry = key; break
+        }
+      }
+      if (!matchedCountry) matchedCountry = 'UNITED STATES' // global fallback
+      const section = countrySections.find(s => s.startsWith(matchedCountry))
+      if (section) {
+        companyIntel = `TOP COMPANIES IN ${matchedCountry} (with career pages — use these in matchingJobs):\n## ${section.slice(0, 4000)}`
+      }
+      // Also always include Global Remote section
+      const remoteSection = countrySections.find(s => s.startsWith('GLOBAL REMOTE'))
+      if (remoteSection) companyIntel += `\n\nGLOBAL REMOTE-FIRST COMPANIES:\n## ${remoteSection.slice(0, 1000)}`
+    }
+  } catch (e) {
+    console.warn("Could not read COMPANIES_BY_COUNTRY.md", e)
+  }
+
   rateEntry.count += 1
   ipStore.set(ip, rateEntry)
 
@@ -218,6 +284,7 @@ RULES: Return ONLY raw JSON. No markdown. No code fences. Use \\n for newlines i
 ---
 
 ${masterGuide ? `CAREER KNOWLEDGE BASE (use this for certifications, salary, visa data):\n${masterGuide}\n---` : ''}
+${companyIntel ? `${companyIntel}\n---` : ''}
 
 RESUME:
 ${resumeText}
