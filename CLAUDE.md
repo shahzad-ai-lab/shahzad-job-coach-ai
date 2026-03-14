@@ -1,5 +1,5 @@
 # CLAUDE.md = GEMINI.md — MASTER BLUEPRINT (ULTRA COMPRESSED)
-**Updated: March 14, 2026 — Session 22 | Rule: start session → "Read CLAUDE.md resume where left off"**
+**Updated: March 14, 2026 — Session 23 | Rule: start session → "Read CLAUDE.md resume where left off"**
 
 ---
 
@@ -69,15 +69,23 @@ model: `gemini-flash-latest` → fallback `gemini-flash-lite-latest` | tokens: 8
 ---
 
 ## WHAT'S DONE ✅ vs TODO
-**DONE:** ATS algo (thresholds/knockouts/density/anatomy/recency) · 16 cards · chatbot · PWA manifest · multi-language · live jobs · security · RAG (MASTER_CAREER_REFERENCE) · file upload PDF/DOCX/TXT
+**DONE:** ATS algo · 16 cards · chatbot · PWA manifest · multi-language · live jobs · security · RAG · file upload · Country Hero Banner (flag+GPS+GDP+IT+industries+100yr roadmap) · getMarketPulse 12 markets expanded · manifest.json screenshots+shortcuts for store
 
 **TODO:**
 - [ ] Shahzad: add SERPER_API_KEY to .env.local + Vercel
-- [ ] Add /public/icon-192.png + icon-512.png (any 192×192 + 512×512 PNG)
-- [ ] Card 17: Company Intel (Serper news → Gemini brief before interview)
-- [ ] Card 18: Real Salary Intel (Serper → actual current ranges)
-- [ ] AI Mock Interview (Web Speech API + Gemini — voice practice)
+- [ ] Add /public/icon-192.png + icon-512.png (any 192×192 + 512×512 PNG) — REQUIRED for stores
+- [ ] MOBILE STORES: go to pwabuilder.com → enter URL → download Android APK + iOS Xcode project → submit to stores
+- [ ] Google Play Store: $25 one-time · Apple App Store: $99/year
 - [ ] Book AI-900 $165 + SC-900 $165 — learn.microsoft.com
+
+## MOBILE APP — HOW TO PUBLISH (no new code needed)
+The app is already a full PWA (manifest.json + apple meta + HTTPS on Vercel).
+**Fastest path to both stores:**
+1. Go to **pwabuilder.com** → enter `https://shahzad-job-coach-ai.vercel.app`
+2. Click "Package for Stores" → downloads Android TWA + iOS Xcode project
+3. Android: upload APK to Google Play Console ($25 one-time) → submit
+4. iOS: open Xcode project → Archive → submit to App Store Connect ($99/yr)
+**Must have first:** icon-192.png + icon-512.png in /public/ (create any simple PNG)
 
 ---
 
@@ -107,7 +115,7 @@ Test models: https://shahzad-job-coach-ai.vercel.app/api/test
 ---
 
 ## SESSION LOG (compressed)
-S1-4 Mar6-8: V1 12cards deploy security H1 submitted | S5-6 Mar11-12: MASTER_REF v4 640KB | S7-14 Mar13: V2 RAG streaming(failed→reverted) 14cards wizard(removed) | S15-17 Mar13-14: stopwords ATScolors skillsGap certs freelance strictScoring | S18 Mar14: v1/v2 folders liveJobs Serper | S19 Mar14: ATS algo complete mobile guide | S20 Mar14: chatbot 16cards PWA multilang | S21 Mar14: liveJobs merged into MatchingJobs card, 7-country recruiters, fix langInstruction bug | S22 Mar14: Job Market Pulse bar (7-country hardcoded, animated pills), Your Market banner in Job Hunt panel, Live Jobs search moved post-results with country label, Quick Start 3-chip row above analyze button
+S1-4 Mar6-8: V1 12cards deploy security H1 submitted | S5-6 Mar11-12: MASTER_REF v4 640KB | S7-14 Mar13: V2 RAG streaming(failed→reverted) 14cards wizard(removed) | S15-17 Mar13-14: stopwords ATScolors skillsGap certs freelance strictScoring | S18 Mar14: v1/v2 folders liveJobs Serper | S19 Mar14: ATS algo complete mobile guide | S20 Mar14: chatbot 16cards PWA multilang | S21 Mar14: liveJobs merged into MatchingJobs card, 7-country recruiters, fix langInstruction bug | S22 Mar14: Job Market Pulse bar (7-country hardcoded, animated pills), Your Market banner in Job Hunt panel, Live Jobs search moved post-results with country label, Quick Start 3-chip row above analyze button | S23 Mar14: Country Hero Banner (flag+GPS+timezone+currency+GDP+pop+IT+industries+100yr roadmap), getMarketPulse expanded 12 markets with 6 fields each, manifest.json screenshots+shortcuts for store submission, mobile app guide (pwabuilder.com)
 
 ---
 *CLAUDE.md = GEMINI.md always · Update every ~10min · Build must pass before push*
