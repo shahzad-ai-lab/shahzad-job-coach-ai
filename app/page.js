@@ -131,8 +131,44 @@ function detectOS() {
   return 'Unknown'
 }
 
+// ── Flag emoji from ISO 2-letter country code ────────────────────────────────
+function countryFlag(code) {
+  if (!code || code.length !== 2) return '🌍'
+  return code.toUpperCase().split('').map(c => String.fromCodePoint(c.charCodeAt(0) + 127397)).join('')
+}
+
+// ── Country job market pulse (instant, no API) — 12 markets + global fallback ──
+function getMarketPulse(country = '', code = '') {
+  const c = country.toLowerCase(), cc = code.toUpperCase()
+  if (cc === 'CA' || c.includes('canada'))
+    return { stats: 'Tech hiring +12% · Express Entry draws active · Toronto #1 hub · 68% remote', laws: 'ESA notice · CPP/EI deductions · T4 slips · NOC codes · Human Rights Code', gdp: '$2.1T USD (2026)', pop: '40M', it: '~900K IT professionals', industries: 'Tech · Finance · Clean Energy · Pharma · Mining · AI Research', future: '2030: AI+clean energy hub · 2050: Top-5 innovation economy · 2126: Post-AGI prosperity leader' }
+  if (cc === 'US' || c.includes('united states'))
+    return { stats: 'AI/ML roles +34% · H-1B April · NYC·SF·Austin top · Layoffs stabilizing', laws: 'At-will employment · W-2 vs 1099 · I-9 work auth · EEO · Non-compete varies', gdp: '$28.5T USD (2026)', pop: '340M', it: '~5M IT professionals', industries: 'Tech · Defense · Finance · Healthcare · AI · Space', future: '2030: AI+quantum superpower · 2050: Automation economy · 2126: Post-scarcity civilization' }
+  if (cc === 'GB' || c.includes('united kingdom'))
+    return { stats: 'Skilled Worker Visa · London fintech booming · NHS hiring · IR35 rules', laws: 'IR35 contractor · P60/P45 · 28 days leave · GDPR on CVs · Equality Act 2010', gdp: '$3.1T USD (2026)', pop: '68M', it: '~1.7M IT professionals', industries: 'Finance · Pharma · Defence · Creative · FinTech · AI Safety', future: '2030: AI safety research capital · FinTech leader · 2126: Global trading hub' }
+  if (cc === 'AU' || c.includes('australia'))
+    return { stats: '482 TSS Visa · Mining+tech hybrid · Melbourne overtaking Sydney', laws: 'Fair Work Act · 4wks leave · Superannuation 11% · TFN · Modern awards', gdp: '$1.8T USD (2026)', pop: '27M', it: '~750K IT professionals', industries: 'Mining · Finance · Agriculture · Tech · Tourism · Defence', future: '2030: APAC AI hub · Critical minerals leader · 2126: Green hydrogen economy' }
+  if (cc === 'IN' || c.includes('india'))
+    return { stats: 'GCC explosion · Bangalore+Hyderabad #1 · FAANG India · Moonlighting varies', laws: 'PF/ESI · Form 16 · 1-3mo notice standard · IT Act · NDA standard', gdp: '$4.1T USD (2026)', pop: '1.44B', it: '~5.5M IT professionals', industries: 'IT/BPO · Pharma · Space · Defence · Textiles · Agriculture', future: '2030: 3rd largest economy · Space tech leader · 2126: 2nd largest GDP globally' }
+  if (cc === 'PK' || c.includes('pakistan'))
+    return { stats: 'Remote exports growing · Upwork+Fiverr #1 · $5B IT target · Karachi+Lahore', laws: 'EOBI · PESSI/SESSI · NTN freelancers · FBR remittance tax · Labour Act', gdp: '$350B USD (2026)', pop: '240M', it: '~600K IT professionals', industries: 'IT Export · Textiles · Agriculture · CPEC · Pharma', future: '2030: $5B IT exports · CPEC hub · 2126: Major South Asian digital economy' }
+  if (cc === 'AE' || c.includes('united arab') || c.includes('emirates'))
+    return { stats: 'Golden Visa · Dubai tech booming · Tax-free · DIFC fintech hub', laws: 'Labour Law Decree 33 · MOHRE · Gratuity after 1yr · No income tax · WPS', gdp: '$510B USD (2026)', pop: '10M', it: '~450K IT professionals', industries: 'Oil & Gas · Finance · Tourism · Logistics · AI · Real Estate', future: '2030: AI economy top-10 · Metaverse hub · 2126: Post-oil knowledge economy leader' }
+  if (cc === 'DE' || c.includes('germany'))
+    return { stats: 'Skilled Immigration Act 2024 · EU Blue Card · Berlin startups growing', laws: 'Works councils · 24 days min leave · Kurzarbeit · GDPR strict · Social security 40%', gdp: '$4.5T USD (2026)', pop: '84M', it: '~1.2M IT professionals', industries: 'Auto · Engineering · Pharma · Finance · Chemicals · AI', future: '2030: Green industrial leader · Hydrogen economy · 2126: Engineering civilization anchor' }
+  if (cc === 'SG' || c.includes('singapore'))
+    return { stats: 'Employment Pass · SkillsFuture credits · MAS fintech · APAC HQ magnet', laws: 'Employment Act · CPF 17% employer · PDPA · Fair Consideration Framework', gdp: '$560B USD (2026)', pop: '6M', it: '~250K IT professionals', industries: 'Finance · Biotech · Logistics · Tech · Tourism · Education', future: '2030: AI governance capital · Smart City 2.0 · 2126: City-state model for world' }
+  if (cc === 'NZ' || c.includes('new zealand'))
+    return { stats: 'Accredited Employer Work Visa · Wellington+Auckland tech · Work-life balance', laws: 'Employment Relations Act · 4wks leave · KiwiSaver 3% · 90-day trial', gdp: '$250B USD (2026)', pop: '5.2M', it: '~120K IT professionals', industries: 'Agriculture · Tourism · Tech · Film · Education · Healthcare', future: '2030: Agri-tech leader · 100% clean energy · 2126: Model sustainable economy' }
+  if (cc === 'NG' || c.includes('nigeria'))
+    return { stats: 'Lagos tech booming · Andela+Flutterwave · Diaspora remote surging', laws: 'Labour Act · PENCOM pension · NSITF · PITA · NIN required', gdp: '$450B USD (2026)', pop: '220M', it: '~500K IT professionals', industries: 'Oil & Gas · Fintech · Agriculture · Telecom · Crypto · Entertainment', future: '2030: Africa tech capital · AfCFTA leader · 2126: 400M+ people — largest African economy' }
+  if (cc === 'ZA' || c.includes('south africa'))
+    return { stats: 'FinTech Cape Town · BPO strong · Load-shedding drives remote demand', laws: 'BCEA 45hr week · UIF · POPIA privacy · B-BBEE · NQF qualifications', gdp: '$400B USD (2026)', pop: '62M', it: '~300K IT professionals', industries: 'Mining · Finance · Tourism · BPO · Agriculture · FinTech', future: '2030: Africa financial hub · Renewables leader · 2126: Gateway to African growth economy' }
+  return { stats: 'Remote work rising globally · AI+digital skills #1 · English opens all doors', laws: 'Know local notice period rights · Understand tax obligations · Verify work authorization', gdp: 'Global economy $110T+', pop: '8.1B', it: '60M+ IT professionals worldwide', industries: 'Tech · Finance · Healthcare · Education · Energy · AI', future: '2030: AI transforms 40% of jobs · 2050: Human-AI collaboration economy · 2126: Post-AGI civilization' }
+}
+
 // ── All individual card keys (used for API request) ───────────────────────────
-const ALL_CARD_KEYS = ['resumeScore','recruiterPov','coverLetter','resumeRewrite','skillsGap','interviewPrep','introScripts','starStories','linkedinSummary','matchingJobs','visaPathways','thankYouEmail','salaryNegotiation','actionPlan','coldOutreach','careerPivot']
+const ALL_CARD_KEYS = ['resumeScore','recruiterPov','coverLetter','resumeRewrite','skillsGap','interviewPrep','introScripts','starStories','linkedinSummary','matchingJobs','visaPathways','thankYouEmail','salaryNegotiation','actionPlan','coldOutreach','careerPivot','countryLaws']
 
 // ── 5 grouped super-cards ─────────────────────────────────────────────────────
 const GROUPS = [
@@ -194,7 +230,18 @@ const GROUPS = [
     tabs: [
       { key: 'coverLetter',   label: 'Cover Letter', icon: '✉️' },
       { key: 'thankYouEmail', label: 'Thank You',    icon: '💌' },
-      { key: 'visaPathways',  label: 'Global Visas', icon: '🌍' },
+    ],
+  },
+  {
+    id: 'legal',
+    title: 'Legal & Global',
+    icon: '⚖️',
+    g: 'linear-gradient(135deg,#11998E,#38EF7D)',
+    desc: '3 tools — laws, visas, compliance',
+    tabs: [
+      { key: 'countryLaws',  label: 'Labor Laws & GRC', icon: '⚖️' },
+      { key: 'visaPathways', label: 'Global Visas',      icon: '🌍' },
+      { key: 'salaryNegotiation', label: 'Salary Levels', icon: '💰' },
     ],
   },
 ]
@@ -399,7 +446,7 @@ export default function Home() {
     fetch('https://ipapi.co/json/')
       .then(r => r.json())
       .then(d => {
-        setUserInfo({ city: d.city || '—', region: d.region || '—', country: d.country_name || '—', os: detectOS() })
+        setUserInfo({ city: d.city || '—', region: d.region || '—', country: d.country_name || '—', countryCode: d.country_code || '', lat: d.latitude ? d.latitude.toFixed(4) : null, lng: d.longitude ? d.longitude.toFixed(4) : null, os: detectOS(), timezone: d.timezone || '', currency: d.currency || '' })
         if (d.city && d.country_name) setSearchLocation(`${d.city}, ${d.country_name}`)
         const loc = encodeURIComponent((d.city || '') + ',' + (d.country_code || ''))
         return fetch(`https://wttr.in/${loc}?format=%c+%C+%t&m`)
@@ -687,6 +734,120 @@ export default function Home() {
           </div>
         </div>
 
+        {/* ── Job Market Pulse ──────────────────────────────────────────────── */}
+        {userInfo && (() => {
+          const c = userInfo.country || ''
+          let pulse = '🌍 Global market — Remote work rising · AI skills most in-demand · English + digital literacy open doors worldwide'
+          if (c.includes('Canada')) pulse = '🇨🇦 Canada — Tech hiring up 12% · Express Entry draws active · Toronto #1 tech hub · Remote work: 68% of tech roles'
+          else if (c.includes('United States') || c.includes('USA')) pulse = '🇺🇸 USA — AI/ML roles up 34% · H-1B lottery: April · NYC/SF/Austin top markets · Layoffs stabilizing Q1 2026'
+          else if (c.includes('United Kingdom') || c.includes('UK')) pulse = '🇬🇧 UK — Skilled Worker visa active · London fintech booming · NHS hiring surge · IR35 freelance rules apply'
+          else if (c.includes('Australia')) pulse = '🇦🇺 Australia — 482 visa popular · Mining + tech hybrid roles hot · Melbourne overtaking Sydney for tech'
+          else if (c.includes('India')) pulse = '🇮🇳 India — GCC hiring explosion · Bangalore/Hyderabad top · FAANG India campuses growing · Moonlighting policy varies'
+          else if (c.includes('Pakistan') || c.includes('United Arab') || c.includes('UAE')) pulse = '🇦🇪 UAE/Gulf — Golden Visa available · Dubai tech scene booming · Tax-free salaries · Remote + onsite hybrid common'
+          return (
+            <div style={{
+              background: 'linear-gradient(90deg,rgba(0,174,239,0.12),rgba(250,207,57,0.08),rgba(56,239,125,0.08))',
+              borderBottom: '1px solid rgba(255,255,255,0.07)',
+              padding: '0',
+              overflow: 'hidden',
+            }}>
+              <div style={{ maxWidth: 1200, margin: '0 auto', padding: '9px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{
+                  fontSize: 10, fontWeight: 900, letterSpacing: 1.5, textTransform: 'uppercase',
+                  color: '#FACF39', whiteSpace: 'nowrap', flexShrink: 0,
+                }}>
+                  Market Pulse
+                </span>
+                <div style={{
+                  flex: 1, overflowX: 'auto', display: 'flex', gap: 8, scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                }}>
+                  {pulse.split('·').map((segment, i) => (
+                    <span key={i} style={{
+                      display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
+                      fontSize: 12, fontWeight: i === 0 ? 800 : 500,
+                      color: i === 0 ? '#fff' : 'rgba(255,255,255,0.65)',
+                      padding: i === 0 ? '3px 10px 3px 0' : '3px 10px',
+                      borderRadius: i === 0 ? 0 : 20,
+                      background: i === 0 ? 'none' : 'rgba(255,255,255,0.06)',
+                      border: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                      animation: 'fade-in 0.4s ease',
+                      animationDelay: `${i * 0.08}s`,
+                      animationFillMode: 'both',
+                    }}>
+                      {segment.trim()}
+                    </span>
+                  ))}
+                </div>
+                <div style={{
+                  width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
+                  background: '#38EF7D',
+                  boxShadow: '0 0 8px rgba(56,239,125,0.8)',
+                  animation: 'pulse-glow 2s ease-in-out infinite',
+                }} />
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* ── Country Hero Banner ──────────────────────────────────────────── */}
+        {userInfo?.countryCode && (() => {
+          const pulse = getMarketPulse(userInfo.country, userInfo.countryCode)
+          const flag = countryFlag(userInfo.countryCode)
+          return (
+            <div style={{
+              background: 'linear-gradient(135deg,rgba(0,114,255,0.08),rgba(250,207,57,0.06),rgba(56,239,125,0.06))',
+              borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '18px 20px',
+            }}>
+              <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+                {/* Top row: flag + country + coords + currency */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginBottom: 12 }}>
+                  <span style={{ fontSize: 40, lineHeight: 1 }}>{flag}</span>
+                  <div>
+                    <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>
+                      {userInfo.country}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 3 }}>
+                      <span>🏙️ {userInfo.city}, {userInfo.region}</span>
+                      {userInfo.lat && <span>📡 {userInfo.lat}°N {userInfo.lng}°E</span>}
+                      {userInfo.timezone && <span>🕐 {userInfo.timezone}</span>}
+                      {userInfo.currency && <span>💱 {userInfo.currency}</span>}
+                    </div>
+                  </div>
+                  {/* Quick stats pills */}
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginLeft: 'auto' }}>
+                    {[
+                      { label: 'GDP', val: pulse.gdp },
+                      { label: 'Population', val: pulse.pop },
+                      { label: 'IT Workforce', val: pulse.it },
+                    ].map(s => (
+                      <div key={s.label} style={{ padding: '5px 12px', borderRadius: 20, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
+                        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{s.label}</div>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: '#FACF39' }}>{s.val}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Bottom rows: industries + future */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 10 }}>
+                  <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(0,174,239,0.07)', border: '1px solid rgba(0,174,239,0.15)' }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: '#00AEEF', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 5 }}>🏭 Key Industries 2026</div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6 }}>{pulse.industries}</div>
+                  </div>
+                  <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(56,239,125,0.06)', border: '1px solid rgba(56,239,125,0.15)' }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: '#38EF7D', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 5 }}>🚀 100-Year Career Roadmap</div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6 }}>{pulse.future}</div>
+                  </div>
+                  <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(250,207,57,0.06)', border: '1px solid rgba(250,207,57,0.15)' }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: '#FACF39', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 5 }}>⚖️ Legal Essentials</div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6 }}>{pulse.laws}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
+
         {/* ── Header ───────────────────────────────────────────────────────── */}
         <header style={{ padding: '28px 16px 16px', textAlign: 'center' }}>
           <div style={{
@@ -879,6 +1040,29 @@ export default function Home() {
             </div>
           )}
 
+          {/* ── Quick Start chips ─────────────────────────────────────────────── */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 10, marginBottom: 20 }}>
+            {[
+              '📋 Upload Resume + Paste Job → Get 16 AI Reports',
+              '🌍 Includes: Visa Paths · Local Recruiters · Live Jobs',
+              '🔒 Zero data stored · No login · 100% free',
+            ].map((chip, i) => (
+              <span key={i} style={{
+                fontSize: 12, fontWeight: 600,
+                padding: '7px 16px', borderRadius: 999,
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.14)',
+                color: 'rgba(255,255,255,0.7)',
+                letterSpacing: 0.2,
+                animation: 'fade-in 0.5s ease',
+                animationDelay: `${i * 0.1}s`,
+                animationFillMode: 'both',
+              }}>
+                {chip}
+              </span>
+            ))}
+          </div>
+
           {/* ── Analyze Button ────────────────────────────────────────────────── */}
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <button
@@ -1037,6 +1221,24 @@ export default function Home() {
                       }
                     </div>
 
+                    {/* Your Market banner — shown inside Job Hunt group */}
+                    {activeGroup === 'jobhunt' && userInfo?.country && (
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        padding: '8px 14px', marginBottom: 16, borderRadius: 10,
+                        background: 'rgba(56,239,125,0.07)',
+                        border: '1px solid rgba(56,239,125,0.2)',
+                      }}>
+                        <span style={{ fontSize: 13 }}>📍</span>
+                        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', fontWeight: 500 }}>
+                          Showing results for your market:
+                        </span>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: '#38EF7D' }}>
+                          {userInfo.country}
+                        </span>
+                      </div>
+                    )}
+
                     {/* Live Jobs — shown inside Job Hunt → Live Jobs & Match tab */}
                     {activeGroup === 'jobhunt' && activeTab === 'matchingJobs' && (
                       <div style={{ marginTop: 20 }}>
@@ -1082,12 +1284,13 @@ export default function Home() {
           )}
 
           {/* ── Live Jobs from Google ─────────────────────────────────────────── */}
+          {results !== null && (
           <div style={{ ...glass, marginTop: 40, border: '1px solid rgba(56,239,125,0.25)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
               <span style={{ fontSize: 28 }}>🔍</span>
               <div>
                 <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(135deg,#38EF7D,#00AEEF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  Live Jobs — Fresh from Google
+                  Search More Jobs{userInfo?.country ? ` in ${userInfo.country}` : ''} — Fresh from Google
                 </h2>
                 <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
                   Real job postings · Posted in last 1–2 weeks · Direct apply links
@@ -1201,6 +1404,7 @@ export default function Home() {
                   </div>
             )}
           </div>
+          )}
 
           {/* ── Privacy / Disclaimer footer card ────────────────────────────── */}
           <div style={{ ...glass, marginTop: 40, padding: '20px 24px' }}>

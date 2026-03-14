@@ -1,5 +1,5 @@
 # CLAUDE.md = GEMINI.md — MASTER BLUEPRINT (ULTRA COMPRESSED)
-**Updated: March 14, 2026 — Session 21 | Rule: start session → "Read CLAUDE.md resume where left off"**
+**Updated: March 14, 2026 — Session 22 | Rule: start session → "Read CLAUDE.md resume where left off"**
 
 ---
 
@@ -107,7 +107,7 @@ Test models: https://shahzad-job-coach-ai.vercel.app/api/test
 ---
 
 ## SESSION LOG (compressed)
-S1-4 Mar6-8: V1 12cards deploy security H1 submitted | S5-6 Mar11-12: MASTER_REF v4 640KB | S7-14 Mar13: V2 RAG streaming(failed→reverted) 14cards wizard(removed) | S15-17 Mar13-14: stopwords ATScolors skillsGap certs freelance strictScoring | S18 Mar14: v1/v2 folders liveJobs Serper | S19 Mar14: ATS algo complete mobile guide | S20 Mar14: chatbot 16cards PWA multilang | S21 Mar14: liveJobs merged into MatchingJobs card, 7-country recruiters, fix langInstruction bug
+S1-4 Mar6-8: V1 12cards deploy security H1 submitted | S5-6 Mar11-12: MASTER_REF v4 640KB | S7-14 Mar13: V2 RAG streaming(failed→reverted) 14cards wizard(removed) | S15-17 Mar13-14: stopwords ATScolors skillsGap certs freelance strictScoring | S18 Mar14: v1/v2 folders liveJobs Serper | S19 Mar14: ATS algo complete mobile guide | S20 Mar14: chatbot 16cards PWA multilang | S21 Mar14: liveJobs merged into MatchingJobs card, 7-country recruiters, fix langInstruction bug | S22 Mar14: Job Market Pulse bar (7-country hardcoded, animated pills), Your Market banner in Job Hunt panel, Live Jobs search moved post-results with country label, Quick Start 3-chip row above analyze button
 
 ---
 *CLAUDE.md = GEMINI.md always · Update every ~10min · Build must pass before push*
