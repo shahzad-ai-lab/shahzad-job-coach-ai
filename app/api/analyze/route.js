@@ -133,7 +133,7 @@ export async function POST(request) {
 
       for (let i = 1; i < sections.length; i++) {
         const sec = sections[i]
-        const header = sec.split('\\n')[0].toUpperCase()
+        const header = sec.split('\n')[0].toUpperCase()
         let shouldInclude = false
         if (activeTriggers.has('VISA') && header.includes('VISA')) shouldInclude = true
         if (activeTriggers.has('FUTURE') && header.includes('FUTURE')) shouldInclude = true
@@ -144,7 +144,7 @@ export async function POST(request) {
         if (shouldInclude) relevantSections.push(sec)
       }
 
-      masterGuide = relevantSections.join('\\n').slice(0, 45000)
+      masterGuide = relevantSections.join('\n').slice(0, 45000)
     }
   } catch (e) {
     console.warn("Could not read MASTER_CAREER_REFERENCE.md", e)
@@ -154,24 +154,24 @@ export async function POST(request) {
   ipStore.set(ip, rateEntry)
 
   const ALL_PROMPT_SECTIONS = {
-    resumeScore: "### resumeScore\\n[Content: ATS SCORE /100, keywords found/missing, summary]",
-    coverLetter: "### coverLetter\\n[Content: 3-paragraph tailored cover letter]",
-    resumeRewrite: "### resumeRewrite\\n[Content: Full rewritten resume]",
-    skillsGap: "### skillsGap\\n[Content: Hard/soft skills matching and top 3 actions]",
-    interviewPrep: "### interviewPrep\\n[Content: 5 expected questions and strategies]",
-    starStories: "### starStories\\n[Content: 3 tailored STAR behavioral stories]",
-    linkedinSummary: "### linkedinSummary\\n[Content: Tailored LinkedIn About section]",
-    introScripts: "### introScripts\\n[Content: 1-min, 2-min, 3-min introduction scripts]",
-    matchingJobs: "### matchingJobs\\n[Content: 5 similar roles to consider]",
-    thankYouEmail: "### thankYouEmail\\n[Content: Post-interview email template]",
-    salaryNegotiation: "### salaryNegotiation\\n[Content: Market salary research (search if needed), scripts, what to avoid]",
-    actionPlan: "### actionPlan\\n[Content: 30-60-90 day onboarding plan]",
-    visaPathways: "### visaPathways\\n[Content: Analyze the candidate's likely location vs target job. Provide 3 specific Visa/Immigration pathways or remote work digital nomad options (e.g., H1-B, Express Entry, D8) using the Master Guide knowledge.]",
-    recruiterPov: "### recruiterPov\\n[Content: Act as a ruthless Fortune 500 tech recruiter. List the top 3 instant 'Red Flags' or rejection reasons in this resume, and exactly how the candidate must fix them immediately.]"
+    resumeScore: "### resumeScore\n[Content: ATS SCORE /100, keywords found/missing, summary]",
+    coverLetter: "### coverLetter\n[Content: 3-paragraph tailored cover letter]",
+    resumeRewrite: "### resumeRewrite\n[Content: Full rewritten resume]",
+    skillsGap: "### skillsGap\n[Content: Hard/soft skills matching and top 3 actions]",
+    interviewPrep: "### interviewPrep\n[Content: 5 expected questions and strategies]",
+    starStories: "### starStories\n[Content: 3 tailored STAR behavioral stories]",
+    linkedinSummary: "### linkedinSummary\n[Content: Tailored LinkedIn About section]",
+    introScripts: "### introScripts\n[Content: 1-min, 2-min, 3-min introduction scripts]",
+    matchingJobs: "### matchingJobs\n[Content: 5 similar roles to consider]",
+    thankYouEmail: "### thankYouEmail\n[Content: Post-interview email template]",
+    salaryNegotiation: "### salaryNegotiation\n[Content: Market salary research (search if needed), scripts, what to avoid]",
+    actionPlan: "### actionPlan\n[Content: 30-60-90 day onboarding plan]",
+    visaPathways: "### visaPathways\n[Content: Analyze the candidate's likely location vs target job. Provide 3 specific Visa/Immigration pathways or remote work digital nomad options (e.g., H1-B, Express Entry, D8) using the Master Guide knowledge.]",
+    recruiterPov: "### recruiterPov\n[Content: Act as a ruthless Fortune 500 tech recruiter. List the top 3 instant 'Red Flags' or rejection reasons in this resume, and exactly how the candidate must fix them immediately.]"
   }
 
   const keysToUse = requestedKeys || Object.keys(ALL_PROMPT_SECTIONS)
-  const dynamicSections = keysToUse.map(k => ALL_PROMPT_SECTIONS[k]).join('\\n')
+  const dynamicSections = keysToUse.map(k => ALL_PROMPT_SECTIONS[k]).join('\n')
 
   const prompt = `You are an expert career coach and ATS specialist. 
 Analyze the resume and job posting carefully in the context of global best practices.
@@ -230,14 +230,14 @@ ${dynamicSections}
               if (done) break
               buffer += decoder.decode(value, { stream: true })
               
-              const chunks = buffer.split('\\n\\n')
+              const chunks = buffer.split('\n\n')
               buffer = chunks.pop() || '' // Keep the last incomplete chunk
               
               for (const chunk of chunks) {
                 if (!chunk.trim() || chunk.includes('[DONE]')) continue
                 
                 // Gemini SSE lines start with "data: "
-                const dataMatch = chunk.match(/^data:\\s*(.+)$/s)
+                const dataMatch = chunk.match(/^data:\s*(.+)$/s)
                 if (dataMatch) {
                   try {
                     const data = JSON.parse(dataMatch[1])
