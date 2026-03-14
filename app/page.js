@@ -567,7 +567,7 @@ export default function Home() {
                 In an era of <strong style={{ color: '#FACF39' }}>AI layoffs and global career migration</strong>, these 14 tools help anyone — from Mississauga to Mumbai — compete at the highest level. Explore visa pathways, crush ATS filters, and build your 30-60-90 day plan with AI guidance backed by real global career data.
               </p>
               <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-                100% free · Zero data stored · Powered by Google Gemini AntiGravity
+                100% free · Zero data stored · Built with heart and mind
               </p>
             </div>
           )}
@@ -894,7 +894,7 @@ export default function Home() {
                   <li>We do <strong style={{ color: 'rgba(255,255,255,0.6)' }}>NOT</strong> store the job description or AI results</li>
                   <li>Data is processed in-memory and discarded immediately</li>
                   <li>Refresh or close — everything is gone</li>
-                  <li>AI analysis provided by Google Gemini (Google Privacy Policy applies)</li>
+                  <li>AI analysis is processed via a third-party AI service — no data is retained after processing</li>
                 </ul>
               </div>
               <div>
@@ -925,10 +925,10 @@ export default function Home() {
 
         {/* ── Footer ─────────────────────────────────────────────────────────── */}
         <footer style={{ textAlign: 'center', padding: '28px 16px', borderTop: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
-          Built by{' '}
+          Built with heart and mind by{' '}
           <strong style={{ color: '#FF0099' }}>Shahzad</strong>
-          {' · Mississauga, Ontario · Powered by '}
-          <strong style={{ color: '#FACF39' }}>Google Gemini AntiGravity</strong>
+          {' · Mississauga, Ontario · '}
+          <strong style={{ color: '#FACF39' }}>Free for All Humanity</strong>
           {' · Free for All Humanity'}
         </footer>
 
