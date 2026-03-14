@@ -131,24 +131,72 @@ function detectOS() {
   return 'Unknown'
 }
 
-// ── Cards definition ──────────────────────────────────────────────────────────
-const CARDS = [
-  { key: 'resumeScore',       title: 'ATS Score',        icon: '📊', g: 'linear-gradient(135deg,#00C6FF,#0072FF)' },
-  { key: 'recruiterPov',      title: 'Recruiter POV',    icon: '🚩', g: 'linear-gradient(135deg,#FF416C,#FF4B2B)' },
-  { key: 'coverLetter',       title: 'Cover Letter',     icon: '✉️',  g: 'linear-gradient(135deg,#FF0099,#FF6B6B)' },
-  { key: 'resumeRewrite',     title: 'Resume Rewrite',   icon: '📄',  g: 'linear-gradient(135deg,#7B2FBE,#C84B31)' },
-  { key: 'skillsGap',         title: 'Skills Gap',       icon: '🎯',  g: 'linear-gradient(135deg,#FF6B35,#FACF39)' },
-  { key: 'interviewPrep',     title: 'Interview Prep',   icon: '🎤',  g: 'linear-gradient(135deg,#11998E,#38EF7D)' },
-  { key: 'introScripts',      title: 'Intro Scripts',    icon: '🗣️',  g: 'linear-gradient(135deg,#FC466B,#3F5EFB)' },
-  { key: 'starStories',       title: 'STAR Stories',     icon: '⭐',  g: 'linear-gradient(135deg,#F7971E,#FFD200)' },
-  { key: 'linkedinSummary',   title: 'LinkedIn',         icon: '💼',  g: 'linear-gradient(135deg,#1CB5E0,#000851)' },
-  { key: 'matchingJobs',      title: 'Matching Jobs',    icon: '🏢',  g: 'linear-gradient(135deg,#56CCF2,#2F80ED)' },
-  { key: 'visaPathways',      title: 'Global Visas',     icon: '🌍',  g: 'linear-gradient(135deg,#38EF7D,#00AEEF)' },
-  { key: 'thankYouEmail',     title: 'Thank You',        icon: '💌',  g: 'linear-gradient(135deg,#DA22FF,#9733EE)' },
-  { key: 'salaryNegotiation', title: 'Salary Strategy',  icon: '💰',  g: 'linear-gradient(135deg,#11998E,#38EF7D)' },
-  { key: 'actionPlan',        title: '30-60-90 Plan',    icon: '🗓️',  g: 'linear-gradient(135deg,#FF416C,#FF4B2B)' },
-  { key: 'coldOutreach',      title: 'Cold Outreach',    icon: '📨',  g: 'linear-gradient(135deg,#8E2DE2,#4A00E0)' },
-  { key: 'careerPivot',       title: 'Career Pivot',     icon: '🔄',  g: 'linear-gradient(135deg,#F7971E,#FFD200)' },
+// ── All individual card keys (used for API request) ───────────────────────────
+const ALL_CARD_KEYS = ['resumeScore','recruiterPov','coverLetter','resumeRewrite','skillsGap','interviewPrep','introScripts','starStories','linkedinSummary','matchingJobs','visaPathways','thankYouEmail','salaryNegotiation','actionPlan','coldOutreach','careerPivot']
+
+// ── 5 grouped super-cards ─────────────────────────────────────────────────────
+const GROUPS = [
+  {
+    id: 'resume',
+    title: 'Resume Power',
+    icon: '📊',
+    g: 'linear-gradient(135deg,#00C6FF,#0072FF)',
+    desc: '4 tools — score, rewrite, profile',
+    tabs: [
+      { key: 'resumeScore',     label: 'ATS Score',      icon: '📊' },
+      { key: 'recruiterPov',    label: 'Recruiter POV',  icon: '🚩' },
+      { key: 'resumeRewrite',   label: 'Resume Rewrite', icon: '📄' },
+      { key: 'linkedinSummary', label: 'LinkedIn',       icon: '💼' },
+    ],
+  },
+  {
+    id: 'jobhunt',
+    title: 'Job Hunt',
+    icon: '🔍',
+    g: 'linear-gradient(135deg,#38EF7D,#00AEEF)',
+    desc: '3 tools + live jobs + recruiters',
+    tabs: [
+      { key: 'matchingJobs',  label: 'Live Jobs & Match', icon: '🏢' },
+      { key: 'careerPivot',   label: 'Career Pivot',      icon: '🔄' },
+      { key: 'coldOutreach',  label: 'Cold Outreach',     icon: '📨' },
+    ],
+  },
+  {
+    id: 'interview',
+    title: 'Interview Ready',
+    icon: '🎤',
+    g: 'linear-gradient(135deg,#FC466B,#3F5EFB)',
+    desc: '3 tools — prep, stories, scripts',
+    tabs: [
+      { key: 'interviewPrep', label: 'Interview Prep', icon: '🎤' },
+      { key: 'starStories',   label: 'STAR Stories',   icon: '⭐' },
+      { key: 'introScripts',  label: 'Intro Scripts',  icon: '🗣️' },
+    ],
+  },
+  {
+    id: 'strategy',
+    title: 'Career Strategy',
+    icon: '🚀',
+    g: 'linear-gradient(135deg,#FF6B35,#FACF39)',
+    desc: '3 tools — skills, salary, plan',
+    tabs: [
+      { key: 'skillsGap',         label: 'Skills Gap',    icon: '🎯' },
+      { key: 'salaryNegotiation', label: 'Salary',        icon: '💰' },
+      { key: 'actionPlan',        label: '30-60-90 Plan', icon: '🗓️' },
+    ],
+  },
+  {
+    id: 'documents',
+    title: 'Documents',
+    icon: '✉️',
+    g: 'linear-gradient(135deg,#DA22FF,#9733EE)',
+    desc: '3 tools — letters, visa paths',
+    tabs: [
+      { key: 'coverLetter',   label: 'Cover Letter', icon: '✉️' },
+      { key: 'thankYouEmail', label: 'Thank You',    icon: '💌' },
+      { key: 'visaPathways',  label: 'Global Visas', icon: '🌍' },
+    ],
+  },
 ]
 
 // ── RenderText: converts markdown-like text to React elements ─────────────────
@@ -299,7 +347,8 @@ export default function Home() {
   const [jobUploading, setJobUploading] = useState(false)
   const [jobFileName, setJobFileName] = useState('')
   const [jobDragOver, setJobDragOver] = useState(false)
-  const [activeCard, setActiveCard]   = useState(null)
+  const [activeGroup, setActiveGroup] = useState(null)
+  const [activeTab, setActiveTab]     = useState(null)
   const [copied, setCopied]           = useState('')
   const [userInfo, setUserInfo]       = useState(null)
   const [weather, setWeather]         = useState('')
@@ -407,11 +456,11 @@ export default function Home() {
     if (!jobText.trim())    { setError('Please paste the job description.'); setErrorDismissed(false); return }
     const rl = checkRL()
     if (!rl.ok) { setError(rl.msg); setErrorDismissed(false); return }
-    setError(''); setErrorDismissed(false); setLoading(true); setResults({}); setActiveCard(CARDS[0].key)
+    setError(''); setErrorDismissed(false); setLoading(true); setResults({}); setActiveGroup(null); setActiveTab(null)
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeText, jobPosting: jobText, requestedKeys: CARDS.map(c => c.key), lang: userLang }),
+        body: JSON.stringify({ resumeText, jobPosting: jobText, requestedKeys: ALL_CARD_KEYS, lang: userLang, userCountry: userInfo?.country || '' }),
       })
       if (!res.ok) {
         let msg = 'Analysis failed'
@@ -508,11 +557,13 @@ export default function Home() {
     if (!results) return
     let content = 'JOB COACH AI 2026 — COMPREHENSIVE CAREER REPORT\n'
     content += '=================================================\n\n'
-    CARDS.forEach(card => {
-      if (results[card.key]) {
-        content += `\n--- ${card.title.toUpperCase()} ---\n`
-        content += results[card.key] + '\n'
-      }
+    GROUPS.forEach(group => {
+      group.tabs.forEach(tab => {
+        if (results[tab.key]) {
+          content += `\n--- ${group.title.toUpperCase()} · ${tab.label.toUpperCase()} ---\n`
+          content += results[tab.key] + '\n'
+        }
+      })
     })
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
     const url  = URL.createObjectURL(blob)
@@ -846,7 +897,7 @@ export default function Home() {
               onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = loading ? 'none' : '0 8px 40px rgba(250,207,57,0.45)' }}
             >
               <span style={{ fontSize: 24 }}>{loading ? '✨' : '🚀'}</span>
-              {loading ? 'Generating all 14 outputs...' : 'Generate 14 Results'}
+              {loading ? 'Generating all 16 AI tools...' : 'Analyse My Profile — 16 AI Tools'}
             </button>
             {loading && (
               <div style={{ marginTop: 18 }}>
@@ -861,7 +912,7 @@ export default function Home() {
                   ))}
                 </div>
                 <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, margin: 0 }}>
-                  AI is generating all 14 career tools — about 15–30 seconds...
+                  AI generating all 16 tools — takes about 20–35 seconds...
                 </p>
               </div>
             )}
@@ -895,141 +946,127 @@ export default function Home() {
                   </button>
                 </div>
               </div>
-              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, marginBottom: 20 }}>
-                Click any card to view · Green dot = result ready
+              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginBottom: 20 }}>
+                Select a category · then choose a tool inside
               </p>
 
-              {/* Card chips grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(130px,1fr))', gap: 10, marginBottom: 24 }}>
-                {CARDS.map(card => {
-                  const hasResult = !!(results[card.key])
-                  const isActive  = activeCard === card.key
+              {/* ── 5 Group Cards ──────────────────────────────────────────── */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 14, marginBottom: 24 }}>
+                {GROUPS.map(group => {
+                  const isActive = activeGroup === group.id
+                  const readyCount = group.tabs.filter(t => !!results[t.key]).length
+                  const allReady = readyCount === group.tabs.length
                   return (
-                    <button
-                      key={card.key}
-                      onClick={() => setActiveCard(card.key)}
-                      style={{
-                        borderRadius: 16, padding: '14px 8px', textAlign: 'center', cursor: 'pointer',
-                        background: isActive ? card.g : 'rgba(255,255,255,0.06)',
-                        border: `2px solid ${isActive ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.08)'}`,
-                        boxShadow: isActive ? '0 6px 20px rgba(0,0,0,0.4)' : 'none',
-                        transform: isActive ? 'scale(1.06)' : 'scale(1)',
-                        transition: 'all .3s cubic-bezier(0.25,0.8,0.25,1)',
-                        fontFamily: 'inherit', color: '#fff', position: 'relative', overflow: 'hidden',
+                    <button key={group.id}
+                      onClick={() => {
+                        setActiveGroup(isActive ? null : group.id)
+                        setActiveTab(isActive ? null : group.tabs[0].key)
                       }}
-                      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.transform = 'scale(1.04) translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 18px rgba(0,0,0,0.4)' } }}
-                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none' } }}
+                      style={{
+                        borderRadius: 18, padding: '20px 14px', textAlign: 'center', cursor: 'pointer',
+                        background: isActive ? group.g : 'rgba(255,255,255,0.06)',
+                        border: `2px solid ${isActive ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                        boxShadow: isActive ? '0 8px 32px rgba(0,0,0,0.5)' : 'none',
+                        transform: isActive ? 'scale(1.04) translateY(-2px)' : 'scale(1)',
+                        transition: 'all .3s ease', fontFamily: 'inherit', color: '#fff',
+                        position: 'relative', overflow: 'hidden',
+                      }}
+                      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.transform = 'scale(1.03) translateY(-2px)'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)' } }}
+                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)' } }}
                     >
-                      {/* Loading shimmer or ready indicator */}
-                      {loading && !hasResult && <ShimmerOverlay />}
-                      {hasResult && (
-                        <div style={{
-                          position: 'absolute', top: 7, right: 7, width: 8, height: 8,
-                          borderRadius: '50%', background: '#38EF7D',
-                          boxShadow: '0 0 6px rgba(56,239,125,0.8)',
-                        }} />
-                      )}
-                      <div style={{ fontSize: 24, marginBottom: 5 }}>{card.icon}</div>
-                      <div style={{ fontSize: 10, fontWeight: 700, lineHeight: 1.3, opacity: isActive ? 1 : 0.8 }}>{card.title}</div>
+                      {loading && !allReady && <ShimmerOverlay />}
+                      {/* Ready badge */}
+                      <div style={{ position: 'absolute', top: 8, right: 10, fontSize: 10, fontWeight: 800,
+                        color: allReady ? '#38EF7D' : 'rgba(255,255,255,0.3)' }}>
+                        {readyCount}/{group.tabs.length}
+                      </div>
+                      <div style={{ fontSize: 32, marginBottom: 8 }}>{group.icon}</div>
+                      <div style={{ fontSize: 13, fontWeight: 900, marginBottom: 4 }}>{group.title}</div>
+                      <div style={{ fontSize: 10, color: isActive ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.4)', lineHeight: 1.4 }}>{group.desc}</div>
                     </button>
                   )
                 })}
               </div>
 
-              {/* Active card content panel */}
-              {activeCard && (() => {
-                const card = CARDS.find(c => c.key === activeCard)
-                const content = results[activeCard]
+              {/* ── Active Group Panel ─────────────────────────────────────── */}
+              {activeGroup && (() => {
+                const group = GROUPS.find(g => g.id === activeGroup)
+                const tab = group.tabs.find(t => t.key === activeTab) || group.tabs[0]
+                const content = results[tab.key]
                 return (
-                  <div style={{ ...glass, border: '1px solid rgba(255,255,255,0.18)', boxShadow: '0 12px 48px rgba(0,0,0,0.6)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-                      <h3 style={{ margin: 0, fontSize: 20, fontWeight: 900, background: card.g, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <span style={{ fontSize: 26 }}>{card.icon}</span> {card.title}
+                  <div style={{ ...glass, border: `1px solid rgba(255,255,255,0.2)`, boxShadow: '0 16px 56px rgba(0,0,0,0.6)', animation: 'fade-in 0.25s ease' }}>
+                    {/* Group header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+                      <h3 style={{ margin: 0, fontSize: 20, fontWeight: 900, background: group.g, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontSize: 26 }}>{group.icon}</span> {group.title}
                       </h3>
-                      <button
-                        onClick={() => content && copyToClipboard(content, activeCard)}
-                        disabled={!content}
-                        style={{
-                          background: copied === activeCard ? 'linear-gradient(135deg,#11998E,#38EF7D)' : 'rgba(255,255,255,0.1)',
-                          color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10,
-                          padding: '8px 18px', cursor: content ? 'pointer' : 'not-allowed',
-                          fontSize: 13, fontWeight: 700, transition: 'all .2s', fontFamily: 'inherit',
-                          opacity: content ? 1 : 0.4,
-                        }}
-                      >
-                        {copied === activeCard ? '✓ Copied!' : '📋 Copy'}
+                      <button onClick={() => content && copyToClipboard(content, tab.key)} disabled={!content}
+                        style={{ background: copied === tab.key ? 'linear-gradient(135deg,#11998E,#38EF7D)' : 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, padding: '7px 16px', cursor: content ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', opacity: content ? 1 : 0.4 }}>
+                        {copied === tab.key ? '✓ Copied!' : '📋 Copy'}
                       </button>
                     </div>
-                    <div style={{
-                      background: 'rgba(0,0,0,0.35)', borderRadius: 14, padding: 22,
-                      fontSize: 14, lineHeight: 1.8, color: 'rgba(255,255,255,0.92)',
-                      maxHeight: 550, overflowY: 'auto',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                    }}>
+
+                    {/* Inner tabs */}
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap' }}>
+                      {group.tabs.map(t => {
+                        const isActiveTab = activeTab === t.key
+                        const hasResult = !!results[t.key]
+                        return (
+                          <button key={t.key} onClick={() => setActiveTab(t.key)}
+                            style={{
+                              padding: '8px 16px', borderRadius: 20, cursor: 'pointer', fontFamily: 'inherit',
+                              background: isActiveTab ? group.g : 'rgba(255,255,255,0.07)',
+                              border: `1px solid ${isActiveTab ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.12)'}`,
+                              color: '#fff', fontSize: 12, fontWeight: isActiveTab ? 800 : 500,
+                              display: 'flex', alignItems: 'center', gap: 6, transition: 'all .2s',
+                            }}>
+                            <span>{t.icon}</span> {t.label}
+                            {hasResult && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#38EF7D', boxShadow: '0 0 5px rgba(56,239,125,0.9)', display: 'inline-block' }} />}
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {/* Content area */}
+                    <div style={{ background: 'rgba(0,0,0,0.35)', borderRadius: 14, padding: 22, fontSize: 14, lineHeight: 1.8, color: 'rgba(255,255,255,0.92)', maxHeight: 520, overflowY: 'auto', border: '1px solid rgba(255,255,255,0.08)' }}>
                       {content
                         ? <RenderText text={content} />
                         : loading
-                          ? <span style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
-                              Generating {card.title}...<span className="typing-cursor" />
-                            </span>
-                          : <span style={{ color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>
-                              No result for {card.title}
-                            </span>
+                          ? <span style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>Generating {tab.label}...<span className="typing-cursor" /></span>
+                          : <span style={{ color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>No result yet for {tab.label}</span>
                       }
                     </div>
 
-                    {/* ── Live Jobs auto-loaded inside Matching Jobs card ── */}
-                    {activeCard === 'matchingJobs' && (
-                      <div style={{ marginTop: 24 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, padding: '12px 16px', background: 'rgba(56,239,125,0.08)', borderRadius: 12, border: '1px solid rgba(56,239,125,0.2)' }}>
-                          <span style={{ fontSize: 20 }}>🔴</span>
-                          <div>
-                            <div style={{ fontWeight: 800, fontSize: 15, color: '#38EF7D' }}>LIVE JOBS — Posted This Week</div>
-                            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Auto-searched from Google Jobs based on your job description</div>
-                          </div>
+                    {/* Live Jobs — shown inside Job Hunt → Live Jobs & Match tab */}
+                    {activeGroup === 'jobhunt' && activeTab === 'matchingJobs' && (
+                      <div style={{ marginTop: 20 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'rgba(56,239,125,0.08)', borderRadius: 10, border: '1px solid rgba(56,239,125,0.2)', marginBottom: 12 }}>
+                          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#FF4444', boxShadow: '0 0 8px rgba(255,68,68,0.8)', display: 'inline-block', animation: 'pulse-glow 1.5s ease-in-out infinite' }} />
+                          <span style={{ fontWeight: 800, fontSize: 14, color: '#38EF7D' }}>LIVE JOBS — Posted This Week</span>
+                          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginLeft: 4 }}>Auto-searched from Google Jobs</span>
                           {autoJobsLoading && <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
                             {[0,1,2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#38EF7D', animation: 'bounce .9s ease infinite', animationDelay: `${i*0.2}s` }} />)}
                           </div>}
                         </div>
-
-                        {autoJobsLoading && <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, fontStyle: 'italic' }}>Fetching live jobs from Google...</p>}
-
-                        {autoJobs && autoJobs.length === 0 && (
-                          <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
-                            No live jobs found automatically. Use the search below to find jobs manually, or add your SERPER_API_KEY to Vercel to enable this feature.
-                          </p>
-                        )}
-
+                        {autoJobsLoading && <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, fontStyle: 'italic', margin: 0 }}>Searching Google Jobs...</p>}
+                        {autoJobs && autoJobs.length === 0 && <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, margin: 0 }}>No live jobs auto-found. Add SERPER_API_KEY to Vercel to activate, or search manually below.</p>}
                         {autoJobs && autoJobs.length > 0 && (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, margin: '0 0 6px' }}>
-                              {autoJobs.length} live jobs found · Click Apply Now to go directly to the application
-                            </p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                             {autoJobs.map((job, i) => (
-                              <div key={i} style={{
-                                background: 'rgba(56,239,125,0.05)', borderRadius: 12, padding: '14px 16px',
-                                border: '1px solid rgba(56,239,125,0.15)',
-                                display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap',
-                              }}>
-                                <div style={{ flex: 1, minWidth: 180 }}>
-                                  <div style={{ fontWeight: 800, fontSize: 14, color: '#fff', marginBottom: 3 }}>{job.title}</div>
-                                  <div style={{ fontSize: 13, color: '#38EF7D', fontWeight: 700, marginBottom: 4 }}>{job.company}</div>
+                              <div key={i} style={{ background: 'rgba(56,239,125,0.05)', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(56,239,125,0.12)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap' }}>
+                                <div style={{ flex: 1, minWidth: 160 }}>
+                                  <div style={{ fontWeight: 800, fontSize: 13, color: '#fff', marginBottom: 2 }}>{job.title}</div>
+                                  <div style={{ fontSize: 12, color: '#38EF7D', fontWeight: 700, marginBottom: 3 }}>{job.company}</div>
                                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, fontSize: 11 }}>
                                     {job.location && <span style={{ color: 'rgba(255,255,255,0.45)' }}>📍 {job.location}</span>}
                                     {job.posted   && <span style={{ color: '#FACF39' }}>🕐 {job.posted}</span>}
-                                    {job.jobType  && <span style={{ color: 'rgba(255,255,255,0.35)' }}>💼 {job.jobType}</span>}
                                     {job.salary   && <span style={{ color: '#38EF7D' }}>💰 {job.salary}</span>}
                                     {job.via      && <span style={{ color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>{job.via}</span>}
                                   </div>
                                 </div>
                                 {job.link && job.link !== '#' && (
-                                  <a href={job.link} target="_blank" rel="noopener noreferrer" style={{
-                                    background: 'linear-gradient(135deg,#38EF7D,#11998E)', color: '#001a0e',
-                                    fontWeight: 800, fontSize: 12, padding: '8px 14px', borderRadius: 8,
-                                    textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0,
-                                    boxShadow: '0 3px 10px rgba(56,239,125,0.3)',
-                                  }}>
-                                    Apply Now →
+                                  <a href={job.link} target="_blank" rel="noopener noreferrer" style={{ background: 'linear-gradient(135deg,#38EF7D,#11998E)', color: '#001a0e', fontWeight: 800, fontSize: 12, padding: '7px 12px', borderRadius: 8, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                                    Apply →
                                   </a>
                                 )}
                               </div>

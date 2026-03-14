@@ -141,6 +141,8 @@ export async function POST(request) {
     requestedKeys = Array.isArray(body.requestedKeys) && body.requestedKeys.length > 0 ? body.requestedKeys : null
     const lang = typeof body.lang === 'string' && body.lang.length <= 5 ? body.lang : 'en'
     langInstruction = lang !== 'en' ? `\nIMPORTANT: Respond in the user's language (detected: ${lang}). Keep all JSON keys in English but write all VALUES in ${lang}.\n` : ''
+    const userCountry = typeof body.userCountry === 'string' ? body.userCountry.slice(0, 60) : ''
+    if (userCountry) langInstruction += `\nUSER LOCATION: ${userCountry}. For matchingJobs — show recruiters ONLY for ${userCountry} or nearest market. Do NOT list other countries.\n`
   } catch {
     return Response.json({ error: 'Invalid request.' }, { status: 400, headers: h })
   }
