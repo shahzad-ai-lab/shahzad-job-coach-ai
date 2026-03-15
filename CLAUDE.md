@@ -1,5 +1,5 @@
 # CLAUDE.md = GEMINI.md — MASTER BLUEPRINT (ULTRA COMPRESSED)
-**Updated: March 14, 2026 — Session 29 | Rule: start session → "Read CLAUDE.md resume where left off"**
+**Updated: March 15, 2026 — Session 30 | Rule: start session → "Read CLAUDE.md resume where left off"**
 
 ---
 
@@ -14,117 +14,177 @@
 | GitHub | https://github.com/shahzad-ai-lab/shahzad-job-coach-ai |
 | Stack | Next.js 14 + Gemini AI + Serper.dev + Vercel + Tailwind |
 | H1 | $6,000 hackathon — SUBMITTED Mar 8 ✓ |
-| Status | 17 cards + chatbot + PWA + multilang + live jobs + country hero + /assess + nav + lang selector — LIVE |
+| Status | 17 cards + PWA + 3-phase splash + country+industry picker + RAG 9 files + /assess — LIVE |
 | Rules | Free · No login · Zero storage · Bold vibrant galaxy gradients always |
 
 ---
 
 ## API KEYS
-| Var | Service | Get it |
-|-----|---------|--------|
-| `GEMINI_API_KEY` | Google AI Studio | aistudio.google.com |
-| `SERPER_API_KEY` | Serper.dev | serper.dev (free 2500/mo, no card) |
-Both → `.env.local` + Vercel environment variables
+| Var | Service | Notes |
+|-----|---------|-------|
+| `GEMINI_API_KEY` | Google AI Studio primary | aistudio.google.com |
+| `GEMINI_API_KEY_2` | Google AI Studio backup | same studio, 2nd key |
+| `GROK_API_KEY` | xAI Grok-4-latest | api.x.ai — OpenAI-compatible |
+| `SERPER_API_KEY` | Serper.dev Google Jobs | serper.dev (free 2500/mo) — NOT YET ADDED |
+All → `.env.local` + Vercel environment variables · NEVER commit keys to git
 
 ---
 
 ## FOLDER STRUCTURE
 ```
-root/  CLAUDE.md · GEMINI.md · .env.local · package.json · next.config.js · tailwind/postcss
-app/   page.js(~1570L) · layout.js · globals.css
-       api/analyze/route.js(~360L) · api/chat/route.js · api/jobs/route.js · api/upload/route.js · api/test/route.js
-public/ manifest.json · [NEED: icon-192.png + icon-512.png for stores]
-v1/    legacy docs, scripts, archive, media, credentials
-v2/    MASTER_CAREER_REFERENCE.md (640KB, 48 sections — read with offset+limit only)
-       COMPANIES_BY_COUNTRY.md (500+ companies · 30+ countries · career URLs · Forbes/Fortune 500)
-       ALL_COUNTRIES.md (195 UN countries · ISO-2/3 codes · regions · capitals · job market tiers)
-       OCCUPATIONS_ISCO08.md (ISCO-08 all 436 unit groups · 200+ job descriptions · BLS fastest-growing · 2026 emerging roles)
-       PLATFORM_BLUEPRINT.md (scoring algorithm · age pathways · competitor table)
-       COMPETITOR_VISABRIDGE.md (full VisaBridge.com intel · pricing model · 238 countries · features · our edge table)
+root/   CLAUDE.md · GEMINI.md · .env.local · package.json · next.config.js · tailwind/postcss
+        (nothing else belongs in root — all tools/docs go inside v1/ or v2/)
+app/    page.js(~1800L) · layout.js · globals.css
+        api/analyze/route.js(~600L) · api/chat/route.js · api/jobs/route.js
+        api/upload/route.js · api/test/route.js
+public/ manifest.json · icon-192.png ✅ · icon-512.png ✅
+v1/     legacy docs · scripts · archive · media · credentials · test files
+v2/     MASTER_CAREER_REFERENCE.md (640KB, 48 sections — read with offset+limit only)
+        COMPANIES_BY_COUNTRY.md (500+ companies · 30+ countries · career URLs)
+        ALL_COUNTRIES.md (195 UN countries · ISO codes · regions · job market tiers)
+        OCCUPATIONS_ISCO08.md (ISCO-08 436 unit groups · BLS fastest-growing · 2026 roles)
+        PLATFORM_BLUEPRINT.md (scoring algorithm · age pathways · competitor table)
+        COMPETITOR_VISABRIDGE.md (VisaBridge.com intel · pricing · 238 countries)
+        CERTIFICATIONS_2026.md (all-industry certs A-Z · Cloud/Security/Finance/Trades/AI)
+        COUNTRY_PACKAGES_195.md (all 195 UN countries · GDP · visa · salary · laws · boards)
+        GLOBAL_CAREER_INTELLIGENCE_2025.md (salary data · ATS systems · job boards · trends)
+        SESSION_RECORDS/  SESSION_LOG_S30.md · V2_DEMO_COMPLETE.md · V3_MOBILE_PLAN.md
+        tools/            generate-icons.js
 ```
 
 ---
 
-## GEMINI SETTINGS
-model: `gemini-flash-latest` → fallback `gemini-flash-lite-latest` | tokens: 8192 | temp: 0.7 | timeout: 60s | rate: 5/hr/IP → backoff 1h/3h/6h | inputs: resume 6K · job 3K · body 50KB
+## AI FALLBACK CHAIN (both analyze + chat routes)
+Gemini KEY1 → gemini-2.0-flash → gemini-flash-latest → gemini-2.0-flash-lite → gemini-1.5-flash
+Gemini KEY2 → same 4 models
+Grok fallback → grok-4-latest (api.x.ai, OpenAI-compatible)
+tokens: 8192 | temp: 0.7 | timeout: 55s | rate: 9999 (disabled for dev)
 
 ---
 
 ## 17 AI CARDS + EXTRAS
 | # | key | What it does |
 |---|-----|-------------|
-| 1 | resumeScore | ATS score + thresholds (80+=shortlist, <50=reject) + knockouts + composite weights + achievement density + anatomy check + recency decay |
-| 2 | recruiterPov | 6.2-sec impression + red flags + LinkedIn cross-check + engagement signals |
-| 3 | coverLetter | 3-para targeted cover letter |
-| 4 | resumeRewrite | Full rewrite with impact-first STAR bullets |
-| 5 | skillsGap | Hard+soft matched/missing + certs with URLs + training links |
+| 1 | resumeScore | ATS score + knockouts + composite weights + achievement density + anatomy check |
+| 2 | recruiterPov | **6-second skim test** (200 apps on desk) + what noticed/missed + red flags + quick wins |
+| 3 | coverLetter | **Top 1% cover letter** — hook + 3 quantified wins + specific why-them + confident ask |
+| 4 | resumeRewrite | **3-step rebuild**: skim diagnosis → measurable wins extracted → top 3 wins in first half |
+| 5 | skillsGap | Hard+soft matched/missing + industry certs with URLs + training links |
 | 6 | interviewPrep | 5 Q&A + questions to ask |
 | 7 | starStories | 3 STAR behavioral stories |
 | 8 | linkedinSummary | LinkedIn About optimized |
 | 9 | introScripts | 1/2/3-min intro scripts |
 | 10 | matchingJobs | Titles + companies + boards + 7-country recruiters + freelance platforms |
-| 11 | visaPathways | Visa options + govt URLs |
+| 11 | visaPathways | In-country vs outside-country — all visa routes + govt URLs |
 | 12 | thankYouEmail | Post-interview email |
-| 13 | salaryNegotiation | Salary table by level (Entry→Exec) + negotiation scripts |
+| 13 | salaryNegotiation | Salary table by level + negotiation scripts (local currency) |
 | 14 | actionPlan | 30-60-90 day onboarding plan |
 | 15 | coldOutreach | LinkedIn DM + cold email + follow-up |
 | 16 | careerPivot | Pivot score + 3 adjacent roles + 90-day plan |
 | 17 | countryLaws | Labor laws + resume compliance + tax/payroll + worker rights + GRC |
-| + | liveJobs | Serper Google Jobs — fresh postings, apply links, post-results only |
-| + | chatbot | Floating 💬 career-locked chatbot, 15/hr, suggested Qs |
+| + | liveJobs | Serper Google Jobs — auto-fetched after analysis, inside matchingJobs card |
+
+---
+
+## TOP RECRUITER 3-STEP METHODOLOGY (injected into every analysis)
+**STEP 1** — 6-second skim: Recruiter has 200 apps. What is NOTICED vs MISSED in top third?
+**STEP 2** — Measurable wins: Every bullet needs a NUMBER. Extract + add metrics: %, $, time, team size.
+**STEP 3** — Reorder: Top 3 strongest results MUST be in first half of page 1. Reorganize ruthlessly.
+**BONUS** — ATS keywords: Insert job description keywords naturally after human optimization.
+**RESULT** — Top 1% candidate: Specific wins > generic duties. Numbers > adjectives. Results > responsibilities.
 
 ---
 
 ## 2026 RESUME INTELLIGENCE (injected into every AI analysis)
-- **ATS pattern scanning**: 2026 ATS reads experience patterns, not just keywords — align with C-suite priorities
-- **6.2-second scan**: Cognitive Hierarchy Trick — anchor points (bolded metrics + logos) guide recruiter eye
-- **Interactive PDFs**: portfolio/GitHub hyperlinks +35% response rate — flag if missing
+- **ATS 2026**: Scans experience PATTERNS not just keywords — align with C-suite priorities
+- **6.2-second scan**: Cognitive Hierarchy Trick — anchor points (bolded metrics + logos) guide eye
+- **Interactive PDFs**: portfolio/GitHub hyperlinks +35% response rate
 - **Impact-first bullets**: STAR method mandatory — flag all duty bullets, rewrite with metrics
 - **Personal Branding**: "My Values" / "Day in My Life" trending for startup/creative roles
-- **Canada specialists**: Resume Target · Careers By Design (Toronto/Vancouver nuances)
-- **USA specialists**: ResumeSpice (recruiter-built, 2-day turnaround)
-- **Top 2026 providers**: Resumeble (ATS+LinkedIn+recruiter outreach) · TopResume (60-day guarantee + Job Search Concierge) · Kickresume (AI Full-Service + Career Maps) · TopStack (pay-after-delivery + C-Suite)
-- **Market trend**: "Career Co-pilots" — AI + human expertise replacing single-doc services
+- **Market trend 2026**: "Career Co-pilots" — AI + human expertise replacing single-doc services
+
+---
+
+## RAG SYSTEM (9 files, all local — Gemini only generates narrative)
+| File | Size | Used for |
+|------|------|---------|
+| MASTER_CAREER_REFERENCE.md | 640KB | Career knowledge base — read with offset+limit only |
+| COMPANIES_BY_COUNTRY.md | 29KB | Top companies + career URLs by country |
+| ALL_COUNTRIES.md | 13KB | 195 countries · ISO codes · regions |
+| OCCUPATIONS_ISCO08.md | 55KB | 436 ISCO-08 job groups · BLS fastest-growing |
+| PLATFORM_BLUEPRINT.md | 12KB | Scoring algorithm · competitor analysis |
+| COMPETITOR_VISABRIDGE.md | 7KB | VisaBridge intel · pricing · 238 countries |
+| CERTIFICATIONS_2026.md | 19KB | All-industry certs A-Z · 2026 emerging |
+| COUNTRY_PACKAGES_195.md | 63KB | 195 countries · GDP · visa · salary · laws |
+| GLOBAL_CAREER_INTELLIGENCE_2025.md | 44KB | Salary data · ATS systems · job boards |
+
+---
+
+## 3-PHASE SPLASH SCREEN
+Phase 1 — Loading (1.8s progress bar) → auto-advances
+Phase 2 — Country picker: "STEP 1 OF 2" — 20 countries grid — pickCountry() → goes to phase 3
+Phase 3 — Industry picker: "STEP 2 OF 2" — 15 industries — pickIndustry() → dismisses splash
+State: `splashPhase`: 'loading' | 'country' | 'industry' · `selectedCountry` · `selectedIndustry`
+API receives: `userCountry` + `userCountryCode` + `userIndustry` + `userIndustryLabel`
+
+---
+
+## COUNTRY-AWARE AI GUIDANCE (analyze/route.js)
+- **Job IN user's country**: local hiring requirements, ATS norms, licensing, permits, background checks
+- **Job OUTSIDE user's country**: ALL pathways — skilled worker visa, employer-sponsored, working holiday, intra-company transfer, temp worker, digital nomad, NON-immigration, treaty visas — with govt URLs
+- Salary card uses local currency + country-specific ranges
+- Country Laws card focuses on user's selected country labor law
+- Skills Gap prioritizes certifications recognized in user's country
 
 ---
 
 ## COUNTRY HERO BANNER (live on app)
-Shows after location detects: flag + country name + GPS + timezone + currency + GDP + population + IT workforce + key industries + 100-year roadmap + legal essentials
 Data: `getMarketPulse(country, code)` — 12 markets (CA/US/GB/AU/IN/PK/AE/DE/SG/NZ/NG/ZA) + global fallback
-Fields per market: `stats · laws · gdp · pop · it · industries · future`
+Fields: `stats · laws · gdp · pop · it · industries · future`
+
+---
+
+## MOBILE APP STATUS
+PWA fully store-ready: manifest.json ✅ · icon-192.png ✅ · icon-512.png ✅ · HTTPS ✅
+**FREE publishing path**: pwabuilder.com → APK → Amazon Appstore (free) + Samsung Galaxy Store (free)
+**Paid**: Google Play $25 one-time · Apple App Store $99/year
+**iOS free**: Share URL → Safari → "Add to Home Screen" = native app experience
+**v3 mobile**: React Native + Expo — build from scratch when next hackathon announced
 
 ---
 
 ## WHAT'S DONE ✅ vs TODO
-**DONE:** Rebranded **Alfalah AI** (الفلاح Come to Success) · 17 cards + chatbot · PWA · scrolling galaxy ticker (11 animated items hover-to-pause) · rainbow-shift top bar · sticky nav (logo ا + Resume + Assessment) · /assess page · RAG (6 data files) · Country Hero Banner · 2026 Intel · VisaBridge competitor intel
-**LANG:** Multilingual system COMMENTED OUT (English-only now) — LANGUAGES array + T translations + tx() preserved in code for v3 re-enable
-**AI FIX:** extractJSON rebuilt (6-step recovery incl. truncated JSON) · 4-model fallback chain: gemini-2.0-flash → gemini-flash-latest → gemini-2.0-flash-lite → gemini-flash-lite-latest · chat + analyze both use same chain
+**DONE S1-30:**
+- 17 AI cards · PWA · 3-phase splash · country+industry picker · RAG 9 files
+- Multi-provider AI chain (Gemini KEY1+KEY2+Grok) · All rate limits disabled for dev
+- Country-aware prompts (in-country vs outside) · Industry-aware cert injection
+- /assess page (5-step quiz · 7 categories · 0-100 score · 70+ career recs)
+- Country Hero Banner · 6-second skim methodology · Top 1% resume rebuild
+- Cover letter top 1% · Recruiter 3-step method baked into all prompts
+- icon-192.png + icon-512.png generated ✅ · Session records in v2/SESSION_RECORDS/
+- Root folder clean: only config files + CLAUDE.md/GEMINI.md
+
+**LANG:** Multilingual system COMMENTED OUT — preserved in code for v3
 
 **TODO:**
-- [ ] Shahzad: add SERPER_API_KEY to .env.local + Vercel env vars
-- [ ] Add /public/icon-192.png + icon-512.png (any 192×192 + 512×512 PNG) — REQUIRED for stores
+- [ ] Add SERPER_API_KEY to .env.local + Vercel (live jobs currently empty)
+- [ ] Pay $25 → Google Play Console when ready
 - [ ] Book AI-900 $165 + SC-900 $165 — learn.microsoft.com
-
----
-
-## MOBILE APP — PUBLISH TO STORES (no new code needed)
-App is full PWA (manifest.json + apple meta + HTTPS). To submit to stores:
-1. **pwabuilder.com** → enter `https://shahzad-job-coach-ai.vercel.app` → Package for Stores
-2. Downloads: Android TWA APK + iOS Xcode project
-3. Google Play Console: $25 one-time | Apple App Store: $99/year
-4. **Prerequisite**: icon-192.png + icon-512.png must exist in /public/ first
+- [ ] Re-enable rate limits before production launch
+- [ ] alfalah.app domain → connect to Vercel when next hackathon launches
 
 ---
 
 ## SECURITY (all active)
-client RL: localStorage `jcai_rl` 5/hr · server RL: Map by IP · sanitize HTML+injection · headers DENY/CSP/nosniff · 50KB body guard · input truncation
+client RL: localStorage `jcai_rl` 9999/hr (disabled) · server RL: Map by IP 9999/hr (disabled)
+sanitize HTML+injection · headers DENY/CSP/nosniff · 50KB body guard · input truncation
 
 ---
 
 ## KNOWN FIXES (permanent — never repeat these mistakes)
 | Error | Fix |
 |-------|-----|
-| 404 model | Use `gemini-flash-latest` |
+| 404 model | Use `gemini-flash-latest` not `gemini-pro` |
 | Vercel timeout | `export const maxDuration = 60` |
 | JSON truncation | maxOutputTokens 8192 |
 | SSE streaming | NEVER use — single JSON response only |
@@ -133,6 +193,7 @@ client RL: localStorage `jcai_rl` 5/hr · server RL: Map by IP · sanitize HTML+
 | 640KB file | Read with offset+limit only |
 | Stop words in ATS | STOP_WORDS 200+ words, minLen >3 |
 | langInstruction undefined | Declare `let langInstruction = ''` OUTSIDE try block |
+| Git push blocked | Never put API keys in .md session logs — use placeholders |
 
 ---
 
@@ -143,7 +204,7 @@ Test models: https://shahzad-job-coach-ai.vercel.app/api/test
 ---
 
 ## SESSION LOG (compressed)
-S1-4 Mar6-8: V1 12cards deploy security H1 submitted | S5-6 Mar11-12: MASTER_REF v4 640KB 48sections | S7-14 Mar13: V2 RAG streaming(failed→reverted) 14cards wizard(removed) | S15-17 Mar13-14: stopwords ATScolors skillsGap certs freelance strictScoring | S18 Mar14: v1/v2 folders liveJobs Serper | S19 Mar14: ATS algo complete | S20 Mar14: chatbot 16cards PWA multilang | S21 Mar14: liveJobs merged matchingJobs 7-country recruiters fix-langInstruction | S22 Mar14: MarketPulse bar YourMarket banner post-results liveJobs quickStart chips | S23 Mar14: CountryHero banner GDP+IT+industries+100yr, getMarketPulse 12markets, 2026ResumeIntelligence injected prompts, manifest store-ready, mobile app guide | S24 Mar14: COMPANIES_BY_COUNTRY.md (500+ companies · 30+ countries · Forbes/Fortune 500 + career URLs), country-company RAG injector | S25 Mar14: ALL_COUNTRIES.md (195 UN countries · ISO codes · regions · job market tiers), OCCUPATIONS_ISCO08.md (ISCO-08 full 436 unit groups · 200+ job descriptions · BLS fastest-growing · 2026 emerging roles · occupation-country demand mapping), occupation RAG injector (auto-detects role from job posting → injects ISCO profile + growth data + fastest-growing list) | S26 Mar14: PLATFORM_BLUEPRINT.md (full scoring algorithm docs · age pathways · competitor analysis), app/assess/page.js NEW ROUTE /assess (5-step quiz · 7-category ISCO scoring · 0-100 market score · 70+ career recs · recency decay · age-specific paths 10-100yr), nav bar on main page (Resume Analyzer ↔ Skills Assessment), CTA banner on home page → live at /assess | S27 Mar14: COMPETITOR_VISABRIDGE.md (full VisaBridge intel) | S28 Mar14: Alfalah AI rebrand · galaxy ticker · translations system · S29 Mar14: lang removed (English-only, code preserved commented) · extractJSON 6-step robust fix · 4-model fallback chain · chat model fallbacks · AI format error fixed · CLAUDE.md ultra-compressed (full VisaBridge.com fetch — identity, pricing, 238 countries, 21 videos, 7 books, 9 blogs, partner program, our edge table, tech stack, contact info · portal JS-only so pricing tiers not scrapeable) · domain research: jobcoach.ai=$180/yr, careercoach.ai=$200/yr, jobcoach.co=$15/yr (recommended cheapest), careermatch.co=$12/yr, globalcoach.ai expensive · CLAUDE.md updated with all v2 files
+S1-4 Mar6-8: V1 12cards deploy security H1 submitted | S5-6 Mar11-12: MASTER_REF v4 640KB 48sections | S7-14 Mar13: V2 RAG streaming(failed→reverted) 14cards wizard(removed) | S15-17 Mar13-14: stopwords ATScolors skillsGap certs freelance strictScoring | S18 Mar14: v1/v2 folders liveJobs Serper | S19 Mar14: ATS algo complete | S20 Mar14: chatbot 16cards PWA multilang | S21 Mar14: liveJobs merged matchingJobs 7-country recruiters fix-langInstruction | S22 Mar14: MarketPulse bar YourMarket banner post-results liveJobs quickStart chips | S23 Mar14: CountryHero banner GDP+IT+industries+100yr getMarketPulse 12markets 2026ResumeIntelligence manifest | S24 Mar14: COMPANIES_BY_COUNTRY.md 500+ companies | S25 Mar14: ALL_COUNTRIES.md OCCUPATIONS_ISCO08.md | S26 Mar14: PLATFORM_BLUEPRINT.md /assess page nav | S27 Mar14: COMPETITOR_VISABRIDGE.md | S28 Mar14: Alfalah AI rebrand galaxy ticker | S29 Mar14: lang removed extractJSON 6-step 4-model fallback chain CLAUDE.md compressed | S30 Mar15: GEMINI_KEY2+GROK_KEY multi-provider · chatbot removed · 3-phase splash country+industry picker · CERTIFICATIONS_2026.md · COUNTRY_PACKAGES_195.md · country-aware RAG · visa in/out-country guidance · icon-192+512 generated PWA store-ready · top recruiter 3-step methodology baked into recruiterPov+resumeRewrite+coverLetter · folder cleanup root clean · session records in v2/SESSION_RECORDS/
 
 ---
-*CLAUDE.md = GEMINI.md always · Update every ~10min · Build must pass before push*
+*CLAUDE.md = GEMINI.md always · Update every session · Build must pass before push*
