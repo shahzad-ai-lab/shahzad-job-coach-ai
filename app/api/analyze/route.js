@@ -139,8 +139,10 @@ export async function POST(request) {
     resumeText = truncate(sanitize(body.resumeText || ''), MAX_RESUME)
     jobPosting = truncate(sanitize(body.jobPosting || ''), MAX_JOB)
     requestedKeys = Array.isArray(body.requestedKeys) && body.requestedKeys.length > 0 ? body.requestedKeys : null
+    const LANG_NAMES = { en:'English', zh:'Chinese (Simplified)', hi:'Hindi', es:'Spanish', fr:'French', ar:'Arabic', bn:'Bengali', pt:'Portuguese', ru:'Russian', ur:'Urdu' }
     const lang = typeof body.lang === 'string' && body.lang.length <= 5 ? body.lang : 'en'
-    langInstruction = lang !== 'en' ? `\nIMPORTANT: Respond in the user's language (detected: ${lang}). Keep all JSON keys in English but write all VALUES in ${lang}.\n` : ''
+    const langName = LANG_NAMES[lang] || 'English'
+    langInstruction = lang !== 'en' ? `\nCRITICAL LANGUAGE INSTRUCTION: You MUST write ALL your response values in ${langName}. The user speaks ${langName}. Keep all JSON keys in English (resumeScore, coverLetter, etc.) but every word of every VALUE must be written in ${langName}. Do not respond in English if the language is ${langName}.\n` : ''
     const userCountry = typeof body.userCountry === 'string' ? body.userCountry.slice(0, 60) : ''
     if (userCountry) langInstruction += `\nUSER LOCATION: ${userCountry}. For matchingJobs — show recruiters ONLY for ${userCountry} or nearest market. Do NOT list other countries.\n`
   } catch {

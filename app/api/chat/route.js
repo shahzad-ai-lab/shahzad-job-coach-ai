@@ -66,14 +66,19 @@ export async function POST(req) {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) return Response.json({ error: 'API not configured.' }, { status: 503, headers })
 
-  let messages
+  let messages, lang = 'en'
   try {
     const body = await req.json()
     messages = body.messages
+    lang = typeof body.lang === 'string' && body.lang.length <= 5 ? body.lang : 'en'
     if (!Array.isArray(messages) || messages.length === 0) throw new Error('invalid')
   } catch {
     return Response.json({ error: 'Invalid request.' }, { status: 400, headers })
   }
+
+  const LANG_NAMES = { en:'English', zh:'Chinese (Simplified)', hi:'Hindi', es:'Spanish', fr:'French', ar:'Arabic', bn:'Bengali', pt:'Portuguese', ru:'Russian', ur:'Urdu' }
+  const langName = LANG_NAMES[lang] || 'English'
+  const langNote = lang !== 'en' ? `\nCRITICAL: Reply entirely in ${langName}. Do not use English.\n` : ''
 
   // Build conversation history for Gemini (last 10 messages max)
   const recent = messages.slice(-10)
@@ -81,7 +86,7 @@ export async function POST(req) {
     `${m.role === 'user' ? 'User' : 'Alfalah AI'}: ${String(m.content).slice(0, 500)}`
   ).join('\n')
 
-  const prompt = `${SYSTEM_PROMPT}\n\n--- CONVERSATION ---\n${conversationText}\n\nAlfalah AI:`
+  const prompt = `${SYSTEM_PROMPT}${langNote}\n\n--- CONVERSATION ---\n${conversationText}\n\nAlfalah AI:`
 
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`
