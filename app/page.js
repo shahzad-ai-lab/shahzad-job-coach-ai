@@ -24,6 +24,310 @@ const CLIENT_HOURLY_LIMIT = 5
 const HOUR_MS = 3_600_000
 const BACKOFF_HOURS = [1, 3, 6]
 
+// ── UI Translations (top 11 languages) ────────────────────────────────────────
+const T = {
+  en: {
+    analyzeBtn: '🚀 Analyse My Profile — 16 AI Tools',
+    analyzingBtn: '✨ Generating all 16 AI tools...',
+    analyzingNote: 'AI generating all 16 tools — takes about 20–35 seconds...',
+    uploadResume: 'Drop file or click to upload',
+    uploadFormats: 'PDF · DOCX · TXT · Max 10MB',
+    orPasteBelow: '— or paste below —',
+    resumePlaceholder: 'Paste your resume text here...',
+    jobPlaceholder: 'Paste the job description here...',
+    resumeTitle: '📋 Your Resume',
+    jobTitle: '💼 Job Description',
+    readingFile: 'Reading file...',
+    resultsHeader: 'AI Results',
+    selectCategory: 'Select a category · then choose a tool inside',
+    downloadBtn: '📥 Download .txt',
+    shareBtn: '🔗 Share',
+    copiedBtn: '✓ Copied!',
+    copyBtn: '📋 Copy',
+    chatPlaceholder: 'Ask anything about your career...',
+    freeUses: 'Free uses:',
+    searching: '⏳ Searching Google Jobs...',
+    searchBtn: '🔍 Search Fresh Jobs',
+    showingMarket: 'Showing results for your market:',
+    noResult: 'No result yet for',
+    generating: 'Generating',
+    detectingLocation: 'Detecting location...',
+  },
+  zh: {
+    analyzeBtn: '🚀 分析我的简历 — 16个AI工具',
+    analyzingBtn: '✨ 正在生成所有16个AI工具...',
+    analyzingNote: 'AI正在生成所有16个工具 — 大约需要20-35秒...',
+    uploadResume: '拖放文件或点击上传',
+    uploadFormats: 'PDF · DOCX · TXT · 最大10MB',
+    orPasteBelow: '— 或在下方粘贴 —',
+    resumePlaceholder: '在此粘贴您的简历文本...',
+    jobPlaceholder: '在此粘贴职位描述...',
+    resumeTitle: '📋 您的简历',
+    jobTitle: '💼 职位描述',
+    readingFile: '正在读取文件...',
+    resultsHeader: 'AI分析结果',
+    selectCategory: '选择类别 · 然后选择内部工具',
+    downloadBtn: '📥 下载 .txt',
+    shareBtn: '🔗 分享',
+    copiedBtn: '✓ 已复制！',
+    copyBtn: '📋 复制',
+    chatPlaceholder: '询问任何职业问题...',
+    freeUses: '免费次数:',
+    searching: '⏳ 正在搜索职位...',
+    searchBtn: '🔍 搜索最新职位',
+    showingMarket: '显示您所在市场的结果:',
+    noResult: '暂无结果:',
+    generating: '正在生成',
+    detectingLocation: '正在检测位置...',
+  },
+  hi: {
+    analyzeBtn: '🚀 मेरी प्रोफ़ाइल विश्लेषण करें — 16 AI टूल्स',
+    analyzingBtn: '✨ सभी 16 AI टूल्स बना रहे हैं...',
+    analyzingNote: 'AI सभी 16 टूल्स बना रहा है — लगभग 20-35 सेकंड लगते हैं...',
+    uploadResume: 'फ़ाइल खींचें या अपलोड करने के लिए क्लिक करें',
+    uploadFormats: 'PDF · DOCX · TXT · अधिकतम 10MB',
+    orPasteBelow: '— या नीचे पेस्ट करें —',
+    resumePlaceholder: 'यहाँ अपना रेज़्यूमे टेक्स्ट पेस्ट करें...',
+    jobPlaceholder: 'यहाँ नौकरी विवरण पेस्ट करें...',
+    resumeTitle: '📋 आपका रेज़्यूमे',
+    jobTitle: '💼 नौकरी विवरण',
+    readingFile: 'फ़ाइल पढ़ रहे हैं...',
+    resultsHeader: 'AI परिणाम',
+    selectCategory: 'श्रेणी चुनें · फिर अंदर का टूल चुनें',
+    downloadBtn: '📥 डाउनलोड .txt',
+    shareBtn: '🔗 शेयर करें',
+    copiedBtn: '✓ कॉपी हो गया!',
+    copyBtn: '📋 कॉपी करें',
+    chatPlaceholder: 'अपने करियर के बारे में कुछ भी पूछें...',
+    freeUses: 'मुफ़्त उपयोग:',
+    searching: '⏳ नौकरियाँ खोज रहे हैं...',
+    searchBtn: '🔍 नई नौकरियाँ खोजें',
+    showingMarket: 'आपके बाज़ार के परिणाम दिखा रहे हैं:',
+    noResult: 'अभी कोई परिणाम नहीं:',
+    generating: 'बना रहे हैं',
+    detectingLocation: 'स्थान पता कर रहे हैं...',
+  },
+  es: {
+    analyzeBtn: '🚀 Analizar Mi Perfil — 16 Herramientas IA',
+    analyzingBtn: '✨ Generando las 16 herramientas IA...',
+    analyzingNote: 'IA generando las 16 herramientas — tarda unos 20-35 segundos...',
+    uploadResume: 'Arrastra el archivo o haz clic para subir',
+    uploadFormats: 'PDF · DOCX · TXT · Máx 10MB',
+    orPasteBelow: '— o pega abajo —',
+    resumePlaceholder: 'Pega el texto de tu currículum aquí...',
+    jobPlaceholder: 'Pega la descripción del trabajo aquí...',
+    resumeTitle: '📋 Tu Currículum',
+    jobTitle: '💼 Descripción del Trabajo',
+    readingFile: 'Leyendo archivo...',
+    resultsHeader: 'Resultados de IA',
+    selectCategory: 'Selecciona una categoría · luego elige una herramienta',
+    downloadBtn: '📥 Descargar .txt',
+    shareBtn: '🔗 Compartir',
+    copiedBtn: '✓ ¡Copiado!',
+    copyBtn: '📋 Copiar',
+    chatPlaceholder: 'Pregunta lo que quieras sobre tu carrera...',
+    freeUses: 'Usos gratuitos:',
+    searching: '⏳ Buscando empleos...',
+    searchBtn: '🔍 Buscar Empleos Frescos',
+    showingMarket: 'Mostrando resultados para tu mercado:',
+    noResult: 'Sin resultado aún para',
+    generating: 'Generando',
+    detectingLocation: 'Detectando ubicación...',
+  },
+  ar: {
+    analyzeBtn: '🚀 تحليل ملفي — 16 أداة ذكاء اصطناعي',
+    analyzingBtn: '✨ جاري توليد جميع الأدوات الـ16...',
+    analyzingNote: 'الذكاء الاصطناعي يولد جميع الأدوات — يستغرق حوالي 20-35 ثانية...',
+    uploadResume: 'اسحب الملف أو انقر للرفع',
+    uploadFormats: 'PDF · DOCX · TXT · الحد الأقصى 10MB',
+    orPasteBelow: '— أو الصق أدناه —',
+    resumePlaceholder: 'الصق نص سيرتك الذاتية هنا...',
+    jobPlaceholder: 'الصق وصف الوظيفة هنا...',
+    resumeTitle: '📋 سيرتك الذاتية',
+    jobTitle: '💼 وصف الوظيفة',
+    readingFile: 'جاري قراءة الملف...',
+    resultsHeader: 'نتائج الذكاء الاصطناعي',
+    selectCategory: 'اختر فئة · ثم اختر أداة بداخلها',
+    downloadBtn: '📥 تحميل .txt',
+    shareBtn: '🔗 مشاركة',
+    copiedBtn: '✓ تم النسخ!',
+    copyBtn: '📋 نسخ',
+    chatPlaceholder: 'اسأل أي شيء عن مسيرتك المهنية...',
+    freeUses: 'استخدامات مجانية:',
+    searching: '⏳ جاري البحث عن وظائف...',
+    searchBtn: '🔍 ابحث عن وظائف جديدة',
+    showingMarket: 'عرض نتائج سوقك:',
+    noResult: 'لا توجد نتيجة بعد لـ',
+    generating: 'جاري التوليد',
+    detectingLocation: 'جاري تحديد الموقع...',
+  },
+  fr: {
+    analyzeBtn: '🚀 Analyser Mon Profil — 16 Outils IA',
+    analyzingBtn: '✨ Génération des 16 outils IA...',
+    analyzingNote: "L'IA génère les 16 outils — environ 20-35 secondes...",
+    uploadResume: 'Déposez le fichier ou cliquez pour télécharger',
+    uploadFormats: 'PDF · DOCX · TXT · Max 10Mo',
+    orPasteBelow: '— ou collez ci-dessous —',
+    resumePlaceholder: 'Collez le texte de votre CV ici...',
+    jobPlaceholder: "Collez la description du poste ici...",
+    resumeTitle: '📋 Votre CV',
+    jobTitle: '💼 Description du Poste',
+    readingFile: 'Lecture du fichier...',
+    resultsHeader: 'Résultats IA',
+    selectCategory: 'Sélectionnez une catégorie · puis choisissez un outil',
+    downloadBtn: '📥 Télécharger .txt',
+    shareBtn: '🔗 Partager',
+    copiedBtn: '✓ Copié !',
+    copyBtn: '📋 Copier',
+    chatPlaceholder: 'Posez toutes vos questions de carrière...',
+    freeUses: 'Utilisations gratuites :',
+    searching: '⏳ Recherche d\'emplois...',
+    searchBtn: '🔍 Rechercher des Emplois',
+    showingMarket: 'Résultats pour votre marché :',
+    noResult: 'Pas encore de résultat pour',
+    generating: 'Génération en cours',
+    detectingLocation: 'Détection de la localisation...',
+  },
+  bn: {
+    analyzeBtn: '🚀 আমার প্রোফাইল বিশ্লেষণ করুন — ১৬টি AI টুল',
+    analyzingBtn: '✨ সব ১৬টি AI টুল তৈরি হচ্ছে...',
+    analyzingNote: 'AI সব ১৬টি টুল তৈরি করছে — প্রায় ২০-৩৫ সেকেন্ড লাগে...',
+    uploadResume: 'ফাইল টেনে আনুন বা আপলোড করতে ক্লিক করুন',
+    uploadFormats: 'PDF · DOCX · TXT · সর্বোচ্চ ১০MB',
+    orPasteBelow: '— অথবা নিচে পেস্ট করুন —',
+    resumePlaceholder: 'এখানে আপনার রেজুমে টেক্সট পেস্ট করুন...',
+    jobPlaceholder: 'এখানে চাকরির বিবরণ পেস্ট করুন...',
+    resumeTitle: '📋 আপনার রেজুমে',
+    jobTitle: '💼 চাকরির বিবরণ',
+    readingFile: 'ফাইল পড়া হচ্ছে...',
+    resultsHeader: 'AI ফলাফল',
+    selectCategory: 'একটি বিভাগ নির্বাচন করুন · তারপর ভেতরের টুল বেছে নিন',
+    downloadBtn: '📥 ডাউনলোড .txt',
+    shareBtn: '🔗 শেয়ার করুন',
+    copiedBtn: '✓ কপি হয়েছে!',
+    copyBtn: '📋 কপি করুন',
+    chatPlaceholder: 'আপনার ক্যারিয়ার সম্পর্কে যেকোনো প্রশ্ন করুন...',
+    freeUses: 'বিনামূল্যে ব্যবহার:',
+    searching: '⏳ চাকরি খোঁজা হচ্ছে...',
+    searchBtn: '🔍 নতুন চাকরি খুঁজুন',
+    showingMarket: 'আপনার বাজারের ফলাফল দেখানো হচ্ছে:',
+    noResult: 'এখনো কোনো ফলাফল নেই:',
+    generating: 'তৈরি হচ্ছে',
+    detectingLocation: 'অবস্থান শনাক্ত করা হচ্ছে...',
+  },
+  pt: {
+    analyzeBtn: '🚀 Analisar Meu Perfil — 16 Ferramentas IA',
+    analyzingBtn: '✨ Gerando todas as 16 ferramentas IA...',
+    analyzingNote: 'IA gerando todas as 16 ferramentas — cerca de 20-35 segundos...',
+    uploadResume: 'Arraste o arquivo ou clique para fazer upload',
+    uploadFormats: 'PDF · DOCX · TXT · Máx 10MB',
+    orPasteBelow: '— ou cole abaixo —',
+    resumePlaceholder: 'Cole o texto do seu currículo aqui...',
+    jobPlaceholder: 'Cole a descrição da vaga aqui...',
+    resumeTitle: '📋 Seu Currículo',
+    jobTitle: '💼 Descrição da Vaga',
+    readingFile: 'Lendo arquivo...',
+    resultsHeader: 'Resultados da IA',
+    selectCategory: 'Selecione uma categoria · depois escolha uma ferramenta',
+    downloadBtn: '📥 Baixar .txt',
+    shareBtn: '🔗 Compartilhar',
+    copiedBtn: '✓ Copiado!',
+    copyBtn: '📋 Copiar',
+    chatPlaceholder: 'Pergunte qualquer coisa sobre sua carreira...',
+    freeUses: 'Usos gratuitos:',
+    searching: '⏳ Pesquisando vagas...',
+    searchBtn: '🔍 Buscar Vagas Novas',
+    showingMarket: 'Mostrando resultados para o seu mercado:',
+    noResult: 'Sem resultado ainda para',
+    generating: 'Gerando',
+    detectingLocation: 'Detectando localização...',
+  },
+  ru: {
+    analyzeBtn: '🚀 Анализировать мой профиль — 16 инструментов',
+    analyzingBtn: '✨ Генерируются все 16 инструментов...',
+    analyzingNote: 'ИИ генерирует все 16 инструментов — около 20-35 секунд...',
+    uploadResume: 'Перетащите файл или нажмите для загрузки',
+    uploadFormats: 'PDF · DOCX · TXT · Макс 10МБ',
+    orPasteBelow: '— или вставьте ниже —',
+    resumePlaceholder: 'Вставьте текст резюме здесь...',
+    jobPlaceholder: 'Вставьте описание вакансии здесь...',
+    resumeTitle: '📋 Ваше резюме',
+    jobTitle: '💼 Описание вакансии',
+    readingFile: 'Чтение файла...',
+    resultsHeader: 'Результаты ИИ',
+    selectCategory: 'Выберите категорию · затем выберите инструмент',
+    downloadBtn: '📥 Скачать .txt',
+    shareBtn: '🔗 Поделиться',
+    copiedBtn: '✓ Скопировано!',
+    copyBtn: '📋 Копировать',
+    chatPlaceholder: 'Задайте любой вопрос о карьере...',
+    freeUses: 'Бесплатных использований:',
+    searching: '⏳ Поиск вакансий...',
+    searchBtn: '🔍 Найти свежие вакансии',
+    showingMarket: 'Показываю результаты для вашего рынка:',
+    noResult: 'Нет результата для',
+    generating: 'Генерация',
+    detectingLocation: 'Определение местоположения...',
+  },
+  id: {
+    analyzeBtn: '🚀 Analisis Profil Saya — 16 Alat AI',
+    analyzingBtn: '✨ Membuat semua 16 alat AI...',
+    analyzingNote: 'AI membuat semua 16 alat — membutuhkan sekitar 20-35 detik...',
+    uploadResume: 'Seret file atau klik untuk mengunggah',
+    uploadFormats: 'PDF · DOCX · TXT · Maks 10MB',
+    orPasteBelow: '— atau tempel di bawah —',
+    resumePlaceholder: 'Tempel teks CV Anda di sini...',
+    jobPlaceholder: 'Tempel deskripsi pekerjaan di sini...',
+    resumeTitle: '📋 CV Anda',
+    jobTitle: '💼 Deskripsi Pekerjaan',
+    readingFile: 'Membaca file...',
+    resultsHeader: 'Hasil AI',
+    selectCategory: 'Pilih kategori · lalu pilih alat di dalamnya',
+    downloadBtn: '📥 Unduh .txt',
+    shareBtn: '🔗 Bagikan',
+    copiedBtn: '✓ Disalin!',
+    copyBtn: '📋 Salin',
+    chatPlaceholder: 'Tanyakan apa saja tentang karier Anda...',
+    freeUses: 'Penggunaan gratis:',
+    searching: '⏳ Mencari lowongan...',
+    searchBtn: '🔍 Cari Lowongan Terbaru',
+    showingMarket: 'Menampilkan hasil untuk pasar Anda:',
+    noResult: 'Belum ada hasil untuk',
+    generating: 'Membuat',
+    detectingLocation: 'Mendeteksi lokasi...',
+  },
+  ur: {
+    analyzeBtn: '🚀 میری پروفائل تجزیہ کریں — 16 AI ٹولز',
+    analyzingBtn: '✨ تمام 16 AI ٹولز بنائے جا رہے ہیں...',
+    analyzingNote: 'AI تمام 16 ٹولز بنا رہا ہے — تقریباً 20-35 سیکنڈ لگتے ہیں...',
+    uploadResume: 'فائل گھسیٹیں یا اپ لوڈ کرنے کے لیے کلک کریں',
+    uploadFormats: 'PDF · DOCX · TXT · زیادہ سے زیادہ 10MB',
+    orPasteBelow: '— یا نیچے پیسٹ کریں —',
+    resumePlaceholder: 'یہاں اپنا سی وی ٹیکسٹ پیسٹ کریں...',
+    jobPlaceholder: 'یہاں نوکری کی تفصیل پیسٹ کریں...',
+    resumeTitle: '📋 آپ کا سی وی',
+    jobTitle: '💼 نوکری کی تفصیل',
+    readingFile: 'فائل پڑھی جا رہی ہے...',
+    resultsHeader: 'AI نتائج',
+    selectCategory: 'ایک زمرہ منتخب کریں · پھر اندر سے ٹول چنیں',
+    downloadBtn: '📥 ڈاؤن لوڈ .txt',
+    shareBtn: '🔗 شیئر کریں',
+    copiedBtn: '✓ کاپی ہو گیا!',
+    copyBtn: '📋 کاپی کریں',
+    chatPlaceholder: 'اپنے کیریئر کے بارے میں کچھ بھی پوچھیں...',
+    freeUses: 'مفت استعمال:',
+    searching: '⏳ نوکریاں تلاش کی جا رہی ہیں...',
+    searchBtn: '🔍 نئی نوکریاں تلاش کریں',
+    showingMarket: 'آپ کی مارکیٹ کے نتائج دکھائے جا رہے ہیں:',
+    noResult: 'ابھی کوئی نتیجہ نہیں:',
+    generating: 'بنایا جا رہا ہے',
+    detectingLocation: 'مقام معلوم کیا جا رہا ہے...',
+  },
+}
+function tx(lang, key) {
+  return (T[lang] && T[lang][key]) || T.en[key] || key
+}
+
 // ── Stop words — comprehensive (removes ALL English filler, narrative, HR jargon) ──
 const STOP_WORDS = new Set([
   // Articles, conjunctions, prepositions
@@ -631,7 +935,7 @@ export default function Home() {
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
     const url  = URL.createObjectURL(blob)
     const a    = document.createElement('a')
-    a.href = url; a.download = 'Job_Coach_AI_Report.txt'; a.click()
+    a.href = url; a.download = 'Alfalah_AI_Career_Report.txt'; a.click()
     URL.revokeObjectURL(url)
   }
 
@@ -712,8 +1016,44 @@ export default function Home() {
         background: 'linear-gradient(160deg,#0F0C29,#302B63,#24243E)',
         color: '#fff', fontFamily: "'Segoe UI',system-ui,sans-serif",
       }}>
-        {/* Rainbow top bar */}
-        <div style={{ height: 5, background: 'linear-gradient(90deg,#FF0099,#FACF39,#00AEEF,#38EF7D,#FF6B35)' }} />
+        {/* ── Rainbow top bar ─────────────────────────────────────────────── */}
+        <div style={{ height: 5, background: 'linear-gradient(90deg,#FF0099,#FACF39,#00AEEF,#38EF7D,#FF6B35,#DA22FF,#FF0099)', backgroundSize: '200% 100%', animation: 'rainbow-shift 4s ease infinite' }} />
+
+        {/* ── Scrolling Ticker Banner ──────────────────────────────────────── */}
+        <div style={{
+          background: 'linear-gradient(90deg,rgba(255,0,153,0.12),rgba(0,174,239,0.12),rgba(250,207,57,0.10),rgba(56,239,125,0.10))',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          padding: '6px 0', overflow: 'hidden',
+        }}>
+          <div className="ticker-wrap">
+            <div className="ticker-inner">
+              {/* Duplicate content for seamless loop */}
+              {[0,1].map(i => (
+                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 0 }}>
+                  {[
+                    { icon: '🌟', text: 'Alfalah AI — الفلاح — Come to Success', color: '#FACF39' },
+                    { icon: '🚀', text: '17 Free AI Career Tools', color: '#00AEEF' },
+                    { icon: '🌍', text: '195 Countries Supported', color: '#38EF7D' },
+                    { icon: '🗣️', text: '11 World Languages', color: '#FF6B35' },
+                    { icon: '⚡', text: 'Skills Assessment 0–100 Score', color: '#DA22FF' },
+                    { icon: '🏆', text: 'From Labor to C-Suite · Age 10 to 100', color: '#FF0099' },
+                    { icon: '🔒', text: 'Zero Data Stored · No Login Required', color: '#00AEEF' },
+                    { icon: '💼', text: 'ATS Score · Cover Letter · Interview Prep', color: '#FACF39' },
+                    { icon: '🛂', text: 'Visa Pathways · Country Laws · Salary Intel', color: '#38EF7D' },
+                    { icon: '🤖', text: 'Powered by Google Gemini AI', color: '#FF6B35' },
+                    { icon: '❤️', text: 'Free for All Humanity · Built with Heart', color: '#FF0099' },
+                  ].map((item, j) => (
+                    <span key={j} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0 24px', fontSize: 12, fontWeight: 600 }}>
+                      <span style={{ animation: 'star-spin 3s ease-in-out infinite', animationDelay: `${j * 0.3}s`, display: 'inline-block' }}>{item.icon}</span>
+                      <span style={{ color: item.color, letterSpacing: 0.3 }}>{item.text}</span>
+                      <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 16, marginLeft: 8 }}>✦</span>
+                    </span>
+                  ))}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
 
         {/* ── Nav Bar ───────────────────────────────────────────────────────── */}
         <nav style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '0 16px', position: 'sticky', top: 0, zIndex: 500 }}>
@@ -783,12 +1123,12 @@ export default function Home() {
                   )}
                 </>
               ) : (
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontStyle: 'italic' }}>Detecting location...</span>
+                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontStyle: 'italic' }}>{tx(userLang,'detectingLocation')}</span>
               )}
             </div>
             {/* Usage dots */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>Free uses:</span>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{tx(userLang,'freeUses')}</span>
               <div style={{ display: 'flex', gap: 4 }}>
                 {Array.from({ length: CLIENT_HOURLY_LIMIT }).map((_, i) => (
                   <div key={i} style={{
@@ -1014,7 +1354,7 @@ export default function Home() {
                     fontSize: 18, fontWeight: 900, marginBottom: 8,
                     color: atsScore.score >= 70 ? '#38EF7D' : atsScore.score >= 45 ? '#FACF39' : '#FF416C',
                   }}>
-                    {atsScore.label} — {atsScore.found}/{atsScore.total} technical keywords matched
+                    {atsScore.label} — {atsScore.matched.length}/{atsScore.matched.length + atsScore.missing.length} technical keywords matched
                   </div>
                   {atsScore.matched.length > 0 && (
                     <div style={{ marginBottom: 10 }}>
@@ -1051,7 +1391,7 @@ export default function Home() {
             {/* Resume Upload */}
             <div style={glass}>
               <h2 style={{ margin: '0 0 14px', fontSize: 18, fontWeight: 800, background: 'linear-gradient(90deg,#00C6FF,#0072FF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>📋</span> Your Resume
+                <span>📋</span> {tx(userLang,'resumeTitle').replace('📋 ','')}
               </h2>
               {/* Drop zone */}
               <div
@@ -1070,20 +1410,20 @@ export default function Home() {
                 <input ref={fileRef} type="file" accept=".pdf,.docx,.txt" onChange={e => processFile(e.target.files[0])} style={{ display: 'none' }} />
                 <div style={{ fontSize: 30, marginBottom: 6 }}>{uploading ? '⏳' : '📂'}</div>
                 {uploading
-                  ? <p style={{ color: '#00AEEF', fontSize: 13, fontWeight: 700, margin: 0 }}>Reading file...</p>
+                  ? <p style={{ color: '#00AEEF', fontSize: 13, fontWeight: 700, margin: 0 }}>{tx(userLang,'readingFile')}</p>
                   : fileName
                     ? <p style={{ color: '#38EF7D', fontSize: 12, fontWeight: 700, margin: 0 }}>✓ {fileName}</p>
                     : <>
-                        <p style={{ color: '#fff', fontSize: 13, fontWeight: 700, margin: '0 0 4px' }}>Drop file or click to upload</p>
-                        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, margin: 0 }}>PDF · DOCX · TXT · Max 10MB</p>
+                        <p style={{ color: '#fff', fontSize: 13, fontWeight: 700, margin: '0 0 4px' }}>{tx(userLang,'uploadResume')}</p>
+                        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, margin: 0 }}>{tx(userLang,'uploadFormats')}</p>
                       </>
                 }
               </div>
-              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', textAlign: 'center', margin: '0 0 8px' }}>— or paste below —</p>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', textAlign: 'center', margin: '0 0 8px' }}>{tx(userLang,'orPasteBelow')}</p>
               <textarea
                 value={resumeText}
                 onChange={e => { const v = e.target.value; setResumeText(v.length > MAX_PASTE_CHARS ? v.slice(0, MAX_PASTE_CHARS) : v) }}
-                placeholder="Paste your resume text here..."
+                placeholder={tx(userLang,'resumePlaceholder')}
                 style={{ ...textarea, height: 150 }}
               />
               <p style={{ textAlign: 'right', fontSize: 11, color: 'rgba(255,255,255,0.25)', margin: '4px 0 0' }}>
@@ -1094,7 +1434,7 @@ export default function Home() {
             {/* Job Description */}
             <div style={glass}>
               <h2 style={{ margin: '0 0 14px', fontSize: 18, fontWeight: 800, background: 'linear-gradient(90deg,#FF0099,#FF6B6B)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>💼</span> Job Description
+                <span>💼</span> {tx(userLang,'jobTitle').replace('💼 ','')}
               </h2>
               <div
                 onDragOver={e => { e.preventDefault(); setJobDragOver(true) }}
@@ -1112,20 +1452,20 @@ export default function Home() {
                 <input ref={jobFileRef} type="file" accept=".pdf,.docx,.txt" onChange={e => processFile(e.target.files[0], true)} style={{ display: 'none' }} />
                 <div style={{ fontSize: 30, marginBottom: 6 }}>{jobUploading ? '⏳' : '📂'}</div>
                 {jobUploading
-                  ? <p style={{ color: '#FF0099', fontSize: 13, fontWeight: 700, margin: 0 }}>Reading file...</p>
+                  ? <p style={{ color: '#FF0099', fontSize: 13, fontWeight: 700, margin: 0 }}>{tx(userLang,'readingFile')}</p>
                   : jobFileName
                     ? <p style={{ color: '#38EF7D', fontSize: 12, fontWeight: 700, margin: 0 }}>✓ {jobFileName}</p>
                     : <>
-                        <p style={{ color: '#fff', fontSize: 13, fontWeight: 700, margin: '0 0 4px' }}>Drop file or click to upload</p>
-                        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, margin: 0 }}>PDF · DOCX · TXT · Max 10MB</p>
+                        <p style={{ color: '#fff', fontSize: 13, fontWeight: 700, margin: '0 0 4px' }}>{tx(userLang,'uploadResume')}</p>
+                        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, margin: 0 }}>{tx(userLang,'uploadFormats')}</p>
                       </>
                 }
               </div>
-              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', textAlign: 'center', margin: '0 0 8px' }}>— or paste below —</p>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', textAlign: 'center', margin: '0 0 8px' }}>{tx(userLang,'orPasteBelow')}</p>
               <textarea
                 value={jobText}
                 onChange={e => { const v = e.target.value; setJobText(v.length > 6000 ? v.slice(0, 6000) : v) }}
-                placeholder="Paste the job description here..."
+                placeholder={tx(userLang,'jobPlaceholder')}
                 style={{ ...textarea, height: 150 }}
               />
               <p style={{ textAlign: 'right', fontSize: 11, color: 'rgba(255,255,255,0.25)', margin: '4px 0 0' }}>
@@ -1187,8 +1527,7 @@ export default function Home() {
               onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 12px 48px rgba(250,207,57,0.65)' } }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = loading ? 'none' : '0 8px 40px rgba(250,207,57,0.45)' }}
             >
-              <span style={{ fontSize: 24 }}>{loading ? '✨' : '🚀'}</span>
-              {loading ? 'Generating all 16 AI tools...' : 'Analyse My Profile — 16 AI Tools'}
+              {loading ? tx(userLang,'analyzingBtn') : tx(userLang,'analyzeBtn')}
             </button>
             {loading && (
               <div style={{ marginTop: 18 }}>
@@ -1203,7 +1542,7 @@ export default function Home() {
                   ))}
                 </div>
                 <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, margin: 0 }}>
-                  AI generating all 16 tools — takes about 20–35 seconds...
+                  {tx(userLang,'analyzingNote')}
                 </p>
               </div>
             )}
@@ -1215,7 +1554,7 @@ export default function Home() {
               {/* Results Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 10 }}>
                 <h2 style={{ fontSize: 26, fontWeight: 900, margin: 0, background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  AI Results
+                  {tx(userLang,'resultsHeader')}
                 </h2>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   <button
@@ -1224,7 +1563,7 @@ export default function Home() {
                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.18)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
                   >
-                    {copied === '__share__' ? '✓ Copied!' : '🔗 Share'}
+                    {copied === '__share__' ? tx(userLang,'copiedBtn') : tx(userLang,'shareBtn')}
                   </button>
                   <button
                     onClick={downloadReport}
@@ -1233,12 +1572,12 @@ export default function Home() {
                     onMouseEnter={e => { if (Object.keys(results).length > 0) e.currentTarget.style.transform = 'translateY(-2px)' }}
                     onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)' }}
                   >
-                    📥 Download .txt
+                    {tx(userLang,'downloadBtn')}
                   </button>
                 </div>
               </div>
               <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginBottom: 20 }}>
-                Select a category · then choose a tool inside
+                {tx(userLang,'selectCategory')}
               </p>
 
               {/* ── 5 Group Cards ──────────────────────────────────────────── */}
@@ -1293,7 +1632,7 @@ export default function Home() {
                       </h3>
                       <button onClick={() => content && copyToClipboard(content, tab.key)} disabled={!content}
                         style={{ background: copied === tab.key ? 'linear-gradient(135deg,#11998E,#38EF7D)' : 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, padding: '7px 16px', cursor: content ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', opacity: content ? 1 : 0.4 }}>
-                        {copied === tab.key ? '✓ Copied!' : '📋 Copy'}
+                        {copied === tab.key ? tx(userLang,'copiedBtn') : tx(userLang,'copyBtn')}
                       </button>
                     </div>
 
@@ -1318,33 +1657,33 @@ export default function Home() {
                       })}
                     </div>
 
-                    {/* Content area */}
-                    <div style={{ background: 'rgba(0,0,0,0.35)', borderRadius: 14, padding: 22, fontSize: 14, lineHeight: 1.8, color: 'rgba(255,255,255,0.92)', maxHeight: 520, overflowY: 'auto', border: '1px solid rgba(255,255,255,0.08)' }}>
-                      {content
-                        ? <RenderText text={content} />
-                        : loading
-                          ? <span style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>Generating {tab.label}...<span className="typing-cursor" /></span>
-                          : <span style={{ color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>No result yet for {tab.label}</span>
-                      }
-                    </div>
-
-                    {/* Your Market banner — shown inside Job Hunt group */}
+                    {/* Your Market banner — shown inside Job Hunt group, above content */}
                     {activeGroup === 'jobhunt' && userInfo?.country && (
                       <div style={{
                         display: 'flex', alignItems: 'center', gap: 8,
-                        padding: '8px 14px', marginBottom: 16, borderRadius: 10,
+                        padding: '8px 14px', marginBottom: 14, borderRadius: 10,
                         background: 'rgba(56,239,125,0.07)',
                         border: '1px solid rgba(56,239,125,0.2)',
                       }}>
                         <span style={{ fontSize: 13 }}>📍</span>
                         <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', fontWeight: 500 }}>
-                          Showing results for your market:
+                          {tx(userLang,'showingMarket')}
                         </span>
                         <span style={{ fontSize: 12, fontWeight: 800, color: '#38EF7D' }}>
                           {userInfo.country}
                         </span>
                       </div>
                     )}
+
+                    {/* Content area */}
+                    <div style={{ background: 'rgba(0,0,0,0.35)', borderRadius: 14, padding: 22, fontSize: 14, lineHeight: 1.8, color: 'rgba(255,255,255,0.92)', maxHeight: 520, overflowY: 'auto', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      {content
+                        ? <RenderText text={content} />
+                        : loading
+                          ? <span style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>{tx(userLang,'generating')} {tab.label}...<span className="typing-cursor" /></span>
+                          : <span style={{ color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>{tx(userLang,'noResult')} {tab.label}</span>
+                      }
+                    </div>
 
                     {/* Live Jobs — shown inside Job Hunt → Live Jobs & Match tab */}
                     {activeGroup === 'jobhunt' && activeTab === 'matchingJobs' && (
@@ -1446,8 +1785,7 @@ export default function Home() {
                 transition: 'all .2s', display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 16,
               }}
             >
-              <span>{jobsLoading ? '⏳' : '🔍'}</span>
-              {jobsLoading ? 'Searching Google Jobs...' : 'Search Fresh Jobs'}
+              {jobsLoading ? tx(userLang,'searching') : tx(userLang,'searchBtn')}
             </button>
 
             {/* Error */}
@@ -1646,7 +1984,7 @@ export default function Home() {
                 id="chat-input"
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
-                placeholder="Ask anything about your career..."
+                placeholder={tx(userLang,'chatPlaceholder')}
                 disabled={chatLoading}
                 style={{
                   flex: 1, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)',
@@ -1686,6 +2024,15 @@ export default function Home() {
           @keyframes pulse-glow { 0%,100%{filter:drop-shadow(0 0 8px #FF009966)} 50%{filter:drop-shadow(0 0 28px #FF0099cc)} }
           @keyframes typing { 0%,100%{opacity:1} 50%{opacity:0} }
           @keyframes shimmer { 0%{left:-60%} 100%{left:120%} }
+          @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+          @keyframes ticker-rtl { 0%{transform:translateX(-50%)} 100%{transform:translateX(0)} }
+          @keyframes float-up { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-6px)} }
+          @keyframes star-spin { 0%{transform:rotate(0deg) scale(1)} 50%{transform:rotate(180deg) scale(1.3)} 100%{transform:rotate(360deg) scale(1)} }
+          @keyframes rainbow-shift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+          .ticker-wrap { overflow:hidden; white-space:nowrap; }
+          .ticker-inner { display:inline-block; animation:ticker 32s linear infinite; }
+          .ticker-inner:hover { animation-play-state:paused; }
+          select option { background:#1a1a2e !important; }
           .typing-cursor::after { content:'▋'; animation:typing 1s infinite steps(1); color:#00AEEF; margin-left:5px; }
           textarea::placeholder { color:rgba(255,255,255,0.22); }
           ::-webkit-scrollbar { width:6px; }
