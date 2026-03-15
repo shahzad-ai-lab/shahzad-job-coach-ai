@@ -689,6 +689,23 @@ export default function Home() {
         {/* Rainbow top bar */}
         <div style={{ height: 5, background: 'linear-gradient(90deg,#FF0099,#FACF39,#00AEEF,#38EF7D,#FF6B35)' }} />
 
+        {/* ── Nav Bar ───────────────────────────────────────────────────────── */}
+        <nav style={{ background: 'rgba(0,0,0,0.35)', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '0 20px' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 4, height: 44 }}>
+            <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 7, textDecoration: 'none', marginRight: 12 }}>
+              <span style={{ fontSize: 18 }}>🚀</span>
+              <span style={{ fontWeight: 900, fontSize: 14, background: 'linear-gradient(135deg,#FF0099,#FACF39)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Job Coach AI</span>
+            </a>
+            <a href="/" style={{ padding: '6px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#fff', textDecoration: 'none', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
+              📄 Resume Analyzer
+            </a>
+            <a href="/assess" style={{ padding: '6px 14px', borderRadius: 8, fontSize: 13, fontWeight: 700, color: '#0F0C29', textDecoration: 'none', background: 'linear-gradient(135deg,#FACF39,#FF6B35)', boxShadow: '0 0 14px rgba(250,207,57,0.35)', display: 'flex', alignItems: 'center', gap: 6 }}>
+              ⚡ Skills Assessment
+              <span style={{ fontSize: 10, fontWeight: 900, background: 'rgba(0,0,0,0.2)', padding: '1px 6px', borderRadius: 10 }}>FREE</span>
+            </a>
+          </div>
+        </nav>
+
         {/* ── User Info Bar ─────────────────────────────────────────────────── */}
         <div style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '8px 20px' }}>
           <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
@@ -884,6 +901,38 @@ export default function Home() {
                 100% free · Zero data stored · Built with heart and mind
               </p>
             </div>
+          )}
+
+          {/* ── Skills Assessment CTA Banner ─────────────────────────────────── */}
+          {!results && (
+            <a href="/assess" style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              maxWidth: 780, margin: '14px auto 0', padding: '14px 22px', borderRadius: 16,
+              background: 'linear-gradient(135deg,rgba(250,207,57,0.12),rgba(255,107,53,0.10))',
+              border: '1px solid rgba(250,207,57,0.25)', textDecoration: 'none',
+              animation: 'fade-in 0.8s ease', gap: 14, flexWrap: 'wrap',
+              boxShadow: '0 0 24px rgba(250,207,57,0.08)',
+              transition: 'border-color 0.2s, box-shadow 0.2s',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <span style={{ fontSize: 30 }}>⚡</span>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: '#FACF39', marginBottom: 2 }}>
+                    No resume yet? Take the Free Skills Assessment
+                  </div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
+                    Get your 0–100 career score · Age 10 to 100 · 195 countries · ISCO-08 career map
+                  </div>
+                </div>
+              </div>
+              <div style={{
+                padding: '8px 20px', borderRadius: 10, fontWeight: 800, fontSize: 13,
+                background: 'linear-gradient(135deg,#FACF39,#FF6B35)', color: '#0F0C29',
+                whiteSpace: 'nowrap', flexShrink: 0,
+              }}>
+                Start Assessment →
+              </div>
+            </a>
           )}
         </header>
 
