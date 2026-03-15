@@ -5,21 +5,22 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 // ── Constants ──────────────────────────────────────────────────────────────────
 const MAX_PASTE_CHARS = 12000
 
-// ── Top 10 World Languages ────────────────────────────────────────────────────
-// Top 11 languages by total speakers (ranked by Ethnologue / Wikipedia 2024)
+// ── LANGUAGE SYSTEM (disabled — English only for now, re-enable later) ────────
+/* LANGUAGES list kept for future multilingual release — do not delete
 const LANGUAGES = [
-  { code: 'en', label: 'English',     flag: '🇬🇧', speakers: '1.5B' },  // #1
-  { code: 'zh', label: 'Chinese',     flag: '🇨🇳', speakers: '1.1B' },  // #2
-  { code: 'hi', label: 'Hindi',       flag: '🇮🇳', speakers: '611M' },  // #3
-  { code: 'es', label: 'Spanish',     flag: '🇪🇸', speakers: '561M' },  // #4
-  { code: 'ar', label: 'Arabic',      flag: '🇸🇦', speakers: '335M' },  // #5
-  { code: 'fr', label: 'French',      flag: '🇫🇷', speakers: '312M' },  // #6
-  { code: 'bn', label: 'Bengali',     flag: '🇧🇩', speakers: '278M' },  // #7
-  { code: 'pt', label: 'Portuguese',  flag: '🇧🇷', speakers: '269M' },  // #8
-  { code: 'ru', label: 'Russian',     flag: '🇷🇺', speakers: '255M' },  // #9
-  { code: 'id', label: 'Indonesian',  flag: '🇮🇩', speakers: '252M' },  // #10
-  { code: 'ur', label: 'Urdu',        flag: '🇵🇰', speakers: '238M' },  // #11
+  { code: 'en', label: 'English',     flag: '🇬🇧', speakers: '1.5B' },
+  { code: 'zh', label: 'Chinese',     flag: '🇨🇳', speakers: '1.1B' },
+  { code: 'hi', label: 'Hindi',       flag: '🇮🇳', speakers: '611M' },
+  { code: 'es', label: 'Spanish',     flag: '🇪🇸', speakers: '561M' },
+  { code: 'ar', label: 'Arabic',      flag: '🇸🇦', speakers: '335M' },
+  { code: 'fr', label: 'French',      flag: '🇫🇷', speakers: '312M' },
+  { code: 'bn', label: 'Bengali',     flag: '🇧🇩', speakers: '278M' },
+  { code: 'pt', label: 'Portuguese',  flag: '🇧🇷', speakers: '269M' },
+  { code: 'ru', label: 'Russian',     flag: '🇷🇺', speakers: '255M' },
+  { code: 'id', label: 'Indonesian',  flag: '🇮🇩', speakers: '252M' },
+  { code: 'ur', label: 'Urdu',        flag: '🇵🇰', speakers: '238M' },
 ]
+*/
 const CLIENT_HOURLY_LIMIT = 5
 const HOUR_MS = 3_600_000
 const BACKOFF_HOURS = [1, 3, 6]
@@ -324,7 +325,8 @@ const T = {
     detectingLocation: 'مقام معلوم کیا جا رہا ہے...',
   },
 }
-function tx(lang, key) {
+// tx() always returns English — multilingual system disabled, kept for future use
+function tx(lang, key) { lang = 'en'; // eslint-disable-line
   return (T[lang] && T[lang][key]) || T.en[key] || key
 }
 
@@ -827,7 +829,7 @@ export default function Home() {
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeText, jobPosting: jobText, requestedKeys: ALL_CARD_KEYS, lang: userLang, userCountry: userInfo?.country || '' }),
+        body: JSON.stringify({ resumeText, jobPosting: jobText, requestedKeys: ALL_CARD_KEYS, userCountry: userInfo?.country || '' }),
       })
       if (!res.ok) {
         let msg = 'Analysis failed'
@@ -877,7 +879,7 @@ export default function Home() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: updated, lang: userLang }),
+        body: JSON.stringify({ messages: updated }),
       })
       const data = await res.json()
       setChatMessages(prev => [...prev, { role: 'assistant', content: data.reply || data.error || 'Sorry, try again.' }])
@@ -1078,26 +1080,8 @@ export default function Home() {
             <a href="/assess" style={{ padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#0F0C29', textDecoration: 'none', background: 'linear-gradient(135deg,#FACF39,#FF6B35)', whiteSpace: 'nowrap', boxShadow: '0 0 10px rgba(250,207,57,0.3)' }}>
               ⚡ Assessment
             </a>
-            {/* Language selector */}
-            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap' }}>🌐</span>
-              <select
-                value={userLang}
-                onChange={e => setUserLang(e.target.value)}
-                style={{
-                  background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
-                  borderRadius: 8, color: '#fff', fontSize: 12, padding: '4px 8px',
-                  cursor: 'pointer', outline: 'none', fontFamily: 'inherit',
-                  maxWidth: 130,
-                }}
-              >
-                {LANGUAGES.map(l => (
-                  <option key={l.code} value={l.code} style={{ background: '#1a1a2e', color: '#fff' }}>
-                    {l.flag} {l.label} ({l.speakers})
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Language selector — disabled, English only (re-enable for v3 multilingual) */}
+            <div style={{ marginLeft: 'auto' }} />
           </div>
         </nav>
 

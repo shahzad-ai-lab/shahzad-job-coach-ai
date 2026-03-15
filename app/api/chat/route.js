@@ -66,19 +66,14 @@ export async function POST(req) {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) return Response.json({ error: 'API not configured.' }, { status: 503, headers })
 
-  let messages, lang = 'en'
+  let messages
   try {
     const body = await req.json()
     messages = body.messages
-    lang = typeof body.lang === 'string' && body.lang.length <= 5 ? body.lang : 'en'
     if (!Array.isArray(messages) || messages.length === 0) throw new Error('invalid')
   } catch {
     return Response.json({ error: 'Invalid request.' }, { status: 400, headers })
   }
-
-  const LANG_NAMES = { en:'English', zh:'Chinese (Simplified)', hi:'Hindi', es:'Spanish', ar:'Arabic', fr:'French', bn:'Bengali', pt:'Portuguese', ru:'Russian', id:'Indonesian', ur:'Urdu' }
-  const langName = LANG_NAMES[lang] || 'English'
-  const langNote = lang !== 'en' ? `\nCRITICAL: Reply entirely in ${langName}. Do not use English.\n` : ''
 
   // Build conversation history for Gemini (last 10 messages max)
   const recent = messages.slice(-10)
@@ -86,25 +81,26 @@ export async function POST(req) {
     `${m.role === 'user' ? 'User' : 'Alfalah AI'}: ${String(m.content).slice(0, 500)}`
   ).join('\n')
 
-  const prompt = `${SYSTEM_PROMPT}${langNote}\n\n--- CONVERSATION ---\n${conversationText}\n\nAlfalah AI:`
+  const prompt = `${SYSTEM_PROMPT}\n\n--- CONVERSATION ---\n${conversationText}\n\nAlfalah AI:`
 
-  try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.8, maxOutputTokens: 512 },
-      }),
-    })
-    const data = await res.json()
-    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!reply) throw new Error('Empty response')
-    return Response.json({ reply: reply.trim() }, { headers })
-  } catch (err) {
-    entry.count = Math.max(0, entry.count - 1)
-    chatRateStore.set(ip, entry)
-    return Response.json({ error: 'AI unavailable. Try again.' }, { status: 503, headers })
+  const CHAT_MODELS = ['gemini-2.0-flash', 'gemini-flash-latest', 'gemini-2.0-flash-lite', 'gemini-flash-lite-latest']
+  for (const model of CHAT_MODELS) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.8, maxOutputTokens: 512 },
+        }),
+      })
+      const data = await res.json()
+      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text
+      if (reply) return Response.json({ reply: reply.trim() }, { headers })
+    } catch {}
   }
+  entry.count = Math.max(0, entry.count - 1)
+  chatRateStore.set(ip, entry)
+  return Response.json({ error: 'AI unavailable. Try again in a moment.' }, { status: 503, headers })
 }

@@ -60,7 +60,9 @@ function truncate(text, max) {
 }
 
 const MODELS = [
+  { name: 'gemini-2.0-flash',         timeout: 55000 },
   { name: 'gemini-flash-latest',      timeout: 55000 },
+  { name: 'gemini-2.0-flash-lite',    timeout: 55000 },
   { name: 'gemini-flash-lite-latest', timeout: 55000 },
 ]
 
@@ -100,10 +102,38 @@ async function callGemini(prompt, apiKey) {
 }
 
 function extractJSON(raw) {
-  let cleaned = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim()
+  // Step 1: Strip markdown code fences
+  let cleaned = raw
+    .replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '') // strip control chars
+    .trim()
+
+  // Step 2: Try clean parse
   try { return JSON.parse(cleaned) } catch {}
-  const match = cleaned.match(/\{[\s\S]*\}/)
+
+  // Step 3: Extract first {...} block
+  const start = cleaned.indexOf('{')
+  if (start === -1) return null
+  const block = cleaned.slice(start)
+
+  // Step 4: Try the full block
+  try { return JSON.parse(block) } catch {}
+
+  // Step 5: Try last-resort greedy match
+  const match = block.match(/\{[\s\S]*\}/)
   if (match) { try { return JSON.parse(match[0]) } catch {} }
+
+  // Step 6: Handle truncated JSON — find last complete key:value pair and close
+  try {
+    let partial = block
+    // Find last complete "key": "value" entry (ends with quote or })
+    const lastComma = partial.lastIndexOf('",\n')
+    if (lastComma > 10) {
+      partial = partial.slice(0, lastComma + 1) + '\n"_truncated": "Some results may be missing — please try again."}'
+      return JSON.parse(partial)
+    }
+  } catch {}
+
   return null
 }
 
@@ -139,10 +169,8 @@ export async function POST(request) {
     resumeText = truncate(sanitize(body.resumeText || ''), MAX_RESUME)
     jobPosting = truncate(sanitize(body.jobPosting || ''), MAX_JOB)
     requestedKeys = Array.isArray(body.requestedKeys) && body.requestedKeys.length > 0 ? body.requestedKeys : null
-    const LANG_NAMES = { en:'English', zh:'Chinese (Simplified)', hi:'Hindi', es:'Spanish', ar:'Arabic', fr:'French', bn:'Bengali', pt:'Portuguese', ru:'Russian', id:'Indonesian', ur:'Urdu' }
-    const lang = typeof body.lang === 'string' && body.lang.length <= 5 ? body.lang : 'en'
-    const langName = LANG_NAMES[lang] || 'English'
-    langInstruction = lang !== 'en' ? `\nCRITICAL LANGUAGE INSTRUCTION: You MUST write ALL your response values in ${langName}. The user speaks ${langName}. Keep all JSON keys in English (resumeScore, coverLetter, etc.) but every word of every VALUE must be written in ${langName}. Do not respond in English if the language is ${langName}.\n` : ''
+    // Language: English only (multilingual system reserved for v3)
+    langInstruction = ''
     const userCountry = typeof body.userCountry === 'string' ? body.userCountry.slice(0, 60) : ''
     if (userCountry) langInstruction += `\nUSER LOCATION: ${userCountry}. For matchingJobs — show recruiters ONLY for ${userCountry} or nearest market. Do NOT list other countries.\n`
   } catch {
