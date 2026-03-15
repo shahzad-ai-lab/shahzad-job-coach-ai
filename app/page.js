@@ -4,6 +4,20 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 const MAX_PASTE_CHARS = 12000
+
+// ── Top 10 World Languages ────────────────────────────────────────────────────
+const LANGUAGES = [
+  { code: 'en', label: 'English',    flag: '🇬🇧' },
+  { code: 'zh', label: 'Chinese',    flag: '🇨🇳' },
+  { code: 'hi', label: 'Hindi',      flag: '🇮🇳' },
+  { code: 'es', label: 'Spanish',    flag: '🇪🇸' },
+  { code: 'fr', label: 'French',     flag: '🇫🇷' },
+  { code: 'ar', label: 'Arabic',     flag: '🇸🇦' },
+  { code: 'bn', label: 'Bengali',    flag: '🇧🇩' },
+  { code: 'pt', label: 'Portuguese', flag: '🇧🇷' },
+  { code: 'ru', label: 'Russian',    flag: '🇷🇺' },
+  { code: 'ur', label: 'Urdu',       flag: '🇵🇰' },
+]
 const CLIENT_HOURLY_LIMIT = 5
 const HOUR_MS = 3_600_000
 const BACKOFF_HOURS = [1, 3, 6]
@@ -404,7 +418,7 @@ export default function Home() {
   // ── Chatbot state ───────────────────────────────────────────────────────────
   const [chatOpen, setChatOpen]       = useState(false)
   const [chatMessages, setChatMessages] = useState([
-    { role: 'assistant', content: "Hi! I'm your Career Coach AI 👋\nAsk me anything about resumes, job search, interviews, salary, skills, or visas. I'm here to help — free, always." }
+    { role: 'assistant', content: "السلام عليكم! I'm Alfalah AI 🌟\nAsk me anything about resumes, job search, interviews, salary, skills, visas, or how to use this platform. Free, always — for all humanity." }
   ])
   const [chatInput, setChatInput]     = useState('')
   const [chatLoading, setChatLoading] = useState(false)
@@ -592,7 +606,7 @@ export default function Home() {
   async function handleShare() {
     const url = window.location.href
     if (navigator.share) {
-      try { await navigator.share({ title: 'Job Coach AI 2026', url }) } catch {}
+      try { await navigator.share({ title: 'Alfalah AI — Come to Success', url }) } catch {}
     } else {
       navigator.clipboard.writeText(url)
         .then(() => { setError(''); setCopied('__share__'); setTimeout(() => setCopied(''), 2000) })
@@ -655,16 +669,26 @@ export default function Home() {
             justifyContent: 'center', gap: 24,
           }}
         >
-          <div style={{ fontSize: 64, animation: 'pulse-glow 1.8s ease-in-out infinite' }}>🚀</div>
+          <div style={{
+            width: 80, height: 80, borderRadius: 20,
+            background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF,#38EF7D)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 44, fontWeight: 900, color: '#0F0C29',
+            boxShadow: '0 0 40px rgba(255,0,153,0.5)',
+            animation: 'pulse-glow 1.8s ease-in-out infinite',
+          }}>ا</div>
           <h1 style={{
             fontSize: 'clamp(2rem,8vw,4rem)', fontWeight: 900, margin: 0,
-            background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF)',
+            background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF,#38EF7D)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>
-            Job Coach AI 2026
+            Alfalah AI
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14, margin: 0 }}>
-            AI Career Coach · 14 Free Tools
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16, margin: 0, fontStyle: 'italic' }}>
+            الفلاح — Come to Success
+          </p>
+          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, margin: 0 }}>
+            17 Free AI Career Tools · 195 Countries
           </p>
           {/* Progress bar */}
           <div style={{ width: 240, height: 4, borderRadius: 4, background: 'rgba(255,255,255,0.12)', overflow: 'hidden' }}>
@@ -690,19 +714,48 @@ export default function Home() {
         <div style={{ height: 5, background: 'linear-gradient(90deg,#FF0099,#FACF39,#00AEEF,#38EF7D,#FF6B35)' }} />
 
         {/* ── Nav Bar ───────────────────────────────────────────────────────── */}
-        <nav style={{ background: 'rgba(0,0,0,0.35)', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '0 20px' }}>
-          <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 4, height: 44 }}>
-            <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 7, textDecoration: 'none', marginRight: 12 }}>
-              <span style={{ fontSize: 18 }}>🚀</span>
-              <span style={{ fontWeight: 900, fontSize: 14, background: 'linear-gradient(135deg,#FF0099,#FACF39)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Job Coach AI</span>
+        <nav style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '0 16px', position: 'sticky', top: 0, zIndex: 500 }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 6, height: 50, flexWrap: 'nowrap' }}>
+            {/* Logo */}
+            <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', marginRight: 10, flexShrink: 0 }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 16, fontWeight: 900, color: '#0F0C29', boxShadow: '0 0 12px rgba(255,0,153,0.4)',
+              }}>ا</div>
+              <div style={{ lineHeight: 1.1 }}>
+                <div style={{ fontWeight: 900, fontSize: 13, background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Alfalah AI</div>
+                <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', fontStyle: 'italic', letterSpacing: 0.5 }}>Come to Success</div>
+              </div>
             </a>
-            <a href="/" style={{ padding: '6px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#fff', textDecoration: 'none', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
-              📄 Resume Analyzer
+            {/* Nav links */}
+            <a href="/" style={{ padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.8)', textDecoration: 'none', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'nowrap' }}>
+              📄 Resume
             </a>
-            <a href="/assess" style={{ padding: '6px 14px', borderRadius: 8, fontSize: 13, fontWeight: 700, color: '#0F0C29', textDecoration: 'none', background: 'linear-gradient(135deg,#FACF39,#FF6B35)', boxShadow: '0 0 14px rgba(250,207,57,0.35)', display: 'flex', alignItems: 'center', gap: 6 }}>
-              ⚡ Skills Assessment
-              <span style={{ fontSize: 10, fontWeight: 900, background: 'rgba(0,0,0,0.2)', padding: '1px 6px', borderRadius: 10 }}>FREE</span>
+            <a href="/assess" style={{ padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#0F0C29', textDecoration: 'none', background: 'linear-gradient(135deg,#FACF39,#FF6B35)', whiteSpace: 'nowrap', boxShadow: '0 0 10px rgba(250,207,57,0.3)' }}>
+              ⚡ Assessment
             </a>
+            {/* Language selector */}
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap' }}>🌐</span>
+              <select
+                value={userLang}
+                onChange={e => setUserLang(e.target.value)}
+                style={{
+                  background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: 8, color: '#fff', fontSize: 12, padding: '4px 8px',
+                  cursor: 'pointer', outline: 'none', fontFamily: 'inherit',
+                  maxWidth: 130,
+                }}
+              >
+                {LANGUAGES.map(l => (
+                  <option key={l.code} value={l.code} style={{ background: '#1a1a2e', color: '#fff' }}>
+                    {l.flag} {l.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </nav>
 
@@ -872,15 +925,18 @@ export default function Home() {
             background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
             fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: '#FACF39',
           }}>
-            AI Career Coach · 14 Free Tools
+            الفلاح · 17 Free AI Tools · 195 Countries
           </div>
           <h1 style={{
-            fontSize: 'clamp(2.4rem,8vw,5rem)', fontWeight: 900, margin: '0 0 10px',
-            background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF)',
+            fontSize: 'clamp(2.4rem,8vw,5rem)', fontWeight: 900, margin: '0 0 6px',
+            background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF,#38EF7D)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: 1.05,
           }}>
-            Job Coach AI 2026
+            Alfalah AI
           </h1>
+          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 16, margin: '0 auto 4px', fontStyle: 'italic', letterSpacing: 0.5 }}>
+            Come to Success — الفلاح
+          </p>
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 15, maxWidth: 480, margin: '0 auto 14px' }}>
             Upload your resume. Paste the job.{' '}
             <strong style={{ color: '#fff' }}>Land the interview.</strong>
@@ -895,7 +951,7 @@ export default function Home() {
               animation: 'fade-in 0.6s ease',
             }}>
               <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.85)', lineHeight: 1.8, margin: '0 0 8px' }}>
-                In an era of <strong style={{ color: '#FACF39' }}>AI layoffs and global career migration</strong>, these 14 tools help anyone — from Mississauga to Mumbai — compete at the highest level. Explore visa pathways, crush ATS filters, and build your 30-60-90 day plan with AI guidance backed by real global career data.
+                In an era of <strong style={{ color: '#FACF39' }}>AI layoffs and global career migration</strong>, Alfalah AI's 17 free tools help anyone — from Karachi to Canada, Lagos to London — compete at the highest level. Explore visa pathways, crush ATS filters, and build your 30-60-90 day plan with AI guidance backed by real global career data.
               </p>
               <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>
                 100% free · Zero data stored · Built with heart and mind
@@ -1510,9 +1566,9 @@ export default function Home() {
             fontSize: 26, transition: 'all .3s',
             animation: chatOpen ? 'none' : 'pulse-glow 2.5s ease-in-out infinite',
           }}
-          title="Career Coach AI Chat"
+          title="Chat with Alfalah AI"
         >
-          {chatOpen ? '✕' : '💬'}
+          {chatOpen ? '✕' : '🌟'}
         </button>
 
         {/* Chat panel */}
@@ -1534,10 +1590,10 @@ export default function Home() {
               background: 'linear-gradient(135deg,rgba(0,198,255,0.15),rgba(0,114,255,0.1))',
               display: 'flex', alignItems: 'center', gap: 10,
             }}>
-              <span style={{ fontSize: 22 }}>🤖</span>
+              <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: '#0F0C29', flexShrink: 0 }}>ا</div>
               <div>
-                <div style={{ fontWeight: 800, fontSize: 14, color: '#fff' }}>Career Coach AI</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Career topics only · Free · Private</div>
+                <div style={{ fontWeight: 800, fontSize: 14, color: '#fff' }}>Alfalah AI</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>الفلاح · Career + App Help · Free · Private</div>
               </div>
               <div style={{ marginLeft: 'auto', width: 8, height: 8, borderRadius: '50%', background: '#38EF7D', boxShadow: '0 0 8px rgba(56,239,125,0.8)' }} />
             </div>
@@ -1573,7 +1629,7 @@ export default function Home() {
             {/* Suggested questions */}
             {chatMessages.length <= 1 && (
               <div style={{ padding: '0 10px 8px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {['How do I improve my ATS score?', 'What salary should I ask for?', 'Help me prepare for interviews', 'How do I pivot careers?'].map(q => (
+                {['What does Alfalah AI do?', 'How do I improve my ATS score?', 'What salary should I ask for?', 'How do I get a work visa?'].map(q => (
                   <button key={q} onClick={() => { setChatInput(q); setTimeout(() => document.getElementById('chat-input')?.focus(), 50) }}
                     style={{ fontSize: 11, padding: '5px 10px', borderRadius: 20, background: 'rgba(0,198,255,0.12)', border: '1px solid rgba(0,198,255,0.25)', color: '#00C6FF', cursor: 'pointer', fontFamily: 'inherit' }}>
                     {q}
@@ -1611,11 +1667,13 @@ export default function Home() {
 
         {/* ── Footer ─────────────────────────────────────────────────────────── */}
         <footer style={{ textAlign: 'center', padding: '28px 16px', borderTop: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
-          Built with heart and mind by{' '}
-          <strong style={{ color: '#FF0099' }}>Shahzad</strong>
-          {' · Mississauga, Ontario · '}
-          <strong style={{ color: '#FACF39' }}>Free for All Humanity</strong>
-          {' · Free for All Humanity'}
+          <strong style={{ color: '#FF0099', fontSize: 14 }}>Alfalah AI</strong>
+          {' · '}
+          <span style={{ fontStyle: 'italic', color: 'rgba(255,255,255,0.4)' }}>الفلاح — Come to Success</span>
+          {' · Built by '}
+          <strong style={{ color: '#FACF39' }}>Shahzad</strong>
+          {' · Mississauga, Canada · '}
+          <strong style={{ color: '#00AEEF' }}>Free for All Humanity · 195 Countries</strong>
         </footer>
 
         {/* ── Global CSS ─────────────────────────────────────────────────────── */}

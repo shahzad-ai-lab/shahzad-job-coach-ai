@@ -315,7 +315,7 @@ export default function AssessPage() {
       <nav style={{ padding: '14px 24px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.2)' }}>
         <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 22 }}>🎯</span>
-          <span style={{ fontWeight: 900, fontSize: 16, background: 'linear-gradient(90deg,#00C6FF,#FF0099)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Job Coach AI 2026</span>
+          <span style={{ fontWeight: 900, fontSize: 16, background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Alfalah AI</span>
         </Link>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           <Link href="/" style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontWeight: 600 }}>Resume Analyzer</Link>

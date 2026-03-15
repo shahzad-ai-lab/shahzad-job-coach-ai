@@ -1,7 +1,7 @@
 {
-  "name": "Job Coach AI 2026",
-  "short_name": "Job Coach AI",
-  "description": "16 free AI career tools — resume, interviews, salary, visas. No login. No data stored.",
+  "name": "Alfalah AI — Come to Success",
+  "short_name": "Alfalah AI",
+  "description": "Free AI career platform for all humanity — resume, skills assessment, coaching, visa pathways. 195 countries. No login. Zero data stored.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -15,10 +15,11 @@
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ],
   "screenshots": [
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "form_factor": "narrow", "label": "AI Career Analysis" }
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "form_factor": "narrow", "label": "Alfalah AI Career Analysis" }
   ],
   "shortcuts": [
-    { "name": "Analyze Resume", "short_name": "Analyze", "url": "/?action=analyze", "description": "Upload resume and get AI analysis" }
+    { "name": "Analyze Resume", "short_name": "Analyze", "url": "/?action=analyze", "description": "Upload resume and get AI career analysis" },
+    { "name": "Skills Assessment", "short_name": "Assess", "url": "/assess", "description": "Take the free 0-100 skills assessment" }
   ],
   "prefer_related_applications": false
 }

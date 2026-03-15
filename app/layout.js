@@ -1,16 +1,19 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'Job Coach AI 2026 — Free AI Career Coach',
-  description: '16 free AI career tools. Upload resume, paste job description, get ATS score, cover letter, interview prep, salary strategy, visa pathways and more. No login. No data stored.',
+  title: 'Alfalah AI — Come to Success | Free AI Career Platform',
+  description: 'Alfalah AI (الفلاح) — Free AI-powered career platform for all humanity. Resume analysis, skills assessment, career coaching, visa pathways, 195 countries. No login. Zero data stored.',
   manifest: '/manifest.json',
-  themeColor: '#0F0C29',
-  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Job Coach AI' },
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Alfalah AI' },
   openGraph: {
-    title: 'Job Coach AI 2026 — 16 Free AI Career Tools',
-    description: 'Free AI career coach for all humanity. Resume analysis, interview prep, salary negotiation, visa pathways.',
+    title: 'Alfalah AI — Come to Success',
+    description: 'Free AI career platform serving all humanity — from labor to C-suite, age 10 to 100, 195 countries.',
     type: 'website',
   },
+}
+
+export const viewport = {
+  themeColor: '#0F0C29',
 }
 
 export default function RootLayout({ children }) {
@@ -21,7 +24,7 @@ export default function RootLayout({ children }) {
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Job Coach AI" />
+        <meta name="apple-mobile-web-app-title" content="Alfalah AI" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <link rel="manifest" href="/manifest.json" />
       </head>
