@@ -139,7 +139,7 @@ export async function POST(request) {
     resumeText = truncate(sanitize(body.resumeText || ''), MAX_RESUME)
     jobPosting = truncate(sanitize(body.jobPosting || ''), MAX_JOB)
     requestedKeys = Array.isArray(body.requestedKeys) && body.requestedKeys.length > 0 ? body.requestedKeys : null
-    const LANG_NAMES = { en:'English', zh:'Chinese (Simplified)', hi:'Hindi', es:'Spanish', fr:'French', ar:'Arabic', bn:'Bengali', pt:'Portuguese', ru:'Russian', ur:'Urdu' }
+    const LANG_NAMES = { en:'English', zh:'Chinese (Simplified)', hi:'Hindi', es:'Spanish', ar:'Arabic', fr:'French', bn:'Bengali', pt:'Portuguese', ru:'Russian', id:'Indonesian', ur:'Urdu' }
     const lang = typeof body.lang === 'string' && body.lang.length <= 5 ? body.lang : 'en'
     const langName = LANG_NAMES[lang] || 'English'
     langInstruction = lang !== 'en' ? `\nCRITICAL LANGUAGE INSTRUCTION: You MUST write ALL your response values in ${langName}. The user speaks ${langName}. Keep all JSON keys in English (resumeScore, coverLetter, etc.) but every word of every VALUE must be written in ${langName}. Do not respond in English if the language is ${langName}.\n` : ''

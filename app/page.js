@@ -6,17 +6,19 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 const MAX_PASTE_CHARS = 12000
 
 // ── Top 10 World Languages ────────────────────────────────────────────────────
+// Top 11 languages by total speakers (ranked by Ethnologue / Wikipedia 2024)
 const LANGUAGES = [
-  { code: 'en', label: 'English',    flag: '🇬🇧' },
-  { code: 'zh', label: 'Chinese',    flag: '🇨🇳' },
-  { code: 'hi', label: 'Hindi',      flag: '🇮🇳' },
-  { code: 'es', label: 'Spanish',    flag: '🇪🇸' },
-  { code: 'fr', label: 'French',     flag: '🇫🇷' },
-  { code: 'ar', label: 'Arabic',     flag: '🇸🇦' },
-  { code: 'bn', label: 'Bengali',    flag: '🇧🇩' },
-  { code: 'pt', label: 'Portuguese', flag: '🇧🇷' },
-  { code: 'ru', label: 'Russian',    flag: '🇷🇺' },
-  { code: 'ur', label: 'Urdu',       flag: '🇵🇰' },
+  { code: 'en', label: 'English',     flag: '🇬🇧', speakers: '1.5B' },  // #1
+  { code: 'zh', label: 'Chinese',     flag: '🇨🇳', speakers: '1.1B' },  // #2
+  { code: 'hi', label: 'Hindi',       flag: '🇮🇳', speakers: '611M' },  // #3
+  { code: 'es', label: 'Spanish',     flag: '🇪🇸', speakers: '561M' },  // #4
+  { code: 'ar', label: 'Arabic',      flag: '🇸🇦', speakers: '335M' },  // #5
+  { code: 'fr', label: 'French',      flag: '🇫🇷', speakers: '312M' },  // #6
+  { code: 'bn', label: 'Bengali',     flag: '🇧🇩', speakers: '278M' },  // #7
+  { code: 'pt', label: 'Portuguese',  flag: '🇧🇷', speakers: '269M' },  // #8
+  { code: 'ru', label: 'Russian',     flag: '🇷🇺', speakers: '255M' },  // #9
+  { code: 'id', label: 'Indonesian',  flag: '🇮🇩', speakers: '252M' },  // #10
+  { code: 'ur', label: 'Urdu',        flag: '🇵🇰', speakers: '238M' },  // #11
 ]
 const CLIENT_HOURLY_LIMIT = 5
 const HOUR_MS = 3_600_000
@@ -751,7 +753,7 @@ export default function Home() {
               >
                 {LANGUAGES.map(l => (
                   <option key={l.code} value={l.code} style={{ background: '#1a1a2e', color: '#fff' }}>
-                    {l.flag} {l.label}
+                    {l.flag} {l.label} ({l.speakers})
                   </option>
                 ))}
               </select>

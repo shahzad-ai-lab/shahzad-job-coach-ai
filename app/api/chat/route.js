@@ -76,7 +76,7 @@ export async function POST(req) {
     return Response.json({ error: 'Invalid request.' }, { status: 400, headers })
   }
 
-  const LANG_NAMES = { en:'English', zh:'Chinese (Simplified)', hi:'Hindi', es:'Spanish', fr:'French', ar:'Arabic', bn:'Bengali', pt:'Portuguese', ru:'Russian', ur:'Urdu' }
+  const LANG_NAMES = { en:'English', zh:'Chinese (Simplified)', hi:'Hindi', es:'Spanish', ar:'Arabic', fr:'French', bn:'Bengali', pt:'Portuguese', ru:'Russian', id:'Indonesian', ur:'Urdu' }
   const langName = LANG_NAMES[lang] || 'English'
   const langNote = lang !== 'en' ? `\nCRITICAL: Reply entirely in ${langName}. Do not use English.\n` : ''
 
