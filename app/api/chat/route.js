@@ -4,7 +4,7 @@
 export const maxDuration = 30
 
 const chatRateStore = new Map()
-const CHAT_LIMIT = 15   // messages per hour per IP
+const CHAT_LIMIT = 9999   // disabled for dev — re-enable per-IP in production
 const HOUR_MS = 3_600_000
 
 const SYSTEM_PROMPT = `You are Alfalah AI — "الفلاح" means "Come to Success" in Arabic. You are the AI assistant embedded in the Alfalah AI career platform, built to help ALL humans globally — students, refugees, career changers, seniors, single parents, people from any country — get fair access to career opportunities.
@@ -117,7 +117,7 @@ export async function POST(req) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${grokKey}` },
         body: JSON.stringify({
-          model: 'grok-3-mini',
+          model: 'grok-4-latest',
           messages: [{ role: 'user', content: prompt }],
           temperature: 0.8, max_tokens: 512,
         }),

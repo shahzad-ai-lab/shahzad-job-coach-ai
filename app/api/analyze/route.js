@@ -6,7 +6,7 @@ export const maxDuration = 60
 const MAX_RESUME = 6000
 const MAX_JOB = 3000
 const MAX_BODY_BYTES = 50000
-const HOURLY_LIMIT = 5
+const HOURLY_LIMIT = 9999  // disabled for dev — per-IP limit re-enabled in production
 const HOUR_MS = 60 * 60 * 1000
 const BACKOFF_HOURS = [1, 3, 6]
 
@@ -117,7 +117,7 @@ async function callAI(prompt, env) {
         method: 'POST', signal: controller.signal,
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
         body: JSON.stringify({
-          model: 'grok-3-mini',
+          model: 'grok-4-latest',
           messages: [{ role: 'user', content: prompt }],
           temperature: 0.7, max_tokens: 8192,
         }),

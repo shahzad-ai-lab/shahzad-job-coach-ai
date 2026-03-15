@@ -21,9 +21,33 @@ const LANGUAGES = [
   { code: 'ur', label: 'Urdu',        flag: '🇵🇰', speakers: '238M' },
 ]
 */
-const CLIENT_HOURLY_LIMIT = 5
+const CLIENT_HOURLY_LIMIT = 9999  // disabled for dev
 const HOUR_MS = 3_600_000
 const BACKOFF_HOURS = [1, 3, 6]
+
+// ── Country picker data ────────────────────────────────────────────────────────
+const COUNTRY_PICKER = [
+  { name: 'Canada',               code: 'CA', flag: '🇨🇦' },
+  { name: 'United States',        code: 'US', flag: '🇺🇸' },
+  { name: 'United Kingdom',       code: 'GB', flag: '🇬🇧' },
+  { name: 'Australia',            code: 'AU', flag: '🇦🇺' },
+  { name: 'India',                code: 'IN', flag: '🇮🇳' },
+  { name: 'Pakistan',             code: 'PK', flag: '🇵🇰' },
+  { name: 'United Arab Emirates', code: 'AE', flag: '🇦🇪' },
+  { name: 'Germany',              code: 'DE', flag: '🇩🇪' },
+  { name: 'Singapore',            code: 'SG', flag: '🇸🇬' },
+  { name: 'Nigeria',              code: 'NG', flag: '🇳🇬' },
+  { name: 'South Africa',         code: 'ZA', flag: '🇿🇦' },
+  { name: 'New Zealand',          code: 'NZ', flag: '🇳🇿' },
+  { name: 'France',               code: 'FR', flag: '🇫🇷' },
+  { name: 'Netherlands',          code: 'NL', flag: '🇳🇱' },
+  { name: 'Sweden',               code: 'SE', flag: '🇸🇪' },
+  { name: 'Saudi Arabia',         code: 'SA', flag: '🇸🇦' },
+  { name: 'Bangladesh',           code: 'BD', flag: '🇧🇩' },
+  { name: 'Philippines',          code: 'PH', flag: '🇵🇭' },
+  { name: 'Brazil',               code: 'BR', flag: '🇧🇷' },
+  { name: 'Other / Global',       code: 'GL', flag: '🌍' },
+]
 
 // ── UI Translations (top 11 languages) ────────────────────────────────────────
 const T = {
@@ -703,7 +727,9 @@ function CircleRing({ score }) {
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function Home() {
   const [splash, setSplash]           = useState(true)
+  const [splashPhase, setSplashPhase] = useState('loading') // 'loading' | 'country'
   const [splashPct, setSplashPct]     = useState(0)
+  const [selectedCountry, setSelectedCountry] = useState(null) // { name, code, flag }
   const [resumeText, setResumeText]   = useState('')
   const [jobText, setJobText]         = useState('')
   const [results, setResults]         = useState(null)
@@ -723,15 +749,6 @@ export default function Home() {
   const [weather, setWeather]         = useState('')
   const [remaining, setRemaining]     = useState(CLIENT_HOURLY_LIMIT)
   const [userLang, setUserLang]       = useState('en')
-  // ── Chatbot state ───────────────────────────────────────────────────────────
-  const [chatOpen, setChatOpen]       = useState(false)
-  const [chatMessages, setChatMessages] = useState([
-    { role: 'assistant', content: "السلام عليكم! I'm Alfalah AI 🌟\nAsk me anything about resumes, job search, interviews, salary, skills, visas, or how to use this platform. Free, always — for all humanity." }
-  ])
-  const [chatInput, setChatInput]     = useState('')
-  const [chatLoading, setChatLoading] = useState(false)
-  const chatEndRef = useRef(null)
-
   // ── Auto Live Jobs (merged into Matching Jobs card) ──────────────────────────
   const [autoJobs, setAutoJobs]       = useState(null)
   const [autoJobsLoading, setAutoJobsLoading] = useState(false)
@@ -747,7 +764,7 @@ export default function Home() {
   const jobFileRef = useRef(null)
   const resultsRef = useRef(null)
 
-  // ── Splash screen: auto-dismiss after 1.8s with progress bar ───────────────
+  // ── Splash screen: loading → country picker ──────────────────────────────────
   useEffect(() => {
     let frame
     const start = Date.now()
@@ -757,11 +774,23 @@ export default function Home() {
       const pct = Math.min(100, Math.round((elapsed / duration) * 100))
       setSplashPct(pct)
       if (elapsed < duration) { frame = requestAnimationFrame(tick) }
-      else { setSplash(false) }
+      else { setSplashPhase('country') } // show country picker, don't dismiss yet
     }
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
   }, [])
+
+  // ── Country selection handler ─────────────────────────────────────────────────
+  function pickCountry(c) {
+    setSelectedCountry(c)
+    setUserInfo(prev => ({
+      ...(prev || {}),
+      country: c.name, countryCode: c.code,
+      city: prev?.city || c.name, region: prev?.region || '',
+    }))
+    setSearchLocation(c.name)
+    setSplash(false)
+  }
 
   // ── Fetch location + weather ────────────────────────────────────────────────
   useEffect(() => {
@@ -823,8 +852,6 @@ export default function Home() {
   async function handleAnalyze() {
     if (!resumeText.trim()) { setError('Please add your resume text or upload a file.'); setErrorDismissed(false); return }
     if (!jobText.trim())    { setError('Please paste the job description.'); setErrorDismissed(false); return }
-    const rl = checkRL()
-    if (!rl.ok) { setError(rl.msg); setErrorDismissed(false); return }
     setError(''); setErrorDismissed(false); setLoading(true); setResults({}); setActiveGroup(null); setActiveTab(null)
     try {
       const res = await fetch('/api/analyze', {
@@ -838,7 +865,6 @@ export default function Home() {
       }
       const data = await res.json()
       setResults(data)
-      const s = getRLS(); setRemaining(Math.max(0, CLIENT_HOURLY_LIMIT - s.count))
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
       // Auto-fetch live jobs using first meaningful line of job posting
       const titleLine = jobText.split('\n').map(l => l.trim()).find(l => l.length > 3 && l.length < 80) || ''
@@ -865,51 +891,6 @@ export default function Home() {
   }
 
   // ── Share / Download ────────────────────────────────────────────────────────
-  // ── Chatbot ─────────────────────────────────────────────────────────────────
-  async function sendChat(e) {
-    e?.preventDefault()
-    const text = chatInput.trim()
-    if (!text || chatLoading) return
-    const userMsg = { role: 'user', content: text }
-    const updated = [...chatMessages, userMsg]
-    setChatMessages(updated)
-    setChatInput('')
-    setChatLoading(true)
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: updated }),
-      })
-      const data = await res.json()
-      setChatMessages(prev => [...prev, { role: 'assistant', content: data.reply || data.error || 'Sorry, try again.' }])
-    } catch {
-      setChatMessages(prev => [...prev, { role: 'assistant', content: 'Network error. Please try again.' }])
-    } finally {
-      setChatLoading(false)
-      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
-    }
-  }
-
-  // ── Live Jobs: search Google Jobs via Serper ────────────────────────────────
-  async function fetchLiveJobs() {
-    if (!searchTitle.trim()) { setJobsError('Enter a job title to search.'); return }
-    setJobsLoading(true); setJobsError(''); setLiveJobs(null)
-    try {
-      const res = await fetch('/api/jobs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jobTitle: searchTitle.trim(), location: searchLocation.trim(), timeframe }),
-      })
-      const data = await res.json()
-      if (!res.ok) { setJobsError(data.error || 'Search failed.'); return }
-      setLiveJobs(data.jobs || [])
-    } catch (e) {
-      setJobsError('Network error — check connection.')
-    } finally {
-      setJobsLoading(false)
-    }
-  }
 
   async function handleShare() {
     const url = window.location.href
@@ -968,47 +949,76 @@ export default function Home() {
     <>
       {/* ── Splash Screen ───────────────────────────────────────────────────── */}
       {splash && (
-        <div
-          onClick={() => setSplash(false)}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 9999, cursor: 'pointer',
-            background: 'linear-gradient(160deg,#0F0C29,#302B63,#24243E)',
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'center', gap: 24,
-          }}
-        >
-          <div style={{
-            width: 80, height: 80, borderRadius: 20,
-            background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF,#38EF7D)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 44, fontWeight: 900, color: '#0F0C29',
-            boxShadow: '0 0 40px rgba(255,0,153,0.5)',
-            animation: 'pulse-glow 1.8s ease-in-out infinite',
-          }}>ا</div>
-          <h1 style={{
-            fontSize: 'clamp(2rem,8vw,4rem)', fontWeight: 900, margin: 0,
-            background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF,#38EF7D)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-          }}>
-            Alfalah AI
-          </h1>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16, margin: 0, fontStyle: 'italic' }}>
-            الفلاح — Come to Success
-          </p>
-          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, margin: 0 }}>
-            17 Free AI Career Tools · 195 Countries
-          </p>
-          {/* Progress bar */}
-          <div style={{ width: 240, height: 4, borderRadius: 4, background: 'rgba(255,255,255,0.12)', overflow: 'hidden' }}>
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'linear-gradient(160deg,#0F0C29,#302B63,#24243E)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          justifyContent: splashPhase === 'country' ? 'flex-start' : 'center',
+          gap: 24, overflowY: 'auto', padding: splashPhase === 'country' ? '32px 16px' : 0,
+        }}>
+          {/* Logo always shown */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: splashPhase === 'country' ? 0 : 0 }}>
             <div style={{
-              height: '100%', borderRadius: 4,
-              background: 'linear-gradient(90deg,#FF0099,#FACF39,#00AEEF)',
-              width: `${splashPct}%`, transition: 'width 0.1s linear',
-            }} />
+              width: splashPhase === 'country' ? 56 : 80,
+              height: splashPhase === 'country' ? 56 : 80,
+              borderRadius: 16, background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF,#38EF7D)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: splashPhase === 'country' ? 30 : 44, fontWeight: 900, color: '#0F0C29',
+              boxShadow: '0 0 40px rgba(255,0,153,0.5)',
+              animation: 'pulse-glow 1.8s ease-in-out infinite', flexShrink: 0,
+            }}>ا</div>
+            <h1 style={{
+              fontSize: splashPhase === 'country' ? 'clamp(1.6rem,6vw,2.8rem)' : 'clamp(2rem,8vw,4rem)',
+              fontWeight: 900, margin: 0,
+              background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF,#38EF7D)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            }}>Alfalah AI</h1>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, margin: 0, fontStyle: 'italic' }}>
+              الفلاح — Come to Success
+            </p>
           </div>
-          <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, margin: 0 }}>
-            Click anywhere to skip
-          </p>
+
+          {splashPhase === 'loading' ? (
+            <>
+              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, margin: 0 }}>17 Free AI Career Tools · 195 Countries</p>
+              <div style={{ width: 240, height: 4, borderRadius: 4, background: 'rgba(255,255,255,0.12)', overflow: 'hidden' }}>
+                <div style={{ height: '100%', borderRadius: 4, background: 'linear-gradient(90deg,#FF0099,#FACF39,#00AEEF)', width: `${splashPct}%`, transition: 'width 0.1s linear' }} />
+              </div>
+              <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12, margin: 0, cursor: 'pointer' }} onClick={() => setSplashPhase('country')}>Loading... tap to skip</p>
+            </>
+          ) : (
+            /* ── Country Picker ── */
+            <div style={{ width: '100%', maxWidth: 520, animation: 'fade-in 0.4s ease' }}>
+              <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', marginBottom: 6 }}>
+                  🌍 Which country are you in?
+                </div>
+                <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, margin: 0 }}>
+                  We'll load your local job market, salary data, visa paths & laws
+                </p>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 10 }}>
+                {COUNTRY_PICKER.map(c => (
+                  <button key={c.code} onClick={() => pickCountry(c)}
+                    style={{
+                      background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)',
+                      borderRadius: 12, padding: '12px 10px', cursor: 'pointer', color: '#fff',
+                      fontFamily: 'inherit', textAlign: 'center', transition: 'all .2s',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(250,207,57,0.18)'; e.currentTarget.style.borderColor = '#FACF39' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
+                  >
+                    <span style={{ fontSize: 26 }}>{c.flag}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.3 }}>{c.name}</span>
+                  </button>
+                ))}
+              </div>
+              <p style={{ textAlign: 'center', marginTop: 16, color: 'rgba(255,255,255,0.25)', fontSize: 11 }}>
+                You can change this anytime — detected automatically next time
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -1713,127 +1723,7 @@ export default function Home() {
             </div>
           )}
 
-          {/* ── Live Jobs from Google ─────────────────────────────────────────── */}
-          {results !== null && (
-          <div style={{ ...glass, marginTop: 40, border: '1px solid rgba(56,239,125,0.25)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
-              <span style={{ fontSize: 28 }}>🔍</span>
-              <div>
-                <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(135deg,#38EF7D,#00AEEF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  Search More Jobs{userInfo?.country ? ` in ${userInfo.country}` : ''} — Fresh from Google
-                </h2>
-                <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
-                  Real job postings · Posted in last 1–2 weeks · Direct apply links
-                </p>
-              </div>
-            </div>
-
-            {/* Search inputs */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 12, marginBottom: 12 }}>
-              <input
-                value={searchTitle}
-                onChange={e => setSearchTitle(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && fetchLiveJobs()}
-                placeholder="Job title (e.g. Software Engineer)"
-                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
-              />
-              <input
-                value={searchLocation}
-                onChange={e => setSearchLocation(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && fetchLiveJobs()}
-                placeholder="Location (e.g. Toronto, Canada)"
-                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
-              />
-              <select
-                value={timeframe}
-                onChange={e => setTimeframe(e.target.value)}
-                style={{ background: 'rgba(30,20,50,0.95)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'inherit', cursor: 'pointer' }}
-              >
-                <option value="d">Past 24 hours</option>
-                <option value="w">Past 1 week</option>
-                <option value="w2">Past 2 weeks</option>
-                <option value="m">Past 1 month</option>
-              </select>
-            </div>
-
-            <button
-              onClick={fetchLiveJobs}
-              disabled={jobsLoading}
-              style={{
-                background: jobsLoading ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg,#38EF7D,#00AEEF)',
-                color: jobsLoading ? 'rgba(255,255,255,0.4)' : '#001a0e',
-                fontWeight: 800, fontSize: 15, border: 'none',
-                cursor: jobsLoading ? 'not-allowed' : 'pointer',
-                padding: '12px 32px', borderRadius: 12,
-                boxShadow: jobsLoading ? 'none' : '0 6px 24px rgba(56,239,125,0.35)',
-                transition: 'all .2s', display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 16,
-              }}
-            >
-              {jobsLoading ? tx(userLang,'searching') : tx(userLang,'searchBtn')}
-            </button>
-
-            {/* Error */}
-            {jobsError && (
-              <div style={{ background: 'rgba(255,60,60,0.15)', border: '1px solid rgba(255,60,60,0.3)', borderRadius: 10, padding: '10px 14px', color: '#FF9090', fontSize: 13, marginBottom: 14 }}>
-                ⚠️ {jobsError}
-              </div>
-            )}
-
-            {/* Job cards */}
-            {liveJobs !== null && (
-              liveJobs.length === 0
-                ? <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, fontStyle: 'italic' }}>No jobs found for this search. Try a broader title or different location.</p>
-                : <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, margin: '0 0 4px' }}>
-                      Found {liveJobs.length} jobs · Powered by Google Jobs
-                    </p>
-                    {liveJobs.map((job, i) => (
-                      <div key={i} style={{
-                        background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '16px 18px',
-                        border: '1px solid rgba(56,239,125,0.12)',
-                        display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-                        gap: 14, flexWrap: 'wrap',
-                      }}>
-                        <div style={{ flex: 1, minWidth: 200 }}>
-                          <div style={{ fontSize: 15, fontWeight: 800, color: '#fff', marginBottom: 4 }}>{job.title}</div>
-                          <div style={{ fontSize: 13, color: '#38EF7D', fontWeight: 700, marginBottom: 4 }}>{job.company}</div>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, fontSize: 11 }}>
-                            {job.location && <span style={{ color: 'rgba(255,255,255,0.45)', display: 'flex', alignItems: 'center', gap: 4 }}>📍 {job.location}</span>}
-                            {job.posted   && <span style={{ color: '#FACF39', display: 'flex', alignItems: 'center', gap: 4 }}>🕐 {job.posted}</span>}
-                            {job.jobType  && <span style={{ color: 'rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', gap: 4 }}>💼 {job.jobType}</span>}
-                            {job.salary   && <span style={{ color: '#38EF7D', display: 'flex', alignItems: 'center', gap: 4 }}>💰 {job.salary}</span>}
-                            {job.via      && <span style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>{job.via}</span>}
-                          </div>
-                          {job.snippet && (
-                            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: '8px 0 0', lineHeight: 1.6, maxHeight: 54, overflow: 'hidden' }}>
-                              {job.snippet.slice(0, 180)}{job.snippet.length > 180 ? '…' : ''}
-                            </p>
-                          )}
-                        </div>
-                        {job.link && job.link !== '#' && (
-                          <a
-                            href={job.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              background: 'linear-gradient(135deg,#FF0099,#FF6B35)',
-                              color: '#fff', fontWeight: 800, fontSize: 13,
-                              padding: '10px 18px', borderRadius: 10,
-                              textDecoration: 'none', whiteSpace: 'nowrap',
-                              boxShadow: '0 4px 14px rgba(255,0,153,0.35)',
-                              display: 'inline-flex', alignItems: 'center', gap: 6,
-                              flexShrink: 0,
-                            }}
-                          >
-                            Apply Now →
-                          </a>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-            )}
-          </div>
-          )}
+          {/* Live Jobs moved into Job Hunt → Matching Jobs card (see above) */}
 
           {/* ── Privacy / Disclaimer footer card ────────────────────────────── */}
           <div style={{ ...glass, marginTop: 40, padding: '20px 24px' }}>
@@ -1877,117 +1767,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ── Chatbot Floating Button + Panel ────────────────────────────────── */}
-        {/* Floating button */}
-        <button
-          onClick={() => setChatOpen(o => !o)}
-          style={{
-            position: 'fixed', bottom: 24, right: 24, zIndex: 1000,
-            width: 60, height: 60, borderRadius: '50%', border: 'none', cursor: 'pointer',
-            background: chatOpen ? 'linear-gradient(135deg,#FF416C,#FF4B2B)' : 'linear-gradient(135deg,#00C6FF,#0072FF)',
-            boxShadow: '0 6px 28px rgba(0,114,255,0.55)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 26, transition: 'all .3s',
-            animation: chatOpen ? 'none' : 'pulse-glow 2.5s ease-in-out infinite',
-          }}
-          title="Chat with Alfalah AI"
-        >
-          {chatOpen ? '✕' : '🌟'}
-        </button>
-
-        {/* Chat panel */}
-        {chatOpen && (
-          <div style={{
-            position: 'fixed', bottom: 96, right: 24, zIndex: 999,
-            width: 'min(380px, calc(100vw - 32px))',
-            height: 520,
-            background: 'rgba(15,12,41,0.97)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: 20, border: '1px solid rgba(0,198,255,0.35)',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.7)',
-            display: 'flex', flexDirection: 'column', overflow: 'hidden',
-            animation: 'fade-in 0.25s ease',
-          }}>
-            {/* Chat header */}
-            <div style={{
-              padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)',
-              background: 'linear-gradient(135deg,rgba(0,198,255,0.15),rgba(0,114,255,0.1))',
-              display: 'flex', alignItems: 'center', gap: 10,
-            }}>
-              <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: '#0F0C29', flexShrink: 0 }}>ا</div>
-              <div>
-                <div style={{ fontWeight: 800, fontSize: 14, color: '#fff' }}>Alfalah AI</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>الفلاح · Career + App Help · Free · Private</div>
-              </div>
-              <div style={{ marginLeft: 'auto', width: 8, height: 8, borderRadius: '50%', background: '#38EF7D', boxShadow: '0 0 8px rgba(56,239,125,0.8)' }} />
-            </div>
-
-            {/* Messages */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 8px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {chatMessages.map((msg, i) => (
-                <div key={i} style={{
-                  display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                }}>
-                  <div style={{
-                    maxWidth: '85%', padding: '10px 14px', borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                    background: msg.role === 'user'
-                      ? 'linear-gradient(135deg,#0072FF,#00C6FF)'
-                      : 'rgba(255,255,255,0.07)',
-                    border: msg.role === 'assistant' ? '1px solid rgba(255,255,255,0.1)' : 'none',
-                    fontSize: 13, lineHeight: 1.6, color: '#fff', whiteSpace: 'pre-wrap',
-                  }}>
-                    {msg.content}
-                  </div>
-                </div>
-              ))}
-              {chatLoading && (
-                <div style={{ display: 'flex', gap: 5, padding: '8px 14px' }}>
-                  {[0,1,2].map(i => (
-                    <div key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: '#00C6FF', animation: 'bounce .9s ease infinite', animationDelay: `${i*0.2}s` }} />
-                  ))}
-                </div>
-              )}
-              <div ref={chatEndRef} />
-            </div>
-
-            {/* Suggested questions */}
-            {chatMessages.length <= 1 && (
-              <div style={{ padding: '0 10px 8px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {['What does Alfalah AI do?', 'How do I improve my ATS score?', 'What salary should I ask for?', 'How do I get a work visa?'].map(q => (
-                  <button key={q} onClick={() => { setChatInput(q); setTimeout(() => document.getElementById('chat-input')?.focus(), 50) }}
-                    style={{ fontSize: 11, padding: '5px 10px', borderRadius: 20, background: 'rgba(0,198,255,0.12)', border: '1px solid rgba(0,198,255,0.25)', color: '#00C6FF', cursor: 'pointer', fontFamily: 'inherit' }}>
-                    {q}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Input */}
-            <form onSubmit={sendChat} style={{ padding: '10px 12px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', gap: 8 }}>
-              <input
-                id="chat-input"
-                value={chatInput}
-                onChange={e => setChatInput(e.target.value)}
-                placeholder={tx(userLang,'chatPlaceholder')}
-                disabled={chatLoading}
-                style={{
-                  flex: 1, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)',
-                  borderRadius: 12, padding: '9px 13px', color: '#fff', fontSize: 13,
-                  outline: 'none', fontFamily: 'inherit',
-                }}
-              />
-              <button type="submit" disabled={chatLoading || !chatInput.trim()}
-                style={{
-                  background: 'linear-gradient(135deg,#00C6FF,#0072FF)', border: 'none',
-                  borderRadius: 12, width: 40, height: 40, cursor: chatLoading || !chatInput.trim() ? 'not-allowed' : 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
-                  opacity: chatInput.trim() ? 1 : 0.4, flexShrink: 0,
-                }}>
-                ➤
-              </button>
-            </form>
-          </div>
-        )}
+        {/* Chatbot disabled — saves API quota, re-enable for v3 if needed */}
 
         {/* ── Footer ─────────────────────────────────────────────────────────── */}
         <footer style={{ textAlign: 'center', padding: '28px 16px', borderTop: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
