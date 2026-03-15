@@ -1,5 +1,5 @@
 # CLAUDE.md = GEMINI.md — MASTER BLUEPRINT (ULTRA COMPRESSED)
-**Updated: March 14, 2026 — Session 26 | Rule: start session → "Read CLAUDE.md resume where left off"**
+**Updated: March 14, 2026 — Session 27 | Rule: start session → "Read CLAUDE.md resume where left off"**
 
 ---
 
@@ -37,6 +37,8 @@ v2/    MASTER_CAREER_REFERENCE.md (640KB, 48 sections — read with offset+limit
        COMPANIES_BY_COUNTRY.md (500+ companies · 30+ countries · career URLs · Forbes/Fortune 500)
        ALL_COUNTRIES.md (195 UN countries · ISO-2/3 codes · regions · capitals · job market tiers)
        OCCUPATIONS_ISCO08.md (ISCO-08 all 436 unit groups · 200+ job descriptions · BLS fastest-growing · 2026 emerging roles)
+       PLATFORM_BLUEPRINT.md (scoring algorithm · age pathways · competitor table)
+       COMPETITOR_VISABRIDGE.md (full VisaBridge.com intel · pricing model · 238 countries · features · our edge table)
 ```
 
 ---
@@ -92,7 +94,7 @@ Fields per market: `stats · laws · gdp · pop · it · industries · future`
 ---
 
 ## WHAT'S DONE ✅ vs TODO
-**DONE:** ATS algo · 17 cards · chatbot · PWA manifest · multilang · live jobs · security · RAG (4 data files) · file upload · Country Hero Banner · getMarketPulse 12 markets · 2026 Resume Intel · 195 countries · ISCO-08 436 occupations + descriptions · 500+ companies per country with career URLs
+**DONE:** ATS algo · 17 cards · chatbot · PWA manifest · multilang · live jobs · security · RAG (6 data files) · file upload · Country Hero Banner · getMarketPulse 12 markets · 2026 Resume Intel · 195 countries · ISCO-08 436 occupations + descriptions · 500+ companies per country with career URLs · /assess skills assessment page (0-100 ISCO score · 70+ careers · age 10-100) · nav bar linking all pages · VisaBridge competitor intel saved
 
 **TODO:**
 - [ ] Shahzad: add SERPER_API_KEY to .env.local + Vercel env vars
@@ -137,7 +139,7 @@ Test models: https://shahzad-job-coach-ai.vercel.app/api/test
 ---
 
 ## SESSION LOG (compressed)
-S1-4 Mar6-8: V1 12cards deploy security H1 submitted | S5-6 Mar11-12: MASTER_REF v4 640KB 48sections | S7-14 Mar13: V2 RAG streaming(failed→reverted) 14cards wizard(removed) | S15-17 Mar13-14: stopwords ATScolors skillsGap certs freelance strictScoring | S18 Mar14: v1/v2 folders liveJobs Serper | S19 Mar14: ATS algo complete | S20 Mar14: chatbot 16cards PWA multilang | S21 Mar14: liveJobs merged matchingJobs 7-country recruiters fix-langInstruction | S22 Mar14: MarketPulse bar YourMarket banner post-results liveJobs quickStart chips | S23 Mar14: CountryHero banner GDP+IT+industries+100yr, getMarketPulse 12markets, 2026ResumeIntelligence injected prompts, manifest store-ready, mobile app guide | S24 Mar14: COMPANIES_BY_COUNTRY.md (500+ companies · 30+ countries · Forbes/Fortune 500 + career URLs), country-company RAG injector | S25 Mar14: ALL_COUNTRIES.md (195 UN countries · ISO codes · regions · job market tiers), OCCUPATIONS_ISCO08.md (ISCO-08 full 436 unit groups · 200+ job descriptions · BLS fastest-growing · 2026 emerging roles · occupation-country demand mapping), occupation RAG injector (auto-detects role from job posting → injects ISCO profile + growth data + fastest-growing list) | S26 Mar14: PLATFORM_BLUEPRINT.md (full scoring algorithm docs · age pathways · competitor analysis), app/assess/page.js NEW ROUTE /assess (5-step quiz · 7-category ISCO scoring · 0-100 market score · 70+ career recs · recency decay · age-specific paths 10-100yr), nav bar on main page (Resume Analyzer ↔ Skills Assessment), CTA banner on home page → live at /assess
+S1-4 Mar6-8: V1 12cards deploy security H1 submitted | S5-6 Mar11-12: MASTER_REF v4 640KB 48sections | S7-14 Mar13: V2 RAG streaming(failed→reverted) 14cards wizard(removed) | S15-17 Mar13-14: stopwords ATScolors skillsGap certs freelance strictScoring | S18 Mar14: v1/v2 folders liveJobs Serper | S19 Mar14: ATS algo complete | S20 Mar14: chatbot 16cards PWA multilang | S21 Mar14: liveJobs merged matchingJobs 7-country recruiters fix-langInstruction | S22 Mar14: MarketPulse bar YourMarket banner post-results liveJobs quickStart chips | S23 Mar14: CountryHero banner GDP+IT+industries+100yr, getMarketPulse 12markets, 2026ResumeIntelligence injected prompts, manifest store-ready, mobile app guide | S24 Mar14: COMPANIES_BY_COUNTRY.md (500+ companies · 30+ countries · Forbes/Fortune 500 + career URLs), country-company RAG injector | S25 Mar14: ALL_COUNTRIES.md (195 UN countries · ISO codes · regions · job market tiers), OCCUPATIONS_ISCO08.md (ISCO-08 full 436 unit groups · 200+ job descriptions · BLS fastest-growing · 2026 emerging roles · occupation-country demand mapping), occupation RAG injector (auto-detects role from job posting → injects ISCO profile + growth data + fastest-growing list) | S26 Mar14: PLATFORM_BLUEPRINT.md (full scoring algorithm docs · age pathways · competitor analysis), app/assess/page.js NEW ROUTE /assess (5-step quiz · 7-category ISCO scoring · 0-100 market score · 70+ career recs · recency decay · age-specific paths 10-100yr), nav bar on main page (Resume Analyzer ↔ Skills Assessment), CTA banner on home page → live at /assess | S27 Mar14: COMPETITOR_VISABRIDGE.md (full VisaBridge.com fetch — identity, pricing, 238 countries, 21 videos, 7 books, 9 blogs, partner program, our edge table, tech stack, contact info · portal JS-only so pricing tiers not scrapeable) · domain research: jobcoach.ai=$180/yr, careercoach.ai=$200/yr, jobcoach.co=$15/yr (recommended cheapest), careermatch.co=$12/yr, globalcoach.ai expensive · CLAUDE.md updated with all v2 files
 
 ---
 *CLAUDE.md = GEMINI.md always · Update every ~10min · Build must pass before push*
