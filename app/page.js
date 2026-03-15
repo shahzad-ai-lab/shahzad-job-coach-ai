@@ -49,6 +49,25 @@ const COUNTRY_PICKER = [
   { name: 'Other / Global',       code: 'GL', flag: '🌍' },
 ]
 
+// ── Industry picker data ───────────────────────────────────────────────────────
+const INDUSTRY_PICKER = [
+  { id: 'tech',        label: 'IT & Technology',        icon: '💻', keys: ['software','developer','engineer','data','cloud','ai','cyber','network','devops'] },
+  { id: 'healthcare',  label: 'Healthcare & Medical',   icon: '🏥', keys: ['nurse','doctor','medical','health','clinical','pharmacy','dental','therapy'] },
+  { id: 'finance',     label: 'Finance & Banking',      icon: '💰', keys: ['accountant','finance','bank','audit','tax','investment','insurance','cfa','cpa'] },
+  { id: 'engineering', label: 'Engineering',            icon: '⚙️', keys: ['mechanical','civil','electrical','structural','chemical','aerospace','manufacturing'] },
+  { id: 'education',   label: 'Education & Training',   icon: '🎓', keys: ['teacher','professor','instructor','tutor','curriculum','training','elearning'] },
+  { id: 'trades',      label: 'Trades & Construction',  icon: '🔧', keys: ['electrician','plumber','carpenter','hvac','welder','construction','red seal','nccer'] },
+  { id: 'marketing',   label: 'Marketing & Sales',      icon: '📈', keys: ['marketing','sales','seo','digital','brand','content','social media','hubspot'] },
+  { id: 'legal',       label: 'Legal & Compliance',     icon: '⚖️', keys: ['lawyer','attorney','paralegal','compliance','gdpr','legal','contract','regulatory'] },
+  { id: 'hr',          label: 'HR & Recruiting',        icon: '👥', keys: ['human resources','recruiter','talent','payroll','shrm','cipd','workday','people ops'] },
+  { id: 'logistics',   label: 'Supply Chain & Ops',     icon: '🚚', keys: ['logistics','supply chain','procurement','warehouse','operations','apics','pmp'] },
+  { id: 'creative',    label: 'Creative & Design',      icon: '🎨', keys: ['designer','ux','graphic','creative','video','animation','adobe','figma','art'] },
+  { id: 'hospitality', label: 'Hospitality & Tourism',  icon: '🏨', keys: ['hotel','restaurant','tourism','chef','hospitality','travel','food','events'] },
+  { id: 'government',  label: 'Government & Public',    icon: '🏛️', keys: ['government','public sector','policy','military','civil service','ngo','non-profit'] },
+  { id: 'science',     label: 'Science & Research',     icon: '🔬', keys: ['scientist','research','biotech','lab','chemistry','biology','physics','phd'] },
+  { id: 'other',       label: 'Other / Not Sure',       icon: '🌐', keys: [] },
+]
+
 // ── UI Translations (top 11 languages) ────────────────────────────────────────
 const T = {
   en: {
@@ -727,9 +746,10 @@ function CircleRing({ score }) {
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function Home() {
   const [splash, setSplash]           = useState(true)
-  const [splashPhase, setSplashPhase] = useState('loading') // 'loading' | 'country'
+  const [splashPhase, setSplashPhase] = useState('loading') // 'loading' | 'country' | 'industry'
   const [splashPct, setSplashPct]     = useState(0)
   const [selectedCountry, setSelectedCountry] = useState(null) // { name, code, flag }
+  const [selectedIndustry, setSelectedIndustry] = useState(null) // { id, label, icon, keys }
   const [resumeText, setResumeText]   = useState('')
   const [jobText, setJobText]         = useState('')
   const [results, setResults]         = useState(null)
@@ -780,7 +800,7 @@ export default function Home() {
     return () => cancelAnimationFrame(frame)
   }, [])
 
-  // ── Country selection handler ─────────────────────────────────────────────────
+  // ── Country selection handler → goes to industry picker ─────────────────────
   function pickCountry(c) {
     setSelectedCountry(c)
     setUserInfo(prev => ({
@@ -789,6 +809,12 @@ export default function Home() {
       city: prev?.city || c.name, region: prev?.region || '',
     }))
     setSearchLocation(c.name)
+    setSplashPhase('industry')
+  }
+
+  // ── Industry selection handler → dismisses splash ─────────────────────────
+  function pickIndustry(ind) {
+    setSelectedIndustry(ind)
     setSplash(false)
   }
 
@@ -856,7 +882,7 @@ export default function Home() {
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeText, jobPosting: jobText, requestedKeys: ALL_CARD_KEYS, userCountry: userInfo?.country || '' }),
+        body: JSON.stringify({ resumeText, jobPosting: jobText, requestedKeys: ALL_CARD_KEYS, userCountry: userInfo?.country || '', userCountryCode: userInfo?.countryCode || '', userIndustry: selectedIndustry?.id || '', userIndustryLabel: selectedIndustry?.label || '' }),
       })
       if (!res.ok) {
         let msg = 'Analysis failed'
@@ -953,22 +979,22 @@ export default function Home() {
           position: 'fixed', inset: 0, zIndex: 9999,
           background: 'linear-gradient(160deg,#0F0C29,#302B63,#24243E)',
           display: 'flex', flexDirection: 'column', alignItems: 'center',
-          justifyContent: splashPhase === 'country' ? 'flex-start' : 'center',
-          gap: 24, overflowY: 'auto', padding: splashPhase === 'country' ? '32px 16px' : 0,
+          justifyContent: splashPhase === 'loading' ? 'center' : 'flex-start',
+          gap: 24, overflowY: 'auto', padding: splashPhase === 'loading' ? 0 : '32px 16px',
         }}>
           {/* Logo always shown */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: splashPhase === 'country' ? 0 : 0 }}>
             <div style={{
-              width: splashPhase === 'country' ? 56 : 80,
-              height: splashPhase === 'country' ? 56 : 80,
+              width: splashPhase === 'loading' ? 80 : 56,
+              height: splashPhase === 'loading' ? 80 : 56,
               borderRadius: 16, background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF,#38EF7D)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: splashPhase === 'country' ? 30 : 44, fontWeight: 900, color: '#0F0C29',
+              fontSize: splashPhase === 'loading' ? 44 : 30, fontWeight: 900, color: '#0F0C29',
               boxShadow: '0 0 40px rgba(255,0,153,0.5)',
               animation: 'pulse-glow 1.8s ease-in-out infinite', flexShrink: 0,
             }}>ا</div>
             <h1 style={{
-              fontSize: splashPhase === 'country' ? 'clamp(1.6rem,6vw,2.8rem)' : 'clamp(2rem,8vw,4rem)',
+              fontSize: splashPhase === 'loading' ? 'clamp(2rem,8vw,4rem)' : 'clamp(1.6rem,6vw,2.8rem)',
               fontWeight: 900, margin: 0,
               background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF,#38EF7D)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
@@ -986,15 +1012,16 @@ export default function Home() {
               </div>
               <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12, margin: 0, cursor: 'pointer' }} onClick={() => setSplashPhase('country')}>Loading... tap to skip</p>
             </>
-          ) : (
-            /* ── Country Picker ── */
-            <div style={{ width: '100%', maxWidth: 520, animation: 'fade-in 0.4s ease' }}>
+          ) : splashPhase === 'country' ? (
+            /* ── Step 1: Country Picker ── */
+            <div style={{ width: '100%', maxWidth: 560, animation: 'fade-in 0.4s ease' }}>
               <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 8, letterSpacing: 1 }}>STEP 1 OF 2</div>
                 <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', marginBottom: 6 }}>
                   🌍 Which country are you in?
                 </div>
                 <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, margin: 0 }}>
-                  We'll load your local job market, salary data, visa paths & laws
+                  We'll load your full country package: job market · salary · visa paths · labor laws
                 </p>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 10 }}>
@@ -1014,8 +1041,43 @@ export default function Home() {
                   </button>
                 ))}
               </div>
-              <p style={{ textAlign: 'center', marginTop: 16, color: 'rgba(255,255,255,0.25)', fontSize: 11 }}>
-                You can change this anytime — detected automatically next time
+            </div>
+          ) : (
+            /* ── Step 2: Industry Picker ── */
+            <div style={{ width: '100%', maxWidth: 560, animation: 'fade-in 0.4s ease' }}>
+              <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 8, letterSpacing: 1 }}>STEP 2 OF 2</div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(250,207,57,0.12)', border: '1px solid rgba(250,207,57,0.3)', borderRadius: 20, padding: '4px 14px', marginBottom: 12 }}>
+                  <span style={{ fontSize: 16 }}>{selectedCountry?.flag}</span>
+                  <span style={{ color: '#FACF39', fontWeight: 700, fontSize: 13 }}>{selectedCountry?.name}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12 }}>✓ loaded</span>
+                </div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', marginBottom: 6 }}>
+                  🏢 What's your industry?
+                </div>
+                <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, margin: 0 }}>
+                  We'll load certifications, salary benchmarks & job titles for your field
+                </p>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 10 }}>
+                {INDUSTRY_PICKER.map(ind => (
+                  <button key={ind.id} onClick={() => pickIndustry(ind)}
+                    style={{
+                      background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)',
+                      borderRadius: 12, padding: '12px 10px', cursor: 'pointer', color: '#fff',
+                      fontFamily: 'inherit', textAlign: 'center', transition: 'all .2s',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,174,239,0.18)'; e.currentTarget.style.borderColor = '#00AEEF' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
+                  >
+                    <span style={{ fontSize: 26 }}>{ind.icon}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, lineHeight: 1.3 }}>{ind.label}</span>
+                  </button>
+                ))}
+              </div>
+              <p style={{ textAlign: 'center', marginTop: 14, color: 'rgba(255,255,255,0.25)', fontSize: 11 }}>
+                <span style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setSplashPhase('country')}>← Back to country</span>
               </p>
             </div>
           )}
@@ -1552,14 +1614,6 @@ export default function Home() {
                 </h2>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   <button
-                    onClick={handleShare}
-                    style={{ padding: '8px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: 13, fontFamily: 'inherit', transition: 'all .2s' }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.18)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                  >
-                    {copied === '__share__' ? tx(userLang,'copiedBtn') : tx(userLang,'shareBtn')}
-                  </button>
-                  <button
                     onClick={downloadReport}
                     disabled={Object.keys(results).length === 0}
                     style={{ padding: '8px 16px', borderRadius: 10, background: 'linear-gradient(135deg,#00C6FF,#0072FF)', border: 'none', color: '#fff', fontWeight: 700, cursor: Object.keys(results).length === 0 ? 'not-allowed' : 'pointer', fontSize: 13, fontFamily: 'inherit', boxShadow: '0 4px 14px rgba(0,198,255,0.35)', transition: 'all .2s', opacity: Object.keys(results).length === 0 ? 0.5 : 1 }}
@@ -1624,10 +1678,6 @@ export default function Home() {
                       <h3 style={{ margin: 0, fontSize: 20, fontWeight: 900, background: group.g, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'flex', alignItems: 'center', gap: 10 }}>
                         <span style={{ fontSize: 26 }}>{group.icon}</span> {group.title}
                       </h3>
-                      <button onClick={() => content && copyToClipboard(content, tab.key)} disabled={!content}
-                        style={{ background: copied === tab.key ? 'linear-gradient(135deg,#11998E,#38EF7D)' : 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, padding: '7px 16px', cursor: content ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', opacity: content ? 1 : 0.4 }}>
-                        {copied === tab.key ? tx(userLang,'copiedBtn') : tx(userLang,'copyBtn')}
-                      </button>
                     </div>
 
                     {/* Inner tabs */}

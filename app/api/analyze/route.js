@@ -234,8 +234,22 @@ export async function POST(request) {
     requestedKeys = Array.isArray(body.requestedKeys) && body.requestedKeys.length > 0 ? body.requestedKeys : null
     // Language: English only (multilingual system reserved for v3)
     langInstruction = ''
-    const userCountry = typeof body.userCountry === 'string' ? body.userCountry.slice(0, 60) : ''
-    if (userCountry) langInstruction += `\nUSER LOCATION: ${userCountry}. For matchingJobs — show recruiters ONLY for ${userCountry} or nearest market. Do NOT list other countries.\n`
+    const userCountry     = typeof body.userCountry     === 'string' ? body.userCountry.slice(0, 60)     : ''
+    const userCountryCode = typeof body.userCountryCode === 'string' ? body.userCountryCode.slice(0, 5)   : ''
+    const userIndustry    = typeof body.userIndustry    === 'string' ? body.userIndustry.slice(0, 40)     : ''
+    const userIndustryLabel = typeof body.userIndustryLabel === 'string' ? body.userIndustryLabel.slice(0, 60) : ''
+    if (userCountry) {
+      langInstruction += `\nUSER SELECTED COUNTRY: ${userCountry} (${userCountryCode})\n`
+      langInstruction += `USER SELECTED INDUSTRY: ${userIndustryLabel || 'General'}\n`
+      langInstruction += `\nCOUNTRY-AWARE GUIDANCE RULES:\n`
+      langInstruction += `• For matchingJobs — show recruiters and job boards for ${userCountry} or nearest regional market FIRST\n`
+      langInstruction += `• For countryLaws — focus on ${userCountry} labor law, notice periods, worker rights, GRC compliance\n`
+      langInstruction += `• For salaryNegotiation — use ${userCountry} salary ranges and local currency benchmarks\n`
+      langInstruction += `• For visaPathways — CRITICAL: detect if job posting is IN ${userCountry} or OUTSIDE ${userCountry}:\n`
+      langInstruction += `  - IF JOB IS IN ${userCountry} (same as user's country): Focus on local hiring requirements, work permit conditions for immigrants already there, ATS norms, background check rules, union requirements, professional licensing\n`
+      langInstruction += `  - IF JOB IS OUTSIDE ${userCountry} (user wants to relocate): List ALL pathways: skilled worker visa, employer-sponsored visa, working holiday visa, intra-company transfer, temporary foreign worker program, digital nomad visa, non-immigration work authorization, treaty trader/investor visa — with official government URLs\n`
+      langInstruction += `• For skillsGap certifications — prioritize certifications recognized and valued in ${userCountry}\n\n`
+    }
   } catch {
     return Response.json({ error: 'Invalid request.' }, { status: 400, headers: h })
   }
@@ -404,6 +418,92 @@ export async function POST(request) {
     console.warn("Could not read OCCUPATIONS_ISCO08.md", e)
   }
 
+  // ── Country Package RAG (COUNTRY_PACKAGES_195.md) ─────────────────────────
+  let countryPackageIntel = ''
+  try {
+    const cpp = path.join(process.cwd(), 'v2', 'COUNTRY_PACKAGES_195.md')
+    if (fs.existsSync(cpp) && userCountry) {
+      const cpText = fs.readFileSync(cpp, 'utf-8')
+      // Find the country's section by ISO code or name
+      const codeSearch = userCountryCode ? new RegExp(`\\|\\s*${userCountryCode}\\s*\\|`, 'i') : null
+      const nameSearch = new RegExp(userCountry.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
+      // Split into per-country rows and find matching block
+      const lines = cpText.split('\n')
+      const matchedLines = []
+      let inSection = false
+      let sectionHeader = ''
+      for (const line of lines) {
+        // Section headers like ## AFRICA, ## AMERICAS etc
+        if (/^## /.test(line)) { sectionHeader = line; inSection = false }
+        // Table rows with country data
+        if ((codeSearch && codeSearch.test(line)) || nameSearch.test(line)) {
+          if (matchedLines.length === 0 && sectionHeader) matchedLines.push(sectionHeader)
+          matchedLines.push(line)
+          inSection = true
+        } else if (inSection && line.trim() && !line.startsWith('|---')) {
+          // Keep a few follow-up lines for context
+          if (matchedLines.length < 20) matchedLines.push(line)
+          else inSection = false
+        }
+      }
+      if (matchedLines.length > 0) {
+        countryPackageIntel = `COUNTRY DATA PACKAGE — ${userCountry.toUpperCase()} (from 195-country intelligence database):\n${matchedLines.join('\n').slice(0, 3000)}`
+      }
+      // Also grab salary benchmarks section
+      const salaryMatch = cpText.match(/## SALARY BENCHMARKS[\s\S]{0,2000}/)
+      if (salaryMatch) countryPackageIntel += `\n\n${salaryMatch[0].slice(0, 1500)}`
+      // Digital nomad section if user is outside job's country
+      const nomadMatch = cpText.match(/## DIGITAL NOMAD[\s\S]{0,1500}/)
+      if (nomadMatch) countryPackageIntel += `\n\n${nomadMatch[0].slice(0, 1000)}`
+      countryPackageIntel = countryPackageIntel.slice(0, 5000)
+    }
+  } catch (e) {
+    console.warn("Could not read COUNTRY_PACKAGES_195.md", e)
+  }
+
+  // ── Certifications RAG (CERTIFICATIONS_2026.md) ───────────────────────────
+  let certIntel = ''
+  try {
+    const certp = path.join(process.cwd(), 'v2', 'CERTIFICATIONS_2026.md')
+    if (fs.existsSync(certp)) {
+      const certText = fs.readFileSync(certp, 'utf-8')
+      const certSections = certText.split(/^## /m)
+      // Map industry ID to certification section keywords
+      const industryCertMap = {
+        'tech':        ['CLOUD','CYBERSECURITY','NETWORKING','DATA','DEVOPS','DEVELOPER','AI'],
+        'healthcare':  ['HEALTHCARE','MEDICAL'],
+        'finance':     ['FINANCE','ACCOUNTING'],
+        'engineering': ['CLOUD','DEVOPS','ENGINEERING'],
+        'education':   ['LANGUAGE','PROFESSIONAL DEVELOPMENT'],
+        'trades':      ['TRADES','SAFETY'],
+        'marketing':   ['MARKETING','DATA'],
+        'legal':       ['LEGAL','COMPLIANCE'],
+        'hr':          ['HR','HUMAN RESOURCES'],
+        'logistics':   ['SUPPLY CHAIN','PROJECT MANAGEMENT'],
+        'creative':    ['DEVELOPER','MARKETING'],
+        'hospitality': ['LANGUAGE','PROFESSIONAL DEVELOPMENT'],
+        'government':  ['COMPLIANCE','SAFETY','PROJECT MANAGEMENT'],
+        'science':     ['DATA','CLOUD','AI'],
+        'other':       ['CLOUD','PROJECT MANAGEMENT','DATA','AI'],
+      }
+      const targetSecs = industryCertMap[userIndustry] || industryCertMap['other']
+      // Also always include 2026 emerging certs
+      const alwaysInclude = ['2026 EMERGING']
+      const relevant = certSections.filter(s => {
+        const h = s.split('\n')[0].toUpperCase()
+        return targetSecs.some(k => h.includes(k)) || alwaysInclude.some(k => h.includes(k))
+      })
+      if (relevant.length > 0) {
+        certIntel = `CERTIFICATIONS FOR ${userIndustryLabel || 'THIS INDUSTRY'} (2026 — prioritize these in skillsGap):\n## ${relevant.join('\n## ').slice(0, 4000)}`
+      } else {
+        // fallback: first 2 sections
+        certIntel = `CERTIFICATIONS 2026 (top sections):\n## ${certSections.slice(1, 3).join('\n## ').slice(0, 2000)}`
+      }
+    }
+  } catch (e) {
+    console.warn("Could not read CERTIFICATIONS_2026.md", e)
+  }
+
   rateEntry.count += 1
   ipStore.set(ip, rateEntry)
 
@@ -426,6 +526,8 @@ RULES: Return ONLY raw JSON. No markdown. No code fences. Use \\n for newlines i
 ---
 
 ${masterGuide ? `CAREER KNOWLEDGE BASE (use this for certifications, salary, visa data):\n${masterGuide}\n---` : ''}
+${countryPackageIntel ? `${countryPackageIntel}\n---` : ''}
+${certIntel ? `${certIntel}\n---` : ''}
 ${companyIntel ? `${companyIntel}\n---` : ''}
 ${occupationIntel ? `OCCUPATION & JOB MARKET INTELLIGENCE (ISCO-08/ILO/BLS 2026):\n${occupationIntel}\n---` : ''}
 
