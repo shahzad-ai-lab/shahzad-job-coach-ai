@@ -59,46 +59,109 @@ function truncate(text, max) {
   return text.length > max ? text.slice(0, max) : text
 }
 
-const MODELS = [
-  { name: 'gemini-2.0-flash',         timeout: 55000 },
-  { name: 'gemini-flash-latest',      timeout: 55000 },
-  { name: 'gemini-2.0-flash-lite',    timeout: 55000 },
-  { name: 'gemini-flash-lite-latest', timeout: 55000 },
-]
+// ── Multi-provider AI fallback chain ──────────────────────────────────────────
+// Order: Gemini KEY1 → Gemini KEY2 → Grok (xAI) → error
+// Add GEMINI_API_KEY_2 and GROK_API_KEY to Vercel env vars to activate backups
 
-async function callGemini(prompt, apiKey) {
+async function callAI(prompt, env) {
+  const { gemini1, gemini2, grok } = env
   const errors = []
-  for (const { name, timeout } of MODELS) {
+
+  // ── Gemini models to try (used for both key1 and key2) ──────────────────────
+  const GEMINI_MODELS = [
+    'gemini-2.0-flash',
+    'gemini-flash-latest',
+    'gemini-2.0-flash-lite',
+    'gemini-1.5-flash',
+  ]
+
+  // ── Helper: call one Gemini model with one key ──────────────────────────────
+  async function tryGemini(model, key, label) {
     const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), timeout)
+    const timer = setTimeout(() => controller.abort(), 55000)
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${name}:generateContent?key=${apiKey}`
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+        {
+          method: 'POST', signal: controller.signal,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.7, maxOutputTokens: 8192 },
+          }),
+        }
+      )
+      clearTimeout(timer)
+      const data = await res.json()
+      if (res.ok) {
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
+        if (text) { console.log(`✓ ${label}/${model}`); return text }
+        errors.push(`${label}/${model}: empty`)
+      } else {
+        const msg = (data?.error?.message || `HTTP ${res.status}`).slice(0, 80)
+        errors.push(`${label}/${model}: ${msg}`)
+      }
+    } catch (err) {
+      clearTimeout(timer)
+      errors.push(`${label}/${model}: ${err.name === 'AbortError' ? 'timeout' : (err.message || 'error').slice(0,50)}`)
+    }
+    return null
+  }
+
+  // ── Helper: call Grok (OpenAI-compatible API) ───────────────────────────────
+  async function tryGrok(key) {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 55000)
+    try {
+      const res = await fetch('https://api.x.ai/v1/chat/completions', {
+        method: 'POST', signal: controller.signal,
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 8192 },
+          model: 'grok-3-mini',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.7, max_tokens: 8192,
         }),
       })
       clearTimeout(timer)
       const data = await res.json()
       if (res.ok) {
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
-        if (text) { console.log(`Success: ${name}`); return text }
-        errors.push(`${name}: empty response`)
+        const text = data?.choices?.[0]?.message?.content
+        if (text) { console.log('✓ grok-3-mini'); return text }
+        errors.push('grok-3-mini: empty')
       } else {
-        const msg = data?.error?.message || `HTTP ${res.status}`
-        errors.push(`${name}: ${msg.slice(0, 80)}`)
+        errors.push(`grok-3-mini: ${(data?.error?.message || `HTTP ${res.status}`).slice(0,80)}`)
       }
     } catch (err) {
       clearTimeout(timer)
-      const msg = err.name === 'AbortError' ? 'timed out' : (err.message?.slice(0, 60) || 'error')
-      errors.push(`${name}: ${msg}`)
+      errors.push(`grok-3-mini: ${err.name === 'AbortError' ? 'timeout' : (err.message||'error').slice(0,50)}`)
+    }
+    return null
+  }
+
+  // ── Chain: try each provider in order ──────────────────────────────────────
+  // 1. Gemini primary key
+  if (gemini1) {
+    for (const model of GEMINI_MODELS) {
+      const result = await tryGemini(model, gemini1, 'G1')
+      if (result) return result
     }
   }
-  throw new Error(`All models failed: ${errors.join(' | ')}`)
+
+  // 2. Gemini secondary key (if provided)
+  if (gemini2) {
+    for (const model of GEMINI_MODELS) {
+      const result = await tryGemini(model, gemini2, 'G2')
+      if (result) return result
+    }
+  }
+
+  // 3. Grok fallback (if provided)
+  if (grok) {
+    const result = await tryGrok(grok)
+    if (result) return result
+  }
+
+  throw new Error(`All providers failed: ${errors.slice(0, 5).join(' | ')}`)
 }
 
 function extractJSON(raw) {
@@ -179,8 +242,14 @@ export async function POST(request) {
 
   if (!resumeText || !jobPosting) return Response.json({ error: 'Resume and Job descriptions are required.' }, { status: 400, headers: h })
 
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return Response.json({ error: 'API key not configured.' }, { status: 500, headers: h })
+  const aiEnv = {
+    gemini1: process.env.GEMINI_API_KEY   || null,
+    gemini2: process.env.GEMINI_API_KEY_2 || null,
+    grok:    process.env.GROK_API_KEY     || null,
+  }
+  if (!aiEnv.gemini1 && !aiEnv.gemini2 && !aiEnv.grok) {
+    return Response.json({ error: 'No AI API key configured.' }, { status: 500, headers: h })
+  }
 
   // ── Lightweight Semantic Router (RAG) ───────────────────────────
   let masterGuide = ''
@@ -406,7 +475,7 @@ Return JSON with EXACTLY these keys. Every field must be detailed, honest, and s
 
   let raw
   try {
-    raw = await callGemini(prompt, apiKey)
+    raw = await callAI(prompt, aiEnv)
   } catch (err) {
     rateEntry.count = Math.max(0, rateEntry.count - 1)
     ipStore.set(ip, rateEntry)

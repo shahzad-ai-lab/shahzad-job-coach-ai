@@ -63,8 +63,12 @@ export async function POST(req) {
   entry.count++
   chatRateStore.set(ip, entry)
 
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return Response.json({ error: 'API not configured.' }, { status: 503, headers })
+  const gemini1 = process.env.GEMINI_API_KEY   || null
+  const gemini2 = process.env.GEMINI_API_KEY_2 || null
+  const grokKey = process.env.GROK_API_KEY     || null
+  if (!gemini1 && !gemini2 && !grokKey) {
+    return Response.json({ error: 'No AI API key configured.' }, { status: 503, headers })
+  }
 
   let messages
   try {
@@ -83,23 +87,47 @@ export async function POST(req) {
 
   const prompt = `${SYSTEM_PROMPT}\n\n--- CONVERSATION ---\n${conversationText}\n\nAlfalah AI:`
 
-  const CHAT_MODELS = ['gemini-2.0-flash', 'gemini-flash-latest', 'gemini-2.0-flash-lite', 'gemini-flash-lite-latest']
-  for (const model of CHAT_MODELS) {
+  const CHAT_MODELS = ['gemini-2.0-flash', 'gemini-flash-latest', 'gemini-2.0-flash-lite', 'gemini-1.5-flash']
+
+  // Try Gemini keys first (key1, then key2)
+  for (const key of [gemini1, gemini2].filter(Boolean)) {
+    for (const model of CHAT_MODELS) {
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+          {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: { temperature: 0.8, maxOutputTokens: 512 },
+            }),
+          }
+        )
+        const data = await res.json()
+        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text
+        if (reply) return Response.json({ reply: reply.trim() }, { headers })
+      } catch {}
+    }
+  }
+
+  // Grok fallback
+  if (grokKey) {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
-      const res = await fetch(url, {
+      const res = await fetch('https://api.x.ai/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${grokKey}` },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.8, maxOutputTokens: 512 },
+          model: 'grok-3-mini',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.8, max_tokens: 512,
         }),
       })
       const data = await res.json()
-      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text
+      const reply = data?.choices?.[0]?.message?.content
       if (reply) return Response.json({ reply: reply.trim() }, { headers })
     } catch {}
   }
+
   entry.count = Math.max(0, entry.count - 1)
   chatRateStore.set(ip, entry)
   return Response.json({ error: 'AI unavailable. Try again in a moment.' }, { status: 503, headers })
