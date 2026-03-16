@@ -850,11 +850,12 @@ export default function Home() {
   const [searchLocation, setSearchLocation] = useState('')
   const [timeframe, setTimeframe]     = useState('w2')
 
-  const fileRef    = useRef(null)
-  const jobFileRef = useRef(null)
-  const resultsRef = useRef(null)
+  const fileRef       = useRef(null)
+  const jobFileRef    = useRef(null)
+  const resultsRef    = useRef(null)
+  const ipResultRef   = useRef(null) // stores IP result as soon as it arrives
 
-  // ── Splash screen: loading → country picker ──────────────────────────────────
+  // ── Splash loading bar → when done, check if IP already resolved ─────────────
   useEffect(() => {
     let frame
     const start = Date.now()
@@ -863,12 +864,28 @@ export default function Home() {
       const elapsed = Date.now() - start
       const pct = Math.min(100, Math.round((elapsed / duration) * 100))
       setSplashPct(pct)
-      if (elapsed < duration) { frame = requestAnimationFrame(tick) }
-      else { setSplashPhase('detecting') } // try IP detect first
+      if (elapsed < duration) {
+        frame = requestAnimationFrame(tick)
+      } else {
+        // IP may have already responded during the loading bar
+        if (ipResultRef.current) {
+          setDetectedCountry(ipResultRef.current)
+          setSplashPhase('detected')
+        } else {
+          setSplashPhase('detecting') // wait for IP, timeout handled separately
+        }
+      }
     }
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
   }, [])
+
+  // ── Fallback: if stuck on 'detecting' for >3s → skip to country picker ───────
+  useEffect(() => {
+    if (splashPhase !== 'detecting') return
+    const t = setTimeout(() => setSplashPhase(p => p === 'detecting' ? 'country' : p), 3000)
+    return () => clearTimeout(t)
+  }, [splashPhase])
 
   // ── Country selection handler → goes to industry picker ─────────────────────
   function pickCountry(c) {
@@ -888,37 +905,28 @@ export default function Home() {
     setSplash(false)
   }
 
-  // ── Fetch location + weather + auto-detect country for splash ──────────────
+  // ── Fetch location + weather + store IP result for splash ──────────────────
   useEffect(() => {
-    // Fallback: if IP detection takes >4s, show manual country picker
-    const detectTimeout = setTimeout(() => {
-      setSplashPhase(prev => (prev === 'detecting' ? 'country' : prev))
-    }, 4000)
-
     fetch('https://ipapi.co/json/')
       .then(r => r.json())
       .then(d => {
-        clearTimeout(detectTimeout)
         setUserInfo({ city: d.city || '—', region: d.region || '—', country: d.country_name || '—', countryCode: d.country_code || '', lat: d.latitude ? d.latitude.toFixed(4) : null, lng: d.longitude ? d.longitude.toFixed(4) : null, os: detectOS(), timezone: d.timezone || '', currency: d.currency || '' })
         if (d.city && d.country_name) setSearchLocation(`${d.city}, ${d.country_name}`)
-        // Auto-detect country for splash
         if (d.country_code && d.country_name) {
           const matched = COUNTRY_LIST_195.find(x => x.code === d.country_code)
           const detected = matched || { name: d.country_name, code: d.country_code, flag: countryFlag(d.country_code) }
+          ipResultRef.current = detected // cache immediately for loading bar to read
           setDetectedCountry(detected)
-          setSplashPhase(prev => (prev === 'detecting' ? 'detected' : prev))
+          setSplashPhase(p => p === 'detecting' ? 'detected' : p)
         } else {
-          setSplashPhase(prev => (prev === 'detecting' ? 'country' : prev))
+          setSplashPhase(p => p === 'detecting' ? 'country' : p)
         }
         const loc = encodeURIComponent((d.city || '') + ',' + (d.country_code || ''))
         return fetch(`https://wttr.in/${loc}?format=%c+%C+%t&m`)
       })
       .then(r => r.text())
       .then(w => setWeather(w.trim()))
-      .catch(() => {
-        clearTimeout(detectTimeout)
-        setSplashPhase(prev => (prev === 'detecting' ? 'country' : prev))
-      })
+      .catch(() => setSplashPhase(p => p === 'detecting' ? 'country' : p))
     const s = getRLS()
     setRemaining(Math.max(0, CLIENT_HOURLY_LIMIT - s.count))
     setUserLang(detectLang())
@@ -1106,7 +1114,11 @@ export default function Home() {
             <div style={{ textAlign: 'center', animation: 'fade-in 0.3s ease' }}>
               <div style={{ fontSize: 36, marginBottom: 12, animation: 'pulse-glow 1s ease infinite' }}>📡</div>
               <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 8 }}>Detecting your location...</div>
-              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, margin: 0 }}>Loading your country package</p>
+              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, margin: '0 0 20px' }}>Loading your country package</p>
+              <button onClick={() => setSplashPhase('country')}
+                style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, padding: '8px 20px', color: 'rgba(255,255,255,0.45)', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }}>
+                Skip → Pick manually
+              </button>
             </div>
 
           ) : splashPhase === 'detected' ? (

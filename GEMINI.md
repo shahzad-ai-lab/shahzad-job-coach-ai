@@ -194,6 +194,7 @@ sanitize HTML+injection · headers DENY/CSP/nosniff · 50KB body guard · input 
 | Stop words in ATS | STOP_WORDS 200+ words, minLen >3 |
 | langInstruction undefined | Declare `let langInstruction = ''` OUTSIDE try block |
 | Git push blocked | Never put API keys in .md session logs — use placeholders |
+| Splash stuck on detecting | detectTimeout fired at mount (before loading finished) — fix: use separate useEffect watching splashPhase==='detecting' + ipResultRef to cache IP result |
 
 ---
 
