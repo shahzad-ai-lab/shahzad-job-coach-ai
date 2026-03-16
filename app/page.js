@@ -49,6 +49,60 @@ const COUNTRY_PICKER = [
   { name: 'Other / Global',       code: 'GL', flag: '🌍' },
 ]
 
+// ── Full 195 UN countries (ISO-2 code + name, flag generated dynamically) ────
+const COUNTRY_LIST_195 = [
+  {n:'Afghanistan',c:'AF'},{n:'Albania',c:'AL'},{n:'Algeria',c:'DZ'},{n:'Andorra',c:'AD'},
+  {n:'Angola',c:'AO'},{n:'Antigua & Barbuda',c:'AG'},{n:'Argentina',c:'AR'},{n:'Armenia',c:'AM'},
+  {n:'Australia',c:'AU'},{n:'Austria',c:'AT'},{n:'Azerbaijan',c:'AZ'},{n:'Bahamas',c:'BS'},
+  {n:'Bahrain',c:'BH'},{n:'Bangladesh',c:'BD'},{n:'Barbados',c:'BB'},{n:'Belarus',c:'BY'},
+  {n:'Belgium',c:'BE'},{n:'Belize',c:'BZ'},{n:'Benin',c:'BJ'},{n:'Bhutan',c:'BT'},
+  {n:'Bolivia',c:'BO'},{n:'Bosnia & Herzegovina',c:'BA'},{n:'Botswana',c:'BW'},{n:'Brazil',c:'BR'},
+  {n:'Brunei',c:'BN'},{n:'Bulgaria',c:'BG'},{n:'Burkina Faso',c:'BF'},{n:'Burundi',c:'BI'},
+  {n:'Cabo Verde',c:'CV'},{n:'Cambodia',c:'KH'},{n:'Cameroon',c:'CM'},{n:'Canada',c:'CA'},
+  {n:'Central African Rep.',c:'CF'},{n:'Chad',c:'TD'},{n:'Chile',c:'CL'},{n:'China',c:'CN'},
+  {n:'Colombia',c:'CO'},{n:'Comoros',c:'KM'},{n:'Congo',c:'CG'},{n:'Congo DR',c:'CD'},
+  {n:'Costa Rica',c:'CR'},{n:"Côte d'Ivoire",c:'CI'},{n:'Croatia',c:'HR'},{n:'Cuba',c:'CU'},
+  {n:'Cyprus',c:'CY'},{n:'Czech Republic',c:'CZ'},{n:'Denmark',c:'DK'},{n:'Djibouti',c:'DJ'},
+  {n:'Dominica',c:'DM'},{n:'Dominican Republic',c:'DO'},{n:'Ecuador',c:'EC'},{n:'Egypt',c:'EG'},
+  {n:'El Salvador',c:'SV'},{n:'Equatorial Guinea',c:'GQ'},{n:'Eritrea',c:'ER'},{n:'Estonia',c:'EE'},
+  {n:'Eswatini',c:'SZ'},{n:'Ethiopia',c:'ET'},{n:'Fiji',c:'FJ'},{n:'Finland',c:'FI'},
+  {n:'France',c:'FR'},{n:'Gabon',c:'GA'},{n:'Gambia',c:'GM'},{n:'Georgia',c:'GE'},
+  {n:'Germany',c:'DE'},{n:'Ghana',c:'GH'},{n:'Greece',c:'GR'},{n:'Grenada',c:'GD'},
+  {n:'Guatemala',c:'GT'},{n:'Guinea',c:'GN'},{n:'Guinea-Bissau',c:'GW'},{n:'Guyana',c:'GY'},
+  {n:'Haiti',c:'HT'},{n:'Honduras',c:'HN'},{n:'Hungary',c:'HU'},{n:'Iceland',c:'IS'},
+  {n:'India',c:'IN'},{n:'Indonesia',c:'ID'},{n:'Iran',c:'IR'},{n:'Iraq',c:'IQ'},
+  {n:'Ireland',c:'IE'},{n:'Israel',c:'IL'},{n:'Italy',c:'IT'},{n:'Jamaica',c:'JM'},
+  {n:'Japan',c:'JP'},{n:'Jordan',c:'JO'},{n:'Kazakhstan',c:'KZ'},{n:'Kenya',c:'KE'},
+  {n:'Kiribati',c:'KI'},{n:'Kuwait',c:'KW'},{n:'Kyrgyzstan',c:'KG'},{n:'Laos',c:'LA'},
+  {n:'Latvia',c:'LV'},{n:'Lebanon',c:'LB'},{n:'Lesotho',c:'LS'},{n:'Liberia',c:'LR'},
+  {n:'Libya',c:'LY'},{n:'Liechtenstein',c:'LI'},{n:'Lithuania',c:'LT'},{n:'Luxembourg',c:'LU'},
+  {n:'Madagascar',c:'MG'},{n:'Malawi',c:'MW'},{n:'Malaysia',c:'MY'},{n:'Maldives',c:'MV'},
+  {n:'Mali',c:'ML'},{n:'Malta',c:'MT'},{n:'Marshall Islands',c:'MH'},{n:'Mauritania',c:'MR'},
+  {n:'Mauritius',c:'MU'},{n:'Mexico',c:'MX'},{n:'Micronesia',c:'FM'},{n:'Moldova',c:'MD'},
+  {n:'Monaco',c:'MC'},{n:'Mongolia',c:'MN'},{n:'Montenegro',c:'ME'},{n:'Morocco',c:'MA'},
+  {n:'Mozambique',c:'MZ'},{n:'Myanmar',c:'MM'},{n:'Namibia',c:'NA'},{n:'Nauru',c:'NR'},
+  {n:'Nepal',c:'NP'},{n:'Netherlands',c:'NL'},{n:'New Zealand',c:'NZ'},{n:'Nicaragua',c:'NI'},
+  {n:'Niger',c:'NE'},{n:'Nigeria',c:'NG'},{n:'Norway',c:'NO'},{n:'Oman',c:'OM'},
+  {n:'Pakistan',c:'PK'},{n:'Palau',c:'PW'},{n:'Panama',c:'PA'},{n:'Papua New Guinea',c:'PG'},
+  {n:'Paraguay',c:'PY'},{n:'Peru',c:'PE'},{n:'Philippines',c:'PH'},{n:'Poland',c:'PL'},
+  {n:'Portugal',c:'PT'},{n:'Qatar',c:'QA'},{n:'Romania',c:'RO'},{n:'Russia',c:'RU'},
+  {n:'Rwanda',c:'RW'},{n:'Saint Kitts & Nevis',c:'KN'},{n:'Saint Lucia',c:'LC'},
+  {n:'Saint Vincent',c:'VC'},{n:'Samoa',c:'WS'},{n:'San Marino',c:'SM'},
+  {n:'São Tomé & Príncipe',c:'ST'},{n:'Saudi Arabia',c:'SA'},{n:'Senegal',c:'SN'},
+  {n:'Serbia',c:'RS'},{n:'Seychelles',c:'SC'},{n:'Sierra Leone',c:'SL'},{n:'Singapore',c:'SG'},
+  {n:'Slovakia',c:'SK'},{n:'Slovenia',c:'SI'},{n:'Solomon Islands',c:'SB'},{n:'Somalia',c:'SO'},
+  {n:'South Africa',c:'ZA'},{n:'South Sudan',c:'SS'},{n:'Spain',c:'ES'},{n:'Sri Lanka',c:'LK'},
+  {n:'Sudan',c:'SD'},{n:'Suriname',c:'SR'},{n:'Sweden',c:'SE'},{n:'Switzerland',c:'CH'},
+  {n:'Syria',c:'SY'},{n:'Taiwan',c:'TW'},{n:'Tajikistan',c:'TJ'},{n:'Tanzania',c:'TZ'},
+  {n:'Thailand',c:'TH'},{n:'Timor-Leste',c:'TL'},{n:'Togo',c:'TG'},{n:'Tonga',c:'TO'},
+  {n:'Trinidad & Tobago',c:'TT'},{n:'Tunisia',c:'TN'},{n:'Turkey',c:'TR'},
+  {n:'Turkmenistan',c:'TM'},{n:'Tuvalu',c:'TV'},{n:'Uganda',c:'UG'},{n:'Ukraine',c:'UA'},
+  {n:'United Arab Emirates',c:'AE'},{n:'United Kingdom',c:'GB'},{n:'United States',c:'US'},
+  {n:'Uruguay',c:'UY'},{n:'Uzbekistan',c:'UZ'},{n:'Vanuatu',c:'VU'},{n:'Venezuela',c:'VE'},
+  {n:'Vietnam',c:'VN'},{n:'Yemen',c:'YE'},{n:'Zambia',c:'ZM'},{n:'Zimbabwe',c:'ZW'},
+  {n:'Other / Global',c:'GL'},
+].map(x => ({ name: x.n, code: x.c, flag: x.c === 'GL' ? '🌍' : countryFlag(x.c) }))
+
 // ── Industry picker data ───────────────────────────────────────────────────────
 const INDUSTRY_PICKER = [
   { id: 'tech',        label: 'IT & Technology',        icon: '💻', keys: ['software','developer','engineer','data','cloud','ai','cyber','network','devops'] },
@@ -612,6 +666,7 @@ const GROUPS = [
 ]
 
 // ── RenderText: converts markdown-like text to React elements ─────────────────
+// Negative sections (MISSING, RED FLAG, FAIL, REJECT, GAP, BURIED) → RED
 function RenderText({ text }) {
   if (!text) return null
 
@@ -625,6 +680,11 @@ function RenderText({ text }) {
     )
   }
 
+  // Detect negative section by heading content
+  const NEGATIVE_PATTERNS = /MISSING|RED FLAG|FAIL|REJECT|GAP|BURIED|WEAK|NOT FOUND|ABSENT|LACKING/i
+  const POSITIVE_PATTERNS = /FOUND|MATCHED|PASS|STRENGTH|WORKS WELL|ADVANTAGE|QUICK WIN|WHAT YOU NOTICED/i
+  let negativeSection = false
+
   const lines = text.split('\n')
   return (
     <>
@@ -635,8 +695,11 @@ function RenderText({ text }) {
         // # Heading 1
         if (/^#\s+/.test(trimmed)) {
           const content = trimmed.replace(/^#+\s*/, '')
+          negativeSection = NEGATIVE_PATTERNS.test(content) && !POSITIVE_PATTERNS.test(content)
+          const col = negativeSection ? '#FF6B6B' : '#00AEEF'
+          const border = negativeSection ? 'rgba(255,107,107,0.3)' : 'rgba(0,174,239,0.3)'
           return (
-            <div key={i} style={{ fontSize: 17, fontWeight: 800, color: '#00AEEF', borderBottom: '1px solid rgba(0,174,239,0.3)', paddingBottom: 6, marginTop: 18, marginBottom: 8 }}>
+            <div key={i} style={{ fontSize: 17, fontWeight: 800, color: col, borderBottom: `1px solid ${border}`, paddingBottom: 6, marginTop: 18, marginBottom: 8 }}>
               {parseInlineBold(content)}
             </div>
           )
@@ -645,8 +708,10 @@ function RenderText({ text }) {
         // ## Heading 2
         if (/^##\s+/.test(trimmed)) {
           const content = trimmed.replace(/^#+\s*/, '')
+          negativeSection = NEGATIVE_PATTERNS.test(content) && !POSITIVE_PATTERNS.test(content)
+          const col = negativeSection ? '#FF6B6B' : '#FACF39'
           return (
-            <div key={i} style={{ fontSize: 15, fontWeight: 700, color: '#FACF39', marginTop: 14, marginBottom: 6 }}>
+            <div key={i} style={{ fontSize: 15, fontWeight: 700, color: col, marginTop: 14, marginBottom: 6 }}>
               {parseInlineBold(content)}
             </div>
           )
@@ -655,10 +720,11 @@ function RenderText({ text }) {
         // Bullet: • - * at start
         if (/^[•\-\*]\s+/.test(trimmed)) {
           const content = trimmed.replace(/^[•\-\*]\s+/, '')
+          const isNeg = negativeSection || NEGATIVE_PATTERNS.test(content)
           return (
-            <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 5, alignItems: 'flex-start', paddingLeft: 8 }}>
-              <span style={{ color: '#FF0099', fontWeight: 900, flexShrink: 0, marginTop: 1 }}>•</span>
-              <span style={{ color: 'rgba(255,255,255,0.88)', lineHeight: 1.6 }}>{parseInlineBold(content)}</span>
+            <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 5, alignItems: 'flex-start', paddingLeft: 8, background: isNeg ? 'rgba(255,65,60,0.08)' : 'transparent', borderRadius: isNeg ? 6 : 0, padding: isNeg ? '4px 8px' : '0 0 0 8px' }}>
+              <span style={{ color: isNeg ? '#FF4136' : '#FF0099', fontWeight: 900, flexShrink: 0, marginTop: 1 }}>{isNeg ? '✗' : '•'}</span>
+              <span style={{ color: isNeg ? '#FF8A80' : 'rgba(255,255,255,0.88)', lineHeight: 1.6 }}>{parseInlineBold(content)}</span>
             </div>
           )
         }
@@ -667,10 +733,11 @@ function RenderText({ text }) {
         if (/^\d+\.\s+/.test(trimmed)) {
           const num = trimmed.match(/^(\d+)\./)[1]
           const content = trimmed.replace(/^\d+\.\s+/, '')
+          const isNeg = negativeSection
           return (
             <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 5, alignItems: 'flex-start', paddingLeft: 8 }}>
-              <span style={{ color: '#FACF39', fontWeight: 800, flexShrink: 0, minWidth: 20, marginTop: 1 }}>{num}.</span>
-              <span style={{ color: 'rgba(255,255,255,0.88)', lineHeight: 1.6 }}>{parseInlineBold(content)}</span>
+              <span style={{ color: isNeg ? '#FF6B6B' : '#FACF39', fontWeight: 800, flexShrink: 0, minWidth: 20, marginTop: 1 }}>{num}.</span>
+              <span style={{ color: isNeg ? '#FF8A80' : 'rgba(255,255,255,0.88)', lineHeight: 1.6 }}>{parseInlineBold(content)}</span>
             </div>
           )
         }
@@ -680,10 +747,11 @@ function RenderText({ text }) {
           const colonIdx = trimmed.indexOf(':')
           const label = trimmed.slice(0, colonIdx)
           const rest = trimmed.slice(colonIdx + 1).trim()
+          const isNeg = NEGATIVE_PATTERNS.test(label)
           return (
-            <div key={i} style={{ marginBottom: 6, lineHeight: 1.7 }}>
-              <span style={{ color: '#FACF39', fontWeight: 800, letterSpacing: 0.5 }}>{label}: </span>
-              <span style={{ color: 'rgba(255,255,255,0.85)' }}>{parseInlineBold(rest)}</span>
+            <div key={i} style={{ marginBottom: 6, lineHeight: 1.7, background: isNeg ? 'rgba(255,65,60,0.1)' : 'transparent', borderRadius: isNeg ? 6 : 0, padding: isNeg ? '3px 8px' : 0 }}>
+              <span style={{ color: isNeg ? '#FF6B6B' : '#FACF39', fontWeight: 800, letterSpacing: 0.5 }}>{label}: </span>
+              <span style={{ color: isNeg ? '#FF8A80' : 'rgba(255,255,255,0.85)' }}>{parseInlineBold(rest)}</span>
             </div>
           )
         }
@@ -746,10 +814,12 @@ function CircleRing({ score }) {
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function Home() {
   const [splash, setSplash]           = useState(true)
-  const [splashPhase, setSplashPhase] = useState('loading') // 'loading' | 'country' | 'industry'
+  const [splashPhase, setSplashPhase] = useState('loading') // 'loading'|'detecting'|'detected'|'country'|'industry'
   const [splashPct, setSplashPct]     = useState(0)
-  const [selectedCountry, setSelectedCountry] = useState(null) // { name, code, flag }
-  const [selectedIndustry, setSelectedIndustry] = useState(null) // { id, label, icon, keys }
+  const [selectedCountry, setSelectedCountry] = useState(null)
+  const [selectedIndustry, setSelectedIndustry] = useState(null)
+  const [detectedCountry, setDetectedCountry]   = useState(null) // auto-detected from IP
+  const [splashSearch, setSplashSearch]         = useState('')   // search in 195 list
   const [resumeText, setResumeText]   = useState('')
   const [jobText, setJobText]         = useState('')
   const [results, setResults]         = useState(null)
@@ -794,7 +864,7 @@ export default function Home() {
       const pct = Math.min(100, Math.round((elapsed / duration) * 100))
       setSplashPct(pct)
       if (elapsed < duration) { frame = requestAnimationFrame(tick) }
-      else { setSplashPhase('country') } // show country picker, don't dismiss yet
+      else { setSplashPhase('detecting') } // try IP detect first
     }
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
@@ -818,23 +888,40 @@ export default function Home() {
     setSplash(false)
   }
 
-  // ── Fetch location + weather ────────────────────────────────────────────────
+  // ── Fetch location + weather + auto-detect country for splash ──────────────
   useEffect(() => {
+    // Fallback: if IP detection takes >4s, show manual country picker
+    const detectTimeout = setTimeout(() => {
+      setSplashPhase(prev => (prev === 'detecting' ? 'country' : prev))
+    }, 4000)
+
     fetch('https://ipapi.co/json/')
       .then(r => r.json())
       .then(d => {
+        clearTimeout(detectTimeout)
         setUserInfo({ city: d.city || '—', region: d.region || '—', country: d.country_name || '—', countryCode: d.country_code || '', lat: d.latitude ? d.latitude.toFixed(4) : null, lng: d.longitude ? d.longitude.toFixed(4) : null, os: detectOS(), timezone: d.timezone || '', currency: d.currency || '' })
         if (d.city && d.country_name) setSearchLocation(`${d.city}, ${d.country_name}`)
+        // Auto-detect country for splash
+        if (d.country_code && d.country_name) {
+          const matched = COUNTRY_LIST_195.find(x => x.code === d.country_code)
+          const detected = matched || { name: d.country_name, code: d.country_code, flag: countryFlag(d.country_code) }
+          setDetectedCountry(detected)
+          setSplashPhase(prev => (prev === 'detecting' ? 'detected' : prev))
+        } else {
+          setSplashPhase(prev => (prev === 'detecting' ? 'country' : prev))
+        }
         const loc = encodeURIComponent((d.city || '') + ',' + (d.country_code || ''))
         return fetch(`https://wttr.in/${loc}?format=%c+%C+%t&m`)
       })
       .then(r => r.text())
       .then(w => setWeather(w.trim()))
-      .catch(() => {})
+      .catch(() => {
+        clearTimeout(detectTimeout)
+        setSplashPhase(prev => (prev === 'detecting' ? 'country' : prev))
+      })
     const s = getRLS()
     setRemaining(Math.max(0, CLIENT_HOURLY_LIMIT - s.count))
-    const lang = detectLang()
-    setUserLang(lang)
+    setUserLang(detectLang())
   }, [])
 
   // ── Instant ATS Score (client-side, zero API) ───────────────────────────────
@@ -979,22 +1066,22 @@ export default function Home() {
           position: 'fixed', inset: 0, zIndex: 9999,
           background: 'linear-gradient(160deg,#0F0C29,#302B63,#24243E)',
           display: 'flex', flexDirection: 'column', alignItems: 'center',
-          justifyContent: splashPhase === 'loading' ? 'center' : 'flex-start',
-          gap: 24, overflowY: 'auto', padding: splashPhase === 'loading' ? 0 : '32px 16px',
+          justifyContent: (splashPhase === 'loading' || splashPhase === 'detecting' || splashPhase === 'detected') ? 'center' : 'flex-start',
+          gap: 24, overflowY: 'auto', padding: (splashPhase === 'loading' || splashPhase === 'detecting' || splashPhase === 'detected') ? 0 : '32px 16px',
         }}>
           {/* Logo always shown */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: splashPhase === 'country' ? 0 : 0 }}>
             <div style={{
-              width: splashPhase === 'loading' ? 80 : 56,
-              height: splashPhase === 'loading' ? 80 : 56,
+              width: (splashPhase === 'loading' || splashPhase === 'detecting') ? 80 : 56,
+              height: (splashPhase === 'loading' || splashPhase === 'detecting') ? 80 : 56,
               borderRadius: 16, background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF,#38EF7D)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: splashPhase === 'loading' ? 44 : 30, fontWeight: 900, color: '#0F0C29',
+              fontSize: (splashPhase === 'loading' || splashPhase === 'detecting') ? 44 : 30, fontWeight: 900, color: '#0F0C29',
               boxShadow: '0 0 40px rgba(255,0,153,0.5)',
               animation: 'pulse-glow 1.8s ease-in-out infinite', flexShrink: 0,
             }}>ا</div>
             <h1 style={{
-              fontSize: splashPhase === 'loading' ? 'clamp(2rem,8vw,4rem)' : 'clamp(1.6rem,6vw,2.8rem)',
+              fontSize: (splashPhase === 'loading' || splashPhase === 'detecting') ? 'clamp(2rem,8vw,4rem)' : 'clamp(1.6rem,6vw,2.8rem)',
               fontWeight: 900, margin: 0,
               background: 'linear-gradient(135deg,#FF0099,#FACF39,#00AEEF,#38EF7D)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
@@ -1005,69 +1092,93 @@ export default function Home() {
           </div>
 
           {splashPhase === 'loading' ? (
+            /* ── Loading bar ── */
             <>
               <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, margin: 0 }}>17 Free AI Career Tools · 195 Countries</p>
               <div style={{ width: 240, height: 4, borderRadius: 4, background: 'rgba(255,255,255,0.12)', overflow: 'hidden' }}>
                 <div style={{ height: '100%', borderRadius: 4, background: 'linear-gradient(90deg,#FF0099,#FACF39,#00AEEF)', width: `${splashPct}%`, transition: 'width 0.1s linear' }} />
               </div>
-              <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12, margin: 0, cursor: 'pointer' }} onClick={() => setSplashPhase('country')}>Loading... tap to skip</p>
+              <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12, margin: 0, cursor: 'pointer' }} onClick={() => setSplashPhase('detecting')}>Loading... tap to skip</p>
             </>
+
+          ) : splashPhase === 'detecting' ? (
+            /* ── Detecting location ── */
+            <div style={{ textAlign: 'center', animation: 'fade-in 0.3s ease' }}>
+              <div style={{ fontSize: 36, marginBottom: 12, animation: 'pulse-glow 1s ease infinite' }}>📡</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 8 }}>Detecting your location...</div>
+              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, margin: 0 }}>Loading your country package</p>
+            </div>
+
+          ) : splashPhase === 'detected' ? (
+            /* ── IP detected — confirm or change ── */
+            <div style={{ width: '100%', maxWidth: 400, textAlign: 'center', animation: 'fade-in 0.4s ease' }}>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 16, letterSpacing: 1 }}>WE DETECTED YOUR LOCATION</div>
+              <div style={{ fontSize: 72, marginBottom: 8 }}>{detectedCountry?.flag}</div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: '#fff', marginBottom: 4 }}>{detectedCountry?.name}</div>
+              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, margin: '0 0 24px' }}>
+                Is this correct? We'll load your full job market, salary, visa & labor law package.
+              </p>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <button onClick={() => pickCountry(detectedCountry)}
+                  style={{ background: 'linear-gradient(135deg,#38EF7D,#00AEEF)', border: 'none', borderRadius: 12, padding: '14px 32px', cursor: 'pointer', color: '#0F0C29', fontFamily: 'inherit', fontSize: 15, fontWeight: 900 }}>
+                  ✓ Yes, that's correct
+                </button>
+                <button onClick={() => { setSplashSearch(''); setSplashPhase('country') }}
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 12, padding: '14px 24px', cursor: 'pointer', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700 }}>
+                  🌍 Change country
+                </button>
+              </div>
+            </div>
+
           ) : splashPhase === 'country' ? (
-            /* ── Step 1: Country Picker ── */
-            <div style={{ width: '100%', maxWidth: 560, animation: 'fade-in 0.4s ease' }}>
-              <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 8, letterSpacing: 1 }}>STEP 1 OF 2</div>
-                <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', marginBottom: 6 }}>
-                  🌍 Which country are you in?
-                </div>
+            /* ── Full 195 country picker with search ── */
+            <div style={{ width: '100%', maxWidth: 600, animation: 'fade-in 0.4s ease' }}>
+              <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 8, letterSpacing: 1 }}>STEP 1 OF 2 — SELECT YOUR COUNTRY</div>
                 <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, margin: 0 }}>
                   We'll load your full country package: job market · salary · visa paths · labor laws
                 </p>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 10 }}>
-                {COUNTRY_PICKER.map(c => (
-                  <button key={c.code} onClick={() => pickCountry(c)}
-                    style={{
-                      background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)',
-                      borderRadius: 12, padding: '12px 10px', cursor: 'pointer', color: '#fff',
-                      fontFamily: 'inherit', textAlign: 'center', transition: 'all .2s',
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(250,207,57,0.18)'; e.currentTarget.style.borderColor = '#FACF39' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
-                  >
-                    <span style={{ fontSize: 26 }}>{c.flag}</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.3 }}>{c.name}</span>
-                  </button>
-                ))}
+              {/* Search box */}
+              <input
+                type="text" placeholder="🔍 Search 195 countries..."
+                value={splashSearch} onChange={e => setSplashSearch(e.target.value)}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontFamily: 'inherit', fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 12 }}
+                autoFocus
+              />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(130px,1fr))', gap: 8, maxHeight: 360, overflowY: 'auto', paddingRight: 4 }}>
+                {COUNTRY_LIST_195
+                  .filter(c => !splashSearch || c.name.toLowerCase().includes(splashSearch.toLowerCase()) || c.code.toLowerCase().includes(splashSearch.toLowerCase()))
+                  .map(c => (
+                    <button key={c.code} onClick={() => { setSplashSearch(''); pickCountry(c) }}
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '10px 8px', cursor: 'pointer', color: '#fff', fontFamily: 'inherit', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(250,207,57,0.18)'; e.currentTarget.style.borderColor = '#FACF39' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)' }}
+                    >
+                      <span style={{ fontSize: 22 }}>{c.flag}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, lineHeight: 1.3 }}>{c.name}</span>
+                    </button>
+                  ))}
               </div>
             </div>
+
           ) : (
             /* ── Step 2: Industry Picker ── */
             <div style={{ width: '100%', maxWidth: 560, animation: 'fade-in 0.4s ease' }}>
               <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 8, letterSpacing: 1 }}>STEP 2 OF 2</div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(250,207,57,0.12)', border: '1px solid rgba(250,207,57,0.3)', borderRadius: 20, padding: '4px 14px', marginBottom: 12 }}>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 8, letterSpacing: 1 }}>STEP 2 OF 2 — SELECT YOUR INDUSTRY</div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(56,239,125,0.12)', border: '1px solid rgba(56,239,125,0.3)', borderRadius: 20, padding: '4px 14px', marginBottom: 12 }}>
                   <span style={{ fontSize: 16 }}>{selectedCountry?.flag}</span>
-                  <span style={{ color: '#FACF39', fontWeight: 700, fontSize: 13 }}>{selectedCountry?.name}</span>
-                  <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12 }}>✓ loaded</span>
+                  <span style={{ color: '#38EF7D', fontWeight: 700, fontSize: 13 }}>{selectedCountry?.name}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>✓ package loaded</span>
                 </div>
-                <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', marginBottom: 6 }}>
-                  🏢 What's your industry?
-                </div>
-                <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, margin: 0 }}>
-                  We'll load certifications, salary benchmarks & job titles for your field
-                </p>
+                <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', marginBottom: 6 }}>🏢 What's your industry?</div>
+                <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, margin: 0 }}>We'll load certifications, salary benchmarks & top job titles for your field</p>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 10 }}>
                 {INDUSTRY_PICKER.map(ind => (
                   <button key={ind.id} onClick={() => pickIndustry(ind)}
-                    style={{
-                      background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)',
-                      borderRadius: 12, padding: '12px 10px', cursor: 'pointer', color: '#fff',
-                      fontFamily: 'inherit', textAlign: 'center', transition: 'all .2s',
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-                    }}
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 12, padding: '12px 10px', cursor: 'pointer', color: '#fff', fontFamily: 'inherit', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}
                     onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,174,239,0.18)'; e.currentTarget.style.borderColor = '#00AEEF' }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
                   >
@@ -1076,7 +1187,7 @@ export default function Home() {
                   </button>
                 ))}
               </div>
-              <p style={{ textAlign: 'center', marginTop: 14, color: 'rgba(255,255,255,0.25)', fontSize: 11 }}>
+              <p style={{ textAlign: 'center', marginTop: 14, color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>
                 <span style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setSplashPhase('country')}>← Back to country</span>
               </p>
             </div>
